@@ -1,0 +1,20 @@
+{
+"dashboard": "Dashboard",
+"posTerminal": "POS Terminal",
+"products": "Products",
+"categories": "Categories",
+"inventory": "Inventory",
+"sales": "Sales",
+"customers": "Customers",
+"purchases": "Purchases",
+"employees": "Employees",
+"reports": "Reports",
+"billing": "Billing",
+"settings": "Settings",
+"signOut": "Logout",
+"selectCompany": "Select a company",
+"showSidebar": "Show sidebar",
+"hideSidebar": "Hide sidebar",
+"sidebarHidden": "Sidebar hidden",
+"sidebarVisible": "Sidebar visible"
+}

@@ -1,0 +1,20 @@
+{
+  "dashboard": "Панель управления",
+  "posTerminal": "POS Терминал",
+  "products": "Товары",
+  "categories": "Категории",
+  "inventory": "Инвентарь",
+  "sales": "Продажи",
+  "customers": "Клиенты",
+  "purchases": "Закупки",
+  "employees": "Сотрудники",
+  "reports": "Отчеты",
+  "billing": "Биллинг",
+  "settings": "Настройки",
+  "signOut": "Выйти",
+  "selectCompany": "Выберите компанию",
+  "showSidebar": "Показать боковую панель",
+  "hideSidebar": "Скрыть боковую панель",
+  "sidebarHidden": "Боковая панель скрыта",
+  "sidebarVisible": "Боковая панель видна"
+}

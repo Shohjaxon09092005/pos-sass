@@ -1,0 +1,20 @@
+{
+  "dashboard": "Boshqaruv paneli",
+  "posTerminal": "POS Terminal",
+  "products": "Mahsulotlar",
+  "categories": "Kategoriyalar",
+  "inventory": "Inventarizatsiya",
+  "sales": "Sotuvlar",
+  "customers": "Mijozlar",
+  "purchases": "Xaridlar",
+  "employees": "Xodimlar",
+  "reports": "Hisobotlar",
+  "billing": "Hisob-kitob",
+  "settings": "Sozlamalar",
+  "signOut": "Chiqish",
+  "selectCompany": "Kompaniyani tanlang",
+  "showSidebar": "Yon panelni ko'rsatish",
+  "hideSidebar": "Yon panelni yashirish",
+  "sidebarHidden": "Yon panel yashirilgan",
+  "sidebarVisible": "Yon panel ko'rinadi"
+}
