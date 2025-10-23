@@ -16,7 +16,8 @@ import EmployeesPage from './pages/EmployeesPage';
 import ReportsPage from './pages/ReportsPage';
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
-
+import CategoriesPage from './pages/CategoriesPage';
+import './i18n/i18n.js'
 function App() {
   return (
     <AuthProvider>
@@ -28,6 +29,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="pos" element={<POSPage />} />
             <Route path="products" element={<ProductsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="customers" element={<CustomersPage />} />

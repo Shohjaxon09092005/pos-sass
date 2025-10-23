@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateMockSalesData, mockProducts } from '../data/mockData';
+// import { generateMockSalesData, mockProducts } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Calendar, Download, Filter, TrendingUp, DollarSign, ShoppingCart, Package } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';

@@ -33,41 +33,44 @@ export interface Branch {
   createdAt: Date;
 }
 
+// types.ts
 export interface Product {
   id: string;
-  companyId: string;
-  name: string;
-  sku: string;
-  barcode?: string;
-  categoryId: string;
+  title: string;
+  notes?: string;
+  image?: string;
   price: number;
   cost: number;
-  stockQuantity: number;
-  minStock: number;
-  maxStock: number;
-  unit: string;
-  taxRate: number;
-  isActive: boolean;
-  variants?: ProductVariant[];
-  createdAt: Date;
-}
-
-export interface ProductVariant {
-  id: string;
-  productId: string;
-  name: string;
+  barcode?: string;
+  reference?: string;
   sku: string;
-  price: number;
-  stockQuantity: number;
+  company: number;
+  created_by: number;
+  updated_by: number;
+  category: string;
+  unit: string;
+  isActive?: boolean;
+  stockQuantity?: number;
+  minStock?: number;
+  maxStock?: number;
+  taxRate?: number;
 }
 
 export interface Category {
   id: string;
-  companyId: string;
-  name: string;
+  title: string;
+  parent: string | null;
   description?: string;
-  parentId?: string;
-  isActive: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Unit {
+  id: string;
+  title: string;
+  abbreviation: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Customer {
@@ -106,7 +109,6 @@ export interface Sale {
 export interface SaleItem {
   id: string;
   productId: string;
-  variantId?: string;
   name: string;
   sku: string;
   quantity: number;
@@ -117,13 +119,50 @@ export interface SaleItem {
 
 export interface Register {
   id: string;
-  branchId: string;
-  name: string;
-  isActive: boolean;
-  cashBalance: number;
-  lastSessionAt?: Date;
+  title: string;
+  notes: string;
+  is_active: boolean;
+  company: number;
+  created_by: number;
+  updated_by: number;
 }
 
+export interface Session {
+  id: string;
+  title: string;
+  start_at: string;
+  end_at: string | null;
+  status: string;
+  opening_balance: number;
+  closing_balance: number;
+  total_sales: number;
+  total_refunds: number;
+  register: string;
+  company: number;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  is_customer?: boolean;
+  image:string
+}
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  is_online: boolean;
+}
+
+export interface Currency {
+  id: string;
+  title: string;
+  symbol: string;
+  code: string;
+  is_default: boolean;
+}
 export interface Supplier {
   id: string;
   companyId: string;
@@ -185,4 +224,26 @@ export interface Plan {
     employees: number;
     ordersPerMonth: number;
   };
+}
+export interface StockMovement {
+  id: string;
+  product: string;
+  product_title?: string;
+  type: 'incoming' | 'outgoing' | 'adjustment';
+  quantity: number;
+  date: string;
+  reason: string;
+  notes?: string;
+}
+
+export interface Location {
+  id: string;
+  title: string;
+  is_active: boolean;
+  notes?: string;
+  company?: number;
+  created_by?: number;
+  updated_by?: number;
+  deleted_by?: number;
+  deleted_at?: string;
 }

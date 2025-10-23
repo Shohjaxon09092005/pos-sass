@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Store, AlertCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Store, AlertCircle } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
 export default function LoginPage() {
   const { user, login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   if (user) {
@@ -16,22 +17,46 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
+      // Backend API ga so'rov yuborish
+      const response = await fetch(`${API_URL}/api/v1/jwt/create/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+
+      const data = await response.json();
+
+      // Tokenlarni local storage ga saqlash
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+
+      // Auth context ga user ma'lumotlarini o'rnatish
       await login(email, password);
     } catch (err) {
-      setError('Invalid credentials');
+      setError("Invalid credentials");
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const demoAccounts = [
-    { email: 'admin@demo.com', password: 'password', role: 'Admin' },
-    { email: 'manager@demo.com', password: 'password', role: 'Manager' },
-    { email: 'cashier@demo.com', password: 'password', role: 'Cashier' },
+    { email: "admin@demo.com", password: "password", role: "Admin" },
+    { email: "manager@demo.com", password: "password", role: "Manager" },
+    { email: "cashier@demo.com", password: "password", role: "Cashier" },
   ];
 
   return (
@@ -60,12 +85,15 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  login
                 </label>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +103,10 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Password
                 </label>
                 <input
@@ -95,12 +126,14 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
           <div className="mt-8 border-t pt-6">
-            <p className="text-sm text-gray-600 mb-4 font-medium">Demo Accounts:</p>
+            <p className="text-sm text-gray-600 mb-4 font-medium">
+              Demo Accounts:
+            </p>
             <div className="space-y-3">
               {demoAccounts.map((account) => (
                 <button
@@ -111,7 +144,9 @@ export default function LoginPage() {
                   }}
                   className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <div className="text-sm font-medium text-gray-900">{account.role}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {account.role}
+                  </div>
                   <div className="text-xs text-gray-500">{account.email}</div>
                 </button>
               ))}
