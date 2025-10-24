@@ -193,25 +193,28 @@ export default function Layout() {
       </div>
 
       {/* Desktop sidebar */}
-      <div
-        className={clsx(
-          "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out",
-          sidebarHidden ? "w-0" : "w-64"
-        )}
-      >
-        <div className="flex flex-col w-64">
-          <SidebarContent
-            navigation={filteredNavigation}
-            location={location}
-            company={company}
-            handleLogout={handleLogout}
-            user={user}
-            sidebarHidden={sidebarHidden}
-            toggleSidebar={toggleSidebar}
-            t={t}
-          />
+      {!sidebarHidden && (
+        <div
+          className={clsx(
+            "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out z-30 bg-white",
+            "w-64"
+          )}
+          style={{ position: 'relative' }}
+        >
+          <div className="flex flex-col w-64 h-full">
+            <SidebarContent
+              navigation={filteredNavigation}
+              location={location}
+              company={company}
+              handleLogout={handleLogout}
+              user={user}
+              sidebarHidden={sidebarHidden}
+              toggleSidebar={toggleSidebar}
+              t={t}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex flex-col">
@@ -250,7 +253,12 @@ export default function Layout() {
           <LanguageSelector />
         </div>
 
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main
+          className={clsx(
+            "flex-1 relative overflow-y-auto focus:outline-none z-10",
+            typeof window !== 'undefined' && window.innerWidth >= 768 && !sidebarHidden ? "ml-1" : ""
+          )}
+        >
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <Outlet />
