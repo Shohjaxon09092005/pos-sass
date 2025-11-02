@@ -64,6 +64,12 @@ const navigation = [
     roles: ["owner", "admin", "manager", "analyst", "viewer"],
   },
   {
+    name: "payments",
+    href: "/payments",
+    icon: CreditCard,
+    roles: ["owner", "admin", "manager", "cashier", "viewer"],
+  },
+  {
     name: "customers",
     href: "/customers",
     icon: Users,

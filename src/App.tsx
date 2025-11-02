@@ -19,6 +19,7 @@ import ReportsPage from './pages/ReportsPage';
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import CategoriesPage from './pages/CategoriesPage';
+import PaymentsPage from './pages/Payments.js';
 import './i18n/i18n.js'
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="sales" element={<SalesPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
             <Route path="employees" element={<EmployeesPage />} />

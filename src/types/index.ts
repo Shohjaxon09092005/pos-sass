@@ -150,19 +150,37 @@ export interface Customer {
   is_customer?: boolean;
   image:string
 }
+
+export interface Payment {
+  id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PaymentMethod {
   id: string;
   name: string;
-  is_online: boolean;
+  type: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Currency {
   id: string;
-  title: string;
-  symbol: string;
   code: string;
-  is_default: boolean;
+  name: string;
+  symbol: string;
+  exchange_rate: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
+
 export interface Supplier {
   id: string;
   companyId: string;

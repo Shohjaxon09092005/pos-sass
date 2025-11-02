@@ -221,25 +221,6 @@ export default function BillingPage() {
     }
   };
 
-  const fetchPaymentMethods = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/payments/methods/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data: ApiResponse<PaymentMethod> = await response.json();
-        setPaymentMethods(data.results);
-      }
-    } catch (err) {
-      console.error('Error fetching payment methods:', err);
-    }
-  };
-
   const fetchBillingPlans = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -395,46 +376,6 @@ export default function BillingPage() {
     } catch (err) {
       console.error('Error creating currency:', err);
       setError(err instanceof Error ? err.message : 'Failed to create currency');
-    }
-  };
-
-  const createPaymentMethod = async (methodData: PaymentMethodCreateData) => {
-    try {
-      const token = localStorage.getItem('access_token');
-      
-      const requestData: any = {
-        name: methodData.name,
-        is_online: methodData.is_online,
-        is_active: methodData.is_active,
-        company: company?.id,
-        notes: "Created from billing page"
-      };
-
-      if (user?.id) {
-        requestData.created_by = user.id;
-        requestData.updated_by = user.id;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/payments/methods/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create payment method');
-      }
-
-      await fetchPaymentMethods();
-      setShowCreatePaymentMethod(false);
-      setNewPaymentMethod({ name: '', is_online: false, is_active: true });
-    } catch (err) {
-      console.error('Error creating payment method:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create payment method');
     }
   };
 
@@ -653,7 +594,7 @@ export default function BillingPage() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Billing & Payments</h1>
-          <p className="text-sm text-gray-600">Manage invoices, payments, currencies and payment methods</p>
+          <p className="text-sm text-gray-600">Manage invoices, payments and currencies</p>
         </div>
         <div className="flex flex-wrap gap-3">
           {activeTab === 'invoices' && (
@@ -665,28 +606,13 @@ export default function BillingPage() {
               <span>Create Invoice</span>
             </button>
           )}
-          {activeTab === 'payments' && (
-            <button 
-              onClick={() => setShowCreatePayment(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Create Payment</span>
-            </button>
-          )}
+          {activeTab === 'payments'}
           <button 
             onClick={() => setShowCreateCurrency(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <Plus className="h-5 w-5" />
             <span>Add Currency</span>
-          </button>
-          <button 
-            onClick={() => setShowCreatePaymentMethod(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Payment Method</span>
           </button>
         </div>
       </div>
@@ -751,209 +677,7 @@ export default function BillingPage() {
         </div>
       )}
 
-      {/* Create Payment Modal */}
-      {showCreatePayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Create New Payment</h3>
-              <button onClick={() => setShowCreatePayment(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => { e.preventDefault(); createPayment(newPayment); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Invoice ID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newPayment.invoice}
-                    onChange={(e) => setNewPayment({...newPayment, invoice: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter invoice UUID"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={newPayment.amount}
-                    onChange={(e) => setNewPayment({...newPayment, amount: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Method *</label>
-                  <select
-                    required
-                    value={newPayment.method}
-                    onChange={(e) => setNewPayment({...newPayment, method: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select method</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Card</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="online">Online</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button type="button" onClick={() => setShowCreatePayment(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
-                  </button>
-                  <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-                    Create Payment
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Currency Modal */}
-      {showCreateCurrency && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Add New Currency</h3>
-              <button onClick={() => setShowCreateCurrency(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => { e.preventDefault(); createCurrency(newCurrency); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newCurrency.title}
-                    onChange={(e) => setNewCurrency({...newCurrency, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="US Dollar"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={3}
-                    value={newCurrency.code}
-                    onChange={(e) => setNewCurrency({...newCurrency, code: e.target.value.toUpperCase()})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="USD"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Symbol *</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={5}
-                    value={newCurrency.symbol}
-                    onChange={(e) => setNewCurrency({...newCurrency, symbol: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="$"
-                  />
-                </div>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newCurrency.is_default}
-                      onChange={(e) => setNewCurrency({...newCurrency, is_default: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Default currency</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newCurrency.is_active}
-                      onChange={(e) => setNewCurrency({...newCurrency, is_active: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button type="button" onClick={() => setShowCreateCurrency(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
-                  </button>
-                  <button type="submit" className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
-                    Add Currency
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Payment Method Modal */}
-      {showCreatePaymentMethod && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Add Payment Method</h3>
-              <button onClick={() => setShowCreatePaymentMethod(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => { e.preventDefault(); createPaymentMethod(newPaymentMethod); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newPaymentMethod.name}
-                    onChange={(e) => setNewPaymentMethod({...newPaymentMethod, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Credit Card"
-                  />
-                </div>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newPaymentMethod.is_online}
-                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_online: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Online payment</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newPaymentMethod.is_active}
-                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_active: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button type="button" onClick={() => setShowCreatePaymentMethod(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
-                  </button>
-                  <button type="submit" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
-                    Add Method
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-            {/* Error Display */}
+      {/* Error Display */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">
@@ -975,7 +699,6 @@ export default function BillingPage() {
               { id: 'invoices', name: 'Invoices', icon: FileText },
               { id: 'payments', name: 'Payments', icon: CreditCard },
               { id: 'currencies', name: 'Currencies', icon: DollarSign },
-              { id: 'methods', name: 'Payment Methods', icon: Users },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -1474,52 +1197,6 @@ export default function BillingPage() {
                     <div className="text-center py-8">
                       <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">No currencies found</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Payment Methods Tab */}
-          {activeTab === 'methods' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {paymentMethods.map((method) => (
-                        <tr key={method.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">{method.name}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              method.is_online ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {method.is_online ? 'Online' : 'Offline'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(method.is_active)}`}>
-                              {method.is_active ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {paymentMethods.length === 0 && (
-                    <div className="text-center py-8">
-                      <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No payment methods found</p>
                     </div>
                   )}
                 </div>
