@@ -77,70 +77,41 @@ interface ApiResponse<T> {
   results: T[];
 }
 
-// Mock plans data
-const plans = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 29,
-    features: [
-      'Up to 2 branches',
-      '5 employees',
-      '1,000 orders/month',
-      'Basic reporting',
-      'Email support'
-    ],
-    limits: {
-      branches: 2,
-      registers: 3,
-      employees: 5,
-      ordersPerMonth: 1000
-    }
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    price: 79,
-    features: [
-      'Up to 10 branches',
-      '25 employees',
-      '10,000 orders/month',
-      'Advanced reporting',
-      'Priority support',
-      'Custom branding'
-    ],
-    limits: {
-      branches: 10,
-      registers: 15,
-      employees: 25,
-      ordersPerMonth: 10000
-    }
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 199,
-    features: [
-      'Unlimited branches',
-      'Unlimited employees',
-      'Unlimited orders',
-      'Custom integrations',
-      'Dedicated account manager',
-      'SLA guarantee'
-    ],
-    limits: {
-      branches: -1,
-      registers: -1,
-      employees: -1,
-      ordersPerMonth: -1
-    }
-  }
-];
+interface BillingPlan {
+  id: string;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  currency: {
+    id: string;
+    title: string;
+    symbol: string;
+    created_at: string;
+    updated_at: string;
+    description: string;
+  };
+  seats_included: number;
+  price_yearly: string;
+  price_monthly: string;
+}
 
-type ActiveTab = 'overview' | 'invoices' | 'payments' | 'currencies' | 'methods';
+interface Subscription {
+  id: number;
+  plan: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  seats: number;
+  auto_renew: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+type ActiveTab = 'overview' | 'invoices' | 'payments' | 'currencies' | 'methods' | 'plans';
 
 export default function BillingPage() {
-  const { company, user } = useAuth(); // user ni qo'shdik
+  const { company, user } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   
@@ -149,6 +120,8 @@ export default function BillingPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [billingPlans, setBillingPlans] = useState<BillingPlan[]>([]);
+  const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -267,6 +240,69 @@ export default function BillingPage() {
     }
   };
 
+  const fetchBillingPlans = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/billing/plans/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data: ApiResponse<BillingPlan> = await response.json();
+        setBillingPlans(data.results);
+      }
+    } catch (err) {
+      console.error('Error fetching billing plans:', err);
+    }
+  };
+
+  const fetchCurrentSubscription = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/billing/subscription/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data: Subscription = await response.json();
+        setCurrentSubscription(data);
+      }
+    } catch (err) {
+      console.error('Error fetching subscription:', err);
+    }
+  };
+
+  const subscribeToPlan = async (planId: string) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/billing/plans/${planId}/subscribe/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to subscribe to plan');
+      }
+
+      await fetchCurrentSubscription();
+      setError(null);
+      alert('Successfully subscribed to the plan!');
+    } catch (err) {
+      console.error('Error subscribing to plan:', err);
+      setError(err instanceof Error ? err.message : 'Failed to subscribe to plan');
+    }
+  };
+
   // Create operations
   const createInvoice = async (invoiceData: InvoiceCreateData) => {
     try {
@@ -320,12 +356,10 @@ export default function BillingPage() {
     }
   };
 
-  // To'g'rilangan createCurrency funksiyasi
   const createCurrency = async (currencyData: CurrencyCreateData) => {
     try {
       const token = localStorage.getItem('access_token');
       
-      // Backendga kerakli maydonlarni yuboramiz
       const requestData: any = {
         title: currencyData.title,
         symbol: currencyData.symbol,
@@ -336,7 +370,6 @@ export default function BillingPage() {
         notes: "Created from billing page"
       };
 
-      // Faqat mavjud bo'lsa user ID sini qo'shamiz
       if (user?.id) {
         requestData.created_by = user.id;
         requestData.updated_by = user.id;
@@ -365,12 +398,10 @@ export default function BillingPage() {
     }
   };
 
-  // To'g'rilangan createPaymentMethod funksiyasi
   const createPaymentMethod = async (methodData: PaymentMethodCreateData) => {
     try {
       const token = localStorage.getItem('access_token');
       
-      // Backendga kerakli maydonlarni yuboramiz
       const requestData: any = {
         name: methodData.name,
         is_online: methodData.is_online,
@@ -379,7 +410,6 @@ export default function BillingPage() {
         notes: "Created from billing page"
       };
 
-      // Faqat mavjud bo'lsa user ID sini qo'shamiz
       if (user?.id) {
         requestData.created_by = user.id;
         requestData.updated_by = user.id;
@@ -468,7 +498,9 @@ export default function BillingPage() {
           fetchInvoices(),
           fetchPayments(),
           fetchCurrencies(),
-          fetchPaymentMethods()
+          fetchPaymentMethods(),
+          fetchBillingPlans(),
+          fetchCurrentSubscription()
         ]);
       } catch (err) {
         setError('Failed to load data');
@@ -484,14 +516,12 @@ export default function BillingPage() {
   const totalPaid = invoices.reduce((sum, invoice) => sum + parseFloat(invoice.amount_paid), 0);
   const outstandingBalance = totalRevenue - totalPaid;
   
-  const totalPaymentAmount = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const positivePayments = payments.filter(p => parseFloat(p.amount) > 0);
   const negativePayments = payments.filter(p => parseFloat(p.amount) < 0);
   const totalIncome = positivePayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const totalExpenses = negativePayments.reduce((sum, payment) => sum + Math.abs(parseFloat(payment.amount)), 0);
 
   // Mock usage data
-  const currentPlan = plans.find(p => p.id === company?.title) || plans[1];
   const usage = {
     companies: 1,
     branches: 2,
@@ -500,12 +530,48 @@ export default function BillingPage() {
     ordersThisMonth: 1247,
   };
 
+  const handlePlanSelection = (plan: BillingPlan) => {
+    if (currentSubscription && currentSubscription.plan === plan.id) {
+      alert('You are already subscribed to this plan.');
+      return;
+    }
+
+    const isChangingPlan = currentSubscription && currentSubscription.plan !== plan.id;
+    const message = isChangingPlan
+      ? `You currently have an active subscription. Are you sure you want to change to the "${plan.title}" plan? This will replace your current plan.`
+      : `Are you sure you want to subscribe to the "${plan.title}" plan?`;
+
+    if (window.confirm(message)) {
+      subscribeToPlan(plan.id);
+    }
+  };
+
+  const getCurrentPlanDetails = () => {
+    if (!currentSubscription) return null;
+    return billingPlans.find(p => p.id === currentSubscription.plan);
+  };
+
+  const currentPlan = getCurrentPlanDetails();
+
   const getUsagePercentage = (used: number, limit: number) => {
     if (limit === -1) return 0;
     return Math.min((used / limit) * 100, 100);
   };
 
-  // To'g'rilangan getStatusColor funksiyasi
+  const getSubscriptionStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'expired':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'trial':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const getStatusColor = (status: string | boolean) => {
     if (typeof status === 'boolean') {
       return status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
@@ -625,8 +691,271 @@ export default function BillingPage() {
         </div>
       </div>
 
+      {/* Create Invoice Modal */}
+      {showCreateInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Create New Invoice</h3>
+              <button onClick={() => setShowCreateInvoice(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={(e) => { e.preventDefault(); createInvoice(newInvoice); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newInvoice.title}
+                    onChange={(e) => setNewInvoice({...newInvoice, title: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Invoice title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newInvoice.customer_name}
+                    onChange={(e) => setNewInvoice({...newInvoice, customer_name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Customer name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={newInvoice.amount_total}
+                    onChange={(e) => setNewInvoice({...newInvoice, amount_total: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowCreateInvoice(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                    Create Invoice
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Payment Modal */}
+      {showCreatePayment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Create New Payment</h3>
+              <button onClick={() => setShowCreatePayment(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={(e) => { e.preventDefault(); createPayment(newPayment); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Invoice ID *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newPayment.invoice}
+                    onChange={(e) => setNewPayment({...newPayment, invoice: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter invoice UUID"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={newPayment.amount}
+                    onChange={(e) => setNewPayment({...newPayment, amount: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Method *</label>
+                  <select
+                    required
+                    value={newPayment.method}
+                    onChange={(e) => setNewPayment({...newPayment, method: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select method</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="online">Online</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowCreatePayment(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                    Create Payment
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Currency Modal */}
+      {showCreateCurrency && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Add New Currency</h3>
+              <button onClick={() => setShowCreateCurrency(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={(e) => { e.preventDefault(); createCurrency(newCurrency); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCurrency.title}
+                    onChange={(e) => setNewCurrency({...newCurrency, title: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="US Dollar"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={3}
+                    value={newCurrency.code}
+                    onChange={(e) => setNewCurrency({...newCurrency, code: e.target.value.toUpperCase()})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="USD"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Symbol *</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={5}
+                    value={newCurrency.symbol}
+                    onChange={(e) => setNewCurrency({...newCurrency, symbol: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="$"
+                  />
+                </div>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newCurrency.is_default}
+                      onChange={(e) => setNewCurrency({...newCurrency, is_default: e.target.checked})}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Default currency</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newCurrency.is_active}
+                      onChange={(e) => setNewCurrency({...newCurrency, is_active: e.target.checked})}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Active</span>
+                  </label>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowCreateCurrency(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+                    Add Currency
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Payment Method Modal */}
+      {showCreatePaymentMethod && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Add Payment Method</h3>
+              <button onClick={() => setShowCreatePaymentMethod(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={(e) => { e.preventDefault(); createPaymentMethod(newPaymentMethod); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newPaymentMethod.name}
+                    onChange={(e) => setNewPaymentMethod({...newPaymentMethod, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Credit Card"
+                  />
+                </div>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPaymentMethod.is_online}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_online: e.target.checked})}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Online payment</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPaymentMethod.is_active}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_active: e.target.checked})}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Active</span>
+                  </label>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowCreatePaymentMethod(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
+                    Add Method
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+            {/* Error Display */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">
             <p className="text-red-700">{error}</p>
             <button onClick={() => setError(null)} className="text-red-700">
@@ -639,9 +968,10 @@ export default function BillingPage() {
       {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
+          <nav className="-mb-px flex space-x-8 px-6 overflow-x-auto">
             {[
               { id: 'overview', name: 'Overview', icon: BarChart3 },
+              { id: 'plans', name: 'Plans', icon: Star },
               { id: 'invoices', name: 'Invoices', icon: FileText },
               { id: 'payments', name: 'Payments', icon: CreditCard },
               { id: 'currencies', name: 'Currencies', icon: DollarSign },
@@ -653,7 +983,7 @@ export default function BillingPage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as ActiveTab)}
                   className={clsx(
-                    'flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                    'flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -735,87 +1065,105 @@ export default function BillingPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900">Current Plan</h2>
-                    <p className="text-sm text-gray-600">You are currently on the {currentPlan.name} plan</p>
+                    {currentPlan ? (
+                      <p className="text-sm text-gray-600">You are currently on the {currentPlan.title} plan</p>
+                    ) : (
+                      <p className="text-sm text-gray-600">No active subscription</p>
+                    )}
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900">${currentPlan.price}</div>
-                    <div className="text-sm text-gray-600">per month</div>
-                  </div>
+                  {currentPlan && (
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {currentPlan.currency.symbol}{parseFloat(billingPeriod === 'monthly' ? currentPlan.price_monthly : currentPlan.price_yearly).toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-600">per {billingPeriod === 'monthly' ? 'month' : 'year'}</div>
+                      {currentSubscription && (
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full mt-2 ${getSubscriptionStatusColor(currentSubscription.status)}`}>
+                          {currentSubscription.status}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Branches</span>
-                      <span className="text-xs text-gray-500">
-                        {usage.branches} / {currentPlan.limits.branches === -1 ? '∞' : currentPlan.limits.branches}
-                      </span>
+                {currentPlan && currentSubscription && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600">Seats</span>
+                        <span className="text-xs text-gray-500">
+                          {currentSubscription.seats} / {currentPlan.seats_included}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full transition-all"
+                          style={{ 
+                            width: `${getUsagePercentage(currentSubscription.seats, currentPlan.seats_included)}%` 
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ 
-                          width: currentPlan.limits.branches === -1 ? '20%' : 
-                            `${getUsagePercentage(usage.branches, currentPlan.limits.branches)}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Employees</span>
-                      <span className="text-xs text-gray-500">
-                        {usage.employees} / {currentPlan.limits.employees === -1 ? '∞' : currentPlan.limits.employees}
-                      </span>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600">Branches</span>
+                        <span className="text-xs text-gray-500">
+                          {usage.branches} / ∞
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full transition-all"
+                          style={{ width: '20%' }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all"
-                        style={{ 
-                          width: currentPlan.limits.employees === -1 ? '20%' : 
-                            `${getUsagePercentage(usage.employees, currentPlan.limits.employees)}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Orders</span>
-                      <span className="text-xs text-gray-500">
-                        {usage.ordersThisMonth.toLocaleString()} / {currentPlan.limits.ordersPerMonth === -1 ? '∞' : currentPlan.limits.ordersPerMonth.toLocaleString()}
-                      </span>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600">Employees</span>
+                        <span className="text-xs text-gray-500">
+                          {usage.employees} / ∞
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full transition-all"
+                          style={{ width: '20%' }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-purple-500 h-2 rounded-full transition-all"
-                        style={{ 
-                          width: currentPlan.limits.ordersPerMonth === -1 ? '20%' : 
-                            `${getUsagePercentage(usage.ordersThisMonth, currentPlan.limits.ordersPerMonth)}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Registers</span>
-                      <span className="text-xs text-gray-500">
-                        {usage.registers} / {currentPlan.limits.registers === -1 ? '∞' : currentPlan.limits.registers}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-orange-500 h-2 rounded-full transition-all"
-                        style={{ 
-                          width: currentPlan.limits.registers === -1 ? '20%' : 
-                            `${getUsagePercentage(usage.registers, currentPlan.limits.registers)}%` 
-                        }}
-                      />
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600">Orders</span>
+                        <span className="text-xs text-gray-500">
+                          {usage.ordersThisMonth.toLocaleString()} / ∞
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-purple-500 h-2 rounded-full transition-all"
+                          style={{ width: '20%' }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {!currentPlan && (
+                  <div className="text-center py-8">
+                    <Star className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500 mb-4">You don't have an active subscription</p>
+                    <button
+                      onClick={() => setActiveTab('plans')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      View Plans
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Recent Activity */}
@@ -929,27 +1277,13 @@ export default function BillingPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Invoice
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Customer
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Total Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Paid Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -957,26 +1291,18 @@ export default function BillingPage() {
                         <tr key={invoice.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <span className="text-sm font-medium text-gray-900">
-                                {invoice.title}
-                              </span>
+                              <span className="text-sm font-medium text-gray-900">{invoice.title}</span>
                               <div className="text-xs text-gray-500">#{invoice.id.slice(0, 8)}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {invoice.customer_name}
-                            </span>
+                            <span className="text-sm text-gray-900">{invoice.customer_name}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-semibold text-gray-900">
-                              ${parseFloat(invoice.amount_total).toFixed(2)}
-                            </span>
+                            <span className="text-sm font-semibold text-gray-900">${parseFloat(invoice.amount_total).toFixed(2)}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              ${parseFloat(invoice.amount_paid).toFixed(2)}
-                            </span>
+                            <span className="text-sm text-gray-900">${parseFloat(invoice.amount_paid).toFixed(2)}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
@@ -984,9 +1310,7 @@ export default function BillingPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {format(new Date(invoice.created_at), 'MMM dd, yyyy')}
-                            </span>
+                            <span className="text-sm text-gray-900">{format(new Date(invoice.created_at), 'MMM dd, yyyy')}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
                             <div className="flex justify-end space-x-2">
@@ -1019,7 +1343,6 @@ export default function BillingPage() {
           {/* Payments Tab */}
           {activeTab === 'payments' && (
             <div className="space-y-6">
-              {/* Search and Filter */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -1050,44 +1373,27 @@ export default function BillingPage() {
                 </div>
               </div>
 
-              {/* Payments Table */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Payment ID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Invoice
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Method
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredPayments.map((payment) => (
                         <tr key={payment.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">
-                              #{payment.id.slice(0, 8)}
-                            </span>
+                            <span className="text-sm font-medium text-gray-900">#{payment.id.slice(0, 8)}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {payment.invoice.slice(0, 8)}...
-                            </span>
+                            <span className="text-sm text-gray-900">{payment.invoice.slice(0, 8)}...</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`text-sm font-semibold ${getAmountColor(payment.amount)}`}>
@@ -1100,19 +1406,15 @@ export default function BillingPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {format(new Date(payment.created_at), 'MMM dd, yyyy HH:mm')}
-                            </span>
+                            <span className="text-sm text-gray-900">{format(new Date(payment.created_at), 'MMM dd, yyyy HH:mm')}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <div className="flex justify-end space-x-2">
-                              <button 
-                                onClick={() => deletePayment(payment.id)}
-                                className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
+                            <button 
+                              onClick={() => deletePayment(payment.id)}
+                              className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1137,40 +1439,24 @@ export default function BillingPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Currency
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Code
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Symbol
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Default
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currencies.map((currency) => (
                         <tr key={currency.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">
-                              {currency.title}
-                            </span>
+                            <span className="text-sm font-medium text-gray-900">{currency.title}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {currency.code}
-                            </span>
+                            <span className="text-sm text-gray-900">{currency.code}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {currency.symbol}
-                            </span>
+                            <span className="text-sm text-gray-900">{currency.symbol}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(currency.is_active)}`}>
@@ -1178,9 +1464,7 @@ export default function BillingPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
-                              {currency.is_default ? 'Yes' : 'No'}
-                            </span>
+                            <span className="text-sm text-gray-900">{currency.is_default ? 'Yes' : 'No'}</span>
                           </td>
                         </tr>
                       ))}
@@ -1205,24 +1489,16 @@ export default function BillingPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {paymentMethods.map((method) => (
                         <tr key={method.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">
-                              {method.name}
-                            </span>
+                            <span className="text-sm font-medium text-gray-900">{method.name}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -1250,344 +1526,172 @@ export default function BillingPage() {
               </div>
             </div>
           )}
+
+          {/* Plans Tab */}
+          {activeTab === 'plans' && (
+            <div className="space-y-6">
+              {/* Billing Period Toggle */}
+              <div className="flex justify-center">
+                <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+                  <button
+                    onClick={() => setBillingPeriod('monthly')}
+                    className={clsx(
+                      'px-6 py-2 rounded-md text-sm font-medium transition-colors',
+                      billingPeriod === 'monthly'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    )}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingPeriod('yearly')}
+                    className={clsx(
+                      'px-6 py-2 rounded-md text-sm font-medium transition-colors',
+                      billingPeriod === 'yearly'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    )}
+                  >
+                    Yearly
+                    <span className="ml-2 text-xs text-green-600 font-semibold">Save 20%</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Plans Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {billingPlans.map((plan) => {
+                  const isCurrentPlan = currentSubscription?.plan === plan.id;
+                  const price = billingPeriod === 'monthly' ? plan.price_monthly : plan.price_yearly;
+
+                  return (
+                    <div
+                      key={plan.id}
+                      className={clsx(
+                        'bg-white rounded-xl shadow-sm border-2 p-8 relative transition-all hover:shadow-lg',
+                        isCurrentPlan
+                          ? 'border-blue-500 ring-2 ring-blue-200'
+                          : 'border-gray-200'
+                      )}
+                    >
+                      {isCurrentPlan && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                            Current Plan
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                          {plan.title}
+                        </h3>
+                        <div className="flex items-baseline justify-center mb-4">
+                          <span className="text-4xl font-bold text-gray-900">
+                            {plan.currency.symbol}{parseFloat(price).toFixed(2)}
+                          </span>
+                          <span className="text-gray-600 ml-2">
+                            / {billingPeriod === 'monthly' ? 'month' : 'year'}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                          {plan.description || 'Perfect for growing businesses'}
+                        </p>
+                      </div>
+
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Seats Included</span>
+                          <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handlePlanSelection(plan)}
+                        disabled={isCurrentPlan}
+                        className={clsx(
+                          'w-full py-3 px-6 rounded-lg font-medium transition-all',
+                          isCurrentPlan
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md'
+                        )}
+                      >
+                        {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {billingPlans.length === 0 && (
+                <div className="text-center py-12">
+                  <Star className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No billing plans available</p>
+                  <p className="text-gray-400 text-sm mt-2">Please contact support for more information</p>
+                </div>
+              )}
+
+              {/* Current Subscription Details */}
+              {currentSubscription && currentPlan && (
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Current Subscription Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Plan</p>
+                      <p className="text-lg font-semibold text-gray-900">{currentPlan.title}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Status</p>
+                      <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${getSubscriptionStatusColor(currentSubscription.status)}`}>
+                        {currentSubscription.status}
+                      </span>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Start Date</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {format(new Date(currentSubscription.start_date), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">End Date</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {format(new Date(currentSubscription.end_date), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Seats Used</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {currentSubscription.seats} / {currentPlan.seats_included}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Auto Renew</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {currentSubscription.auto_renew ? 'Yes' : 'No'}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Monthly Price</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {currentPlan.currency.symbol}{parseFloat(currentPlan.price_monthly).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-1">Yearly Price</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {currentPlan.currency.symbol}{parseFloat(currentPlan.price_yearly).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* All Modals */}
-      {/* Create Invoice Modal */}
-      {showCreateInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Create New Invoice</h3>
-              <button
-                onClick={() => setShowCreateInvoice(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                createInvoice(newInvoice);
-              }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newInvoice.title}
-                    onChange={(e) => setNewInvoice({...newInvoice, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Invoice title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newInvoice.customer_name}
-                    onChange={(e) => setNewInvoice({...newInvoice, customer_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Customer name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Total Amount *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={newInvoice.amount_total}
-                    onChange={(e) => setNewInvoice({...newInvoice, amount_total: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateInvoice(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Create Invoice
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Payment Modal */}
-      {showCreatePayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Create New Payment</h3>
-              <button
-                onClick={() => setShowCreatePayment(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                createPayment(newPayment);
-              }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Invoice ID *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newPayment.invoice}
-                    onChange={(e) => setNewPayment({...newPayment, invoice: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter invoice UUID"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={newPayment.amount}
-                    onChange={(e) => setNewPayment({...newPayment, amount: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Method *
-                  </label>
-                  <select
-                    required
-                    value={newPayment.method}
-                    onChange={(e) => setNewPayment({...newPayment, method: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select method</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Card</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="online">Online</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreatePayment(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Create Payment
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Currency Modal */}
-      {showCreateCurrency && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Add New Currency</h3>
-              <button
-                onClick={() => setShowCreateCurrency(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                createCurrency(newCurrency);
-              }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newCurrency.title}
-                    onChange={(e) => setNewCurrency({...newCurrency, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="US Dollar"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Code *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={3}
-                    value={newCurrency.code}
-                    onChange={(e) => setNewCurrency({...newCurrency, code: e.target.value.toUpperCase()})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="USD"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Symbol *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={5}
-                    value={newCurrency.symbol}
-                    onChange={(e) => setNewCurrency({...newCurrency, symbol: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="$"
-                  />
-                </div>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newCurrency.is_default}
-                      onChange={(e) => setNewCurrency({...newCurrency, is_default: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Default currency</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newCurrency.is_active}
-                      onChange={(e) => setNewCurrency({...newCurrency, is_active: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateCurrency(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Add Currency
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Payment Method Modal */}
-      {showCreatePaymentMethod && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Add Payment Method</h3>
-              <button
-                onClick={() => setShowCreatePaymentMethod(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                createPaymentMethod(newPaymentMethod);
-              }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newPaymentMethod.name}
-                    onChange={(e) => setNewPaymentMethod({...newPaymentMethod, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Credit Card"
-                  />
-                </div>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newPaymentMethod.is_online}
-                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_online: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Online payment</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newPaymentMethod.is_active}
-                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, is_active: e.target.checked})}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreatePaymentMethod(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Add Method
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
