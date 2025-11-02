@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -134,10 +134,15 @@ const getUserRole = (user: any) => {
 
 export default function Layout() {
   const { user, logout, company } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -156,20 +161,36 @@ export default function Layout() {
     setSidebarHidden(!sidebarHidden);
   };
 
+  if (!mounted) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex overflow-hidden">
       {/* Mobile sidebar */}
       <div
         className={clsx(
-          "fixed inset-0 flex z-40 md:hidden",
-          sidebarOpen ? "block" : "hidden"
+          "fixed inset-0 flex z-50 md:hidden transition-opacity duration-300",
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
       >
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+          className={clsx(
+            "fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300",
+            sidebarOpen ? "opacity-100" : "opacity-0"
+          )}
           onClick={() => setSidebarOpen(false)}
         />
-        <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl">
+        <div
+          className={clsx(
+            "relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl transform transition-transform duration-300",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
@@ -188,38 +209,37 @@ export default function Layout() {
             sidebarHidden={sidebarHidden}
             toggleSidebar={toggleSidebar}
             t={t}
+            i18n={i18n}
           />
         </div>
       </div>
 
       {/* Desktop sidebar */}
-      {!sidebarHidden && (
-        <div
-          className={clsx(
-            "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out z-30",
-            "w-64"
-          )}
-          style={{ position: 'relative' }}
-        >
-          <div className="flex flex-col w-64 h-full bg-white/80 backdrop-blur-xl border-r border-slate-200/50">
-            <SidebarContent
-              navigation={filteredNavigation}
-              location={location}
-              company={company}
-              handleLogout={handleLogout}
-              user={user}
-              sidebarHidden={sidebarHidden}
-              toggleSidebar={toggleSidebar}
-              t={t}
-            />
-          </div>
+      <div
+        className={clsx(
+          "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out z-40",
+          sidebarHidden ? "w-0" : "w-64"
+        )}
+      >
+        <div className="flex flex-col w-64 h-full bg-white/80 backdrop-blur-xl border-r border-slate-200/50">
+          <SidebarContent
+            navigation={filteredNavigation}
+            location={location}
+            company={company}
+            handleLogout={handleLogout}
+            user={user}
+            sidebarHidden={sidebarHidden}
+            toggleSidebar={toggleSidebar}
+            t={t}
+            i18n={i18n}
+          />
         </div>
-      )}
+      </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-hidden flex flex-col min-w-0">
         {/* Mobile header */}
-        <div className="md:hidden">
+        <div className="md:hidden z-30 relative">
           <div className="flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
             <button
               type="button"
@@ -228,13 +248,15 @@ export default function Layout() {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Enterprise POS</h1>
+            <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              Enterprise POS
+            </h1>
             <LanguageSelectorMobile />
           </div>
         </div>
 
         {/* Desktop header */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
+        <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 z-30 relative">
           <div className="flex items-center space-x-3">
             <button
               type="button"
@@ -249,12 +271,7 @@ export default function Layout() {
           <LanguageSelector />
         </div>
 
-        <main
-          className={clsx(
-            "flex-1 relative overflow-y-auto focus:outline-none z-10",
-            typeof window !== 'undefined' && window.innerWidth >= 768 && !sidebarHidden ? "ml-1" : ""
-          )}
-        >
+        <main className="flex-1 relative overflow-y-auto focus:outline-none z-10">
           <div className="py-8">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-10">
               <Outlet />
@@ -272,16 +289,34 @@ function LanguageSelector() {
 
   const selectedLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const handleLanguageChange = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
-    setIsOpen(false);
+  const handleLanguageChange = async (languageCode: string) => {
+    try {
+      await i18n.changeLanguage(languageCode);
+      // Force a re-render by updating state
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.language-selector')) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative">
+    <div className="relative language-selector">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white/50 border border-slate-200/50 rounded-xl shadow-sm hover:bg-white/80 hover:shadow transition-all duration-200 backdrop-blur-sm"
+        className="flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white/50 border border-slate-200/50 rounded-xl shadow-sm hover:bg-white/80 hover:shadow transition-all duration-200 backdrop-blur-sm z-40 relative"
       >
         <Globe className="h-4 w-4 text-slate-400" />
         <span>{selectedLanguage?.nativeName}</span>
@@ -295,15 +330,15 @@ function LanguageSelector() {
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
               className={clsx(
-                "block w-full text-left px-4 py-2.5 text-sm transition-all",
+                "block w-full text-left px-4 py-2.5 text-sm transition-all duration-200 hover:bg-slate-50/50",
                 i18n.language === language.code
                   ? "bg-blue-50/50 text-blue-600 font-semibold"
-                  : "text-slate-700 hover:bg-slate-50/50 hover:text-slate-900"
+                  : "text-slate-700 hover:text-slate-900"
               )}
             >
               <div className="flex flex-col">
-                <span>{language.nativeName}</span>
-                <span className="text-xs text-slate-500">{language.name}</span>
+                <span className="font-medium">{language.nativeName}</span>
+                <span className="text-xs text-slate-500 mt-0.5">{language.name}</span>
               </div>
             </button>
           ))}
@@ -319,35 +354,55 @@ function LanguageSelectorMobile() {
 
   const selectedLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const handleLanguageChange = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
-    setIsOpen(false);
+  const handleLanguageChange = async (languageCode: string) => {
+    try {
+      await i18n.changeLanguage(languageCode);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.language-selector-mobile')) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative">
+    <div className="relative language-selector-mobile">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-1 px-2.5 py-1.5 text-sm text-slate-700 bg-white/50 border border-slate-200 rounded-lg hover:bg-white/80 transition-all backdrop-blur-sm"
+        className="flex items-center space-x-1 px-3 py-2 text-sm text-slate-700 bg-white/50 border border-slate-200 rounded-lg hover:bg-white/80 transition-all backdrop-blur-sm z-40 relative"
       >
         <Globe className="h-4 w-4" />
         <span className="text-xs font-medium">{selectedLanguage.code.toUpperCase()}</span>
+        <ChevronDown className={clsx("h-3 w-3 text-slate-400 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-32 origin-top-right bg-white/95 backdrop-blur-xl border border-slate-200 rounded-xl shadow-xl py-1">
+        <div className="absolute right-0 z-50 mt-2 w-40 origin-top-right bg-white/95 backdrop-blur-xl border border-slate-200 rounded-xl shadow-xl py-1">
           {languages.map((language) => (
             <button
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
               className={clsx(
-                "block w-full text-left px-3 py-2 text-sm transition-all",
+                "block w-full text-left px-3 py-2.5 text-sm transition-all duration-200 hover:bg-slate-50/50",
                 i18n.language === language.code
                   ? "bg-blue-50/50 text-blue-600 font-semibold"
-                  : "text-slate-700 hover:bg-slate-50"
+                  : "text-slate-700 hover:text-slate-900"
               )}
             >
-              {language.nativeName}
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">{language.nativeName}</span>
+              </div>
             </button>
           ))}
         </div>
@@ -365,6 +420,7 @@ interface SidebarContentProps {
   sidebarHidden: boolean;
   toggleSidebar: () => void;
   t: (key: string) => string;
+  i18n: any;
 }
 
 function SidebarContent({
@@ -376,6 +432,7 @@ function SidebarContent({
   sidebarHidden,
   toggleSidebar,
   t,
+  i18n,
 }: SidebarContentProps) {
   const displayName = getUserDisplayName(user);
   const userInitial = getUserInitial(user);
@@ -390,12 +447,20 @@ function SidebarContent({
     console.log("Selecting company:", companyId);
     await setSelectedCompany(companyId);
     setShowCompanyDropdown(false);
-
-    const newSelectedCompany = companies.find((c) => c.id === companyId);
-    if (newSelectedCompany) {
-      console.log("Successfully selected company:", newSelectedCompany.title);
-    }
   };
+
+  // Close company dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.company-selector')) {
+        setShowCompanyDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto">
@@ -413,7 +478,7 @@ function SidebarContent({
       </div>
 
       {/* Company selection dropdown */}
-      <div className="mx-4 mb-6 relative">
+      <div className="mx-4 mb-6 relative company-selector">
         <div
           className="px-4 py-3 text-sm bg-slate-50/50 backdrop-blur-sm rounded-xl cursor-pointer hover:bg-slate-100/50 transition-all duration-200 border border-slate-200/30"
           onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
@@ -437,15 +502,15 @@ function SidebarContent({
         </div>
 
         {showCompanyDropdown && companies.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-xl shadow-xl z-10 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
             {companies.map((companyItem) => (
               <div
                 key={companyItem.id}
                 className={clsx(
-                  "px-4 py-3 text-sm cursor-pointer transition-all",
+                  "px-4 py-3 text-sm cursor-pointer transition-all duration-200 hover:bg-slate-50/50",
                   selectedCompanyId === companyItem.id
                     ? "bg-blue-50/50 text-blue-600 font-medium"
-                    : "text-slate-700 hover:bg-slate-50/50"
+                    : "text-slate-700"
                 )}
                 onClick={() => handleCompanySelect(companyItem.id)}
               >

@@ -28,48 +28,6 @@ interface Payment {
   updated_at: string;
 }
 
-interface Currency {
-  id: string;
-  title: string;
-  symbol: string;
-  code: string;
-  is_default: boolean;
-  is_active: boolean;
-}
-
-interface PaymentMethod {
-  id: string;
-  name: string;
-  is_online: boolean;
-  is_active: boolean;
-}
-
-interface InvoiceCreateData {
-  title: string;
-  customer_name: string;
-  amount_total: string;
-}
-
-interface PaymentCreateData {
-  invoice: string;
-  amount: string;
-  method: string;
-}
-
-interface CurrencyCreateData {
-  title: string;
-  symbol: string;
-  code: string;
-  is_default: boolean;
-  is_active: boolean;
-}
-
-interface PaymentMethodCreateData {
-  name: string;
-  is_online: boolean;
-  is_active: boolean;
-}
-
 interface ApiResponse<T> {
   count: number;
   next: string | null;
@@ -108,7 +66,7 @@ interface Subscription {
   updated_at: string;
 }
 
-type ActiveTab = 'overview' | 'invoices' | 'payments' | 'currencies' | 'methods' | 'plans';
+type ActiveTab = 'overview' | 'plans' | 'invoices' | 'payments' | 'plans';
 
 export default function BillingPage() {
   const { company, user } = useAuth();
@@ -118,50 +76,15 @@ export default function BillingPage() {
   // Data states
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [billingPlans, setBillingPlans] = useState<BillingPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Modal states
-  const [showCreateInvoice, setShowCreateInvoice] = useState(false);
-  const [showCreatePayment, setShowCreatePayment] = useState(false);
-  const [showCreateCurrency, setShowCreateCurrency] = useState(false);
-  const [showCreatePaymentMethod, setShowCreatePaymentMethod] = useState(false);
-  
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [methodFilter, setMethodFilter] = useState<string>('all');
-  
-  // Form states
-  const [newInvoice, setNewInvoice] = useState<InvoiceCreateData>({
-    title: '',
-    customer_name: '',
-    amount_total: ''
-  });
-
-  const [newPayment, setNewPayment] = useState<PaymentCreateData>({
-    invoice: '',
-    amount: '',
-    method: ''
-  });
-
-  const [newCurrency, setNewCurrency] = useState<CurrencyCreateData>({
-    title: '',
-    symbol: '',
-    code: '',
-    is_default: false,
-    is_active: true
-  });
-
-  const [newPaymentMethod, setNewPaymentMethod] = useState<PaymentMethodCreateData>({
-    name: '',
-    is_online: false,
-    is_active: true
-  });
 
   // Fetch all data
   const fetchInvoices = async () => {
@@ -199,25 +122,6 @@ export default function BillingPage() {
       }
     } catch (err) {
       console.error('Error fetching payments:', err);
-    }
-  };
-
-  const fetchCurrencies = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/payments/currency/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data: ApiResponse<Currency> = await response.json();
-        setCurrencies(data.results);
-      }
-    } catch (err) {
-      console.error('Error fetching currencies:', err);
     }
   };
 
@@ -284,152 +188,6 @@ export default function BillingPage() {
     }
   };
 
-  // Create operations
-  const createInvoice = async (invoiceData: InvoiceCreateData) => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/billing/invoices/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invoiceData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create invoice');
-      }
-
-      await fetchInvoices();
-      setShowCreateInvoice(false);
-      setNewInvoice({ title: '', customer_name: '', amount_total: '' });
-    } catch (err) {
-      console.error('Error creating invoice:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create invoice');
-    }
-  };
-
-  const createPayment = async (paymentData: PaymentCreateData) => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/payments/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create payment');
-      }
-
-      await fetchPayments();
-      setShowCreatePayment(false);
-      setNewPayment({ invoice: '', amount: '', method: '' });
-    } catch (err) {
-      console.error('Error creating payment:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create payment');
-    }
-  };
-
-  const createCurrency = async (currencyData: CurrencyCreateData) => {
-    try {
-      const token = localStorage.getItem('access_token');
-      
-      const requestData: any = {
-        title: currencyData.title,
-        symbol: currencyData.symbol,
-        code: currencyData.code,
-        is_default: currencyData.is_default,
-        is_active: currencyData.is_active,
-        company: company?.id,
-        notes: "Created from billing page"
-      };
-
-      if (user?.id) {
-        requestData.created_by = user.id;
-        requestData.updated_by = user.id;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/payments/currency/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create currency');
-      }
-
-      await fetchCurrencies();
-      setShowCreateCurrency(false);
-      setNewCurrency({ title: '', symbol: '', code: '', is_default: false, is_active: true });
-    } catch (err) {
-      console.error('Error creating currency:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create currency');
-    }
-  };
-
-  // Delete operations
-  const deleteInvoice = async (invoiceId: string) => {
-    if (!window.confirm('Are you sure you want to delete this invoice?')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/billing/invoices/${invoiceId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete invoice');
-      }
-
-      await fetchInvoices();
-    } catch (err) {
-      console.error('Error deleting invoice:', err);
-      setError('Failed to delete invoice');
-    }
-  };
-
-  const deletePayment = async (paymentId: string) => {
-    if (!window.confirm('Are you sure you want to delete this payment?')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/payments/${paymentId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete payment');
-      }
-
-      await fetchPayments();
-    } catch (err) {
-      console.error('Error deleting payment:', err);
-      setError('Failed to delete payment');
-    }
-  };
-
   // Load all data on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -438,8 +196,6 @@ export default function BillingPage() {
         await Promise.all([
           fetchInvoices(),
           fetchPayments(),
-          fetchCurrencies(),
-          fetchPaymentMethods(),
           fetchBillingPlans(),
           fetchCurrentSubscription()
         ]);
@@ -594,88 +350,13 @@ export default function BillingPage() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Billing & Payments</h1>
-          <p className="text-sm text-gray-600">Manage invoices, payments and currencies</p>
+          <p className="text-sm text-gray-600">Manage invoices and payments</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          {activeTab === 'invoices' && (
-            <button 
-              onClick={() => setShowCreateInvoice(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Create Invoice</span>
-            </button>
-          )}
+          {activeTab === 'invoices'}
           {activeTab === 'payments'}
-          <button 
-            onClick={() => setShowCreateCurrency(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Currency</span>
-          </button>
         </div>
       </div>
-
-      {/* Create Invoice Modal */}
-      {showCreateInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Create New Invoice</h3>
-              <button onClick={() => setShowCreateInvoice(false)} className="text-gray-400 hover:text-gray-600">
-                <span className="text-2xl">×</span>
-              </button>
-            </div>
-            <div className="p-6">
-              <form onSubmit={(e) => { e.preventDefault(); createInvoice(newInvoice); }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newInvoice.title}
-                    onChange={(e) => setNewInvoice({...newInvoice, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Invoice title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newInvoice.customer_name}
-                    onChange={(e) => setNewInvoice({...newInvoice, customer_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Customer name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={newInvoice.amount_total}
-                    onChange={(e) => setNewInvoice({...newInvoice, amount_total: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button type="button" onClick={() => setShowCreateInvoice(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
-                  </button>
-                  <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-                    Create Invoice
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Error Display */}
       {error && (
@@ -698,7 +379,6 @@ export default function BillingPage() {
               { id: 'plans', name: 'Plans', icon: Star },
               { id: 'invoices', name: 'Invoices', icon: FileText },
               { id: 'payments', name: 'Payments', icon: CreditCard },
-              { id: 'currencies', name: 'Currencies', icon: DollarSign },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -1040,12 +720,6 @@ export default function BillingPage() {
                               <button className="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors">
                                 <Download className="h-4 w-4" />
                               </button>
-                              <button 
-                                onClick={() => deleteInvoice(invoice.id)}
-                                className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
                             </div>
                           </td>
                         </tr>
@@ -1147,56 +821,6 @@ export default function BillingPage() {
                     <div className="text-center py-8">
                       <CreditCard className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">No payments found</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Currencies Tab */}
-          {activeTab === 'currencies' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {currencies.map((currency) => (
-                        <tr key={currency.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">{currency.title}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">{currency.code}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">{currency.symbol}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(currency.is_active)}`}>
-                              {currency.is_active ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">{currency.is_default ? 'Yes' : 'No'}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {currencies.length === 0 && (
-                    <div className="text-center py-8">
-                      <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No currencies found</p>
                     </div>
                   )}
                 </div>
