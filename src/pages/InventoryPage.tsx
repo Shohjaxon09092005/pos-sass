@@ -1453,7 +1453,7 @@ export default function InventoryPage() {
       {/* Add Location Modal */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 {selectedLocation ? "Edit Location" : "Add New Location"}
@@ -1569,7 +1569,7 @@ export default function InventoryPage() {
       {/* Stock Transfer Modal */}
       {showTransferModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Create Stock Transfer
@@ -1789,7 +1789,7 @@ export default function InventoryPage() {
       {/* Edit Transfer Modal */}
       {showTransferEditModal && editingTransfer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Edit Stock Transfer
@@ -2253,7 +2253,7 @@ export default function InventoryPage() {
       {/* Stock Adjustment Modal */}
       {showAdjustmentModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Adjust Stock - {selectedProduct.name}

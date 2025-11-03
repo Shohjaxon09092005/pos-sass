@@ -926,8 +926,8 @@ export default function ProductsPage() {
       </div>
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] ">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"  style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Add New Product
@@ -1153,7 +1153,7 @@ export default function ProductsPage() {
       {/* Edit Product Modal */}
       {editingProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Edit Product</h3>
               <button
@@ -1402,7 +1402,7 @@ export default function ProductsPage() {
       {/* // Product Detail Modal - rasmni ko'rsatish qismini yangilaymiz */}
       {showDetailModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Mahsulot Tafsilotlari

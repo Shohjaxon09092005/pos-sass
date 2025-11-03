@@ -847,7 +847,7 @@ export default function CustomersPage() {
       {/* Customer Detail Modal */}
       {showDetailModal && selectedCustomer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-xl p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             {/* Modal Header */}
             <div className="flex-shrink-0 p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -896,7 +896,7 @@ export default function CustomersPage() {
               </div>
 
               {/* Customer Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-center">
                     <DollarSign className="h-8 w-8 text-blue-600 mr-3" />
@@ -1168,7 +1168,7 @@ export default function CustomersPage() {
 
       {(showAddModal || showEditModal) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             {/* Modal Header */}
             <div className="flex-shrink-0 p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">

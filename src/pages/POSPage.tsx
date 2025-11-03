@@ -1,15 +1,33 @@
 import { useState, useEffect } from "react";
-import { 
-  Search, ShoppingCart, Minus, Plus, X, User, CreditCard, 
-  DollarSign, Printer, Check, Calculator, Store, Package,
-  Clock, CheckCircle, XCircle, AlertCircle, Lock, Unlock,
-  TrendingUp, Calendar, RefreshCw
+import {
+  Search,
+  ShoppingCart,
+  Minus,
+  Plus,
+  X,
+  User,
+  CreditCard,
+  DollarSign,
+  Printer,
+  Check,
+  Calculator,
+  Store,
+  Package,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Lock,
+  Unlock,
+  TrendingUp,
+  Calendar,
+  RefreshCw,
 } from "lucide-react";
 import { clsx } from "clsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-// Types
+// Types (o'zgarmadi)
 interface Product {
   id: string;
   title: string;
@@ -101,29 +119,32 @@ const safeParseFloat = (value: any): number => {
 // Mock auth context
 const useAuth = () => ({
   user: { id: "1", name: "Demo User" },
-  company: { id: "1", name: "Demo Company" }
+  company: { id: "1", name: "Demo Company" },
 });
 
 export default function POSPage() {
   const { user, company } = useAuth();
-  
+
   // State management
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [cart, setCart] = useState<SaleItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [amountPaid, setAmountPaid] = useState<string>("");
+  const [amountPaid, setAmountPaid] = useState<string>("0");
   const [showPayment, setShowPayment] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showNumberpad, setShowNumberpad] = useState(false);
   const [numberpadValue, setNumberpadValue] = useState("");
-  const [numberpadMode, setNumberpadMode] = useState<"quantity" | "price" | "amount_paid" | null>(null);
+  const [numberpadMode, setNumberpadMode] = useState<
+    "quantity" | "price" | "amount_paid" | null
+  >(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [lastSale, setLastSale] = useState<any>(null);
-  const [cartVisible, setCartVisible] = useState(false);
 
   // API data states
   const [products, setProducts] = useState<Product[]>([]);
@@ -133,9 +154,11 @@ export default function POSPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
-  const [selectedRegister, setSelectedRegister] = useState<Register | null>(null);
+  const [selectedRegister, setSelectedRegister] = useState<Register | null>(
+    null
+  );
   const [activeSession, setActiveSession] = useState<Session | null>(null);
-  
+
   // Modal states
   const [showRegisterSelection, setShowRegisterSelection] = useState(true);
   const [showSessionModal, setShowSessionModal] = useState(false);
@@ -144,7 +167,7 @@ export default function POSPage() {
   const [newRegisterNotes, setNewRegisterNotes] = useState("");
   const [openingBalance, setOpeningBalance] = useState<string>("0");
   const [closingBalance, setClosingBalance] = useState<string>("0");
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -152,7 +175,7 @@ export default function POSPage() {
   // Alert/Notification state
   const [alertModal, setAlertModal] = useState<{
     show: boolean;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: "success" | "error" | "warning" | "info";
     title: string;
     message: string;
     onConfirm?: () => void;
@@ -161,9 +184,9 @@ export default function POSPage() {
     cancelText?: string;
   }>({
     show: false,
-    type: 'info',
-    title: '',
-    message: '',
+    type: "info",
+    title: "",
+    message: "",
   });
 
   // Input prompt state
@@ -173,24 +196,24 @@ export default function POSPage() {
     message: string;
     placeholder: string;
     defaultValue: string;
-    inputType: 'text' | 'number';
+    inputType: "text" | "number";
     onConfirm: (value: string) => void;
     onCancel?: () => void;
   }>({
     show: false,
-    title: '',
-    message: '',
-    placeholder: '',
-    defaultValue: '',
-    inputType: 'text',
+    title: "",
+    message: "",
+    placeholder: "",
+    defaultValue: "",
+    inputType: "text",
     onConfirm: () => {},
   });
 
-  const [promptInputValue, setPromptInputValue] = useState('');
+  const [promptInputValue, setPromptInputValue] = useState("");
 
   // Helper functions for alerts
   const showAlert = (
-    type: 'success' | 'error' | 'warning' | 'info',
+    type: "success" | "error" | "warning" | "info",
     title: string,
     message: string,
     onConfirm?: () => void
@@ -201,7 +224,7 @@ export default function POSPage() {
       title,
       message,
       onConfirm,
-      confirmText: 'OK',
+      confirmText: "OK",
     });
   };
 
@@ -213,22 +236,22 @@ export default function POSPage() {
   ) => {
     setAlertModal({
       show: true,
-      type: 'warning',
+      type: "warning",
       title,
       message,
       onConfirm,
       onCancel,
-      confirmText: 'Confirm',
-      cancelText: 'Cancel',
+      confirmText: "Confirm",
+      cancelText: "Cancel",
     });
   };
 
   const closeAlert = () => {
     setAlertModal({
       show: false,
-      type: 'info',
-      title: '',
-      message: '',
+      type: "info",
+      title: "",
+      message: "",
     });
   };
 
@@ -237,7 +260,7 @@ export default function POSPage() {
     message: string,
     defaultValue: string,
     placeholder: string,
-    inputType: 'text' | 'number',
+    inputType: "text" | "number",
     onConfirm: (value: string) => void,
     onCancel?: () => void
   ) => {
@@ -257,14 +280,14 @@ export default function POSPage() {
   const closePrompt = () => {
     setInputPrompt({
       show: false,
-      title: '',
-      message: '',
-      placeholder: '',
-      defaultValue: '',
-      inputType: 'text',
+      title: "",
+      message: "",
+      placeholder: "",
+      defaultValue: "",
+      inputType: "text",
       onConfirm: () => {},
     });
-    setPromptInputValue('');
+    setPromptInputValue("");
   };
 
   // Fetch data on mount
@@ -288,7 +311,7 @@ export default function POSPage() {
         sessionsResponse,
         customersResponse,
         paymentMethodsResponse,
-        currenciesResponse
+        currenciesResponse,
       ] = await Promise.all([
         fetch(`${API_URL}/api/v1/products/`, { headers }),
         fetch(`${API_URL}/api/v1/products/categories/`, { headers }),
@@ -296,43 +319,65 @@ export default function POSPage() {
         fetch(`${API_URL}/api/v1/pos/sessions/`, { headers }),
         fetch(`${API_URL}/api/v1/partners/`, { headers }),
         fetch(`${API_URL}/api/v1/payments/methods/`, { headers }),
-        fetch(`${API_URL}/api/v1/payments/currency/`, { headers })
+        fetch(`${API_URL}/api/v1/payments/currency/`, { headers }),
       ]);
 
-      const productsData = productsResponse.ok ? await productsResponse.json() : { results: [] };
-      const categoriesData = categoriesResponse.ok ? await categoriesResponse.json() : { results: [] };
-      const registersData = registersResponse.ok ? await registersResponse.json() : { results: [] };
-      const sessionsData = sessionsResponse.ok ? await sessionsResponse.json() : { results: [] };
-      const customersData = customersResponse.ok ? await customersResponse.json() : { results: [] };
-      const paymentMethodsData = paymentMethodsResponse.ok ? await paymentMethodsResponse.json() : { results: [] };
-      const currenciesData = currenciesResponse.ok ? await currenciesResponse.json() : { results: [] };
+      const productsData = productsResponse.ok
+        ? await productsResponse.json()
+        : { results: [] };
+      const categoriesData = categoriesResponse.ok
+        ? await categoriesResponse.json()
+        : { results: [] };
+      const registersData = registersResponse.ok
+        ? await registersResponse.json()
+        : { results: [] };
+      const sessionsData = sessionsResponse.ok
+        ? await sessionsResponse.json()
+        : { results: [] };
+      const customersData = customersResponse.ok
+        ? await customersResponse.json()
+        : { results: [] };
+      const paymentMethodsData = paymentMethodsResponse.ok
+        ? await paymentMethodsResponse.json()
+        : { results: [] };
+      const currenciesData = currenciesResponse.ok
+        ? await currenciesResponse.json()
+        : { results: [] };
 
-      const transformedProducts: Product[] = (productsData.results || []).map((product: any) => ({
-        id: product.id,
-        title: product.title || 'Unknown Product',
-        image: product.image,
-        price: safeParseFloat(product.price),
-        cost: safeParseFloat(product.cost),
-        barcode: product.barcode,
-        reference: product.reference,
-        sku: product.sku,
-        category: product.category,
-        company: product.company,
-        stockQuantity: safeParseFloat(product.current_stock || product.stock_quantity || 0),
-      }));
+      const transformedProducts: Product[] = (productsData.results || []).map(
+        (product: any) => ({
+          id: product.id,
+          title: product.title || "Unknown Product",
+          image: product.image,
+          price: safeParseFloat(product.price),
+          cost: safeParseFloat(product.cost),
+          barcode: product.barcode,
+          reference: product.reference,
+          sku: product.sku,
+          category: product.category,
+          company: product.company,
+          stockQuantity: safeParseFloat(
+            product.current_stock || product.stock_quantity || 0
+          ),
+        })
+      );
 
-      const transformedCategories: Category[] = (categoriesData.results || []).map((category: any) => ({
+      const transformedCategories: Category[] = (
+        categoriesData.results || []
+      ).map((category: any) => ({
         id: category.id,
-        title: category.title || 'Unknown Category',
+        title: category.title || "Unknown Category",
         parent: category.parent,
       }));
 
-      const transformedRegisters: Register[] = (registersData.results || []).map((register: any) => ({
+      const transformedRegisters: Register[] = (
+        registersData.results || []
+      ).map((register: any) => ({
         id: register.id,
-        title: register.title || 'Unknown Register',
+        title: register.title || "Unknown Register",
         notes: register.notes,
         active: register.active !== false,
-        status: register.status || 'closed',
+        status: register.status || "closed",
         location: register.location,
         location_title: register.location_title,
         company: register.company,
@@ -340,38 +385,46 @@ export default function POSPage() {
         updated_by: register.updated_by,
       }));
 
-      const transformedSessions: Session[] = (sessionsData.results || []).map((session: any) => ({
-        id: session.id,
-        title: session.title || 'Unknown Session',
-        start_at: session.start_at,
-        end_at: session.end_at,
-        status: session.status,
-        opening_balance: safeParseFloat(session.opening_balance),
-        closing_balance: safeParseFloat(session.closing_balance),
-        total_sales: safeParseFloat(session.total_sales),
-        total_refunds: safeParseFloat(session.total_refunds),
-        register: session.register,
-        register_title: session.register_title,
-        company: session.company,
-      }));
+      const transformedSessions: Session[] = (sessionsData.results || []).map(
+        (session: any) => ({
+          id: session.id,
+          title: session.title || "Unknown Session",
+          start_at: session.start_at,
+          end_at: session.end_at,
+          status: session.status,
+          opening_balance: safeParseFloat(session.opening_balance),
+          closing_balance: safeParseFloat(session.closing_balance),
+          total_sales: safeParseFloat(session.total_sales),
+          total_refunds: safeParseFloat(session.total_refunds),
+          register: session.register,
+          register_title: session.register_title,
+          company: session.company,
+        })
+      );
 
-      const transformedCustomers: Customer[] = (customersData.results || []).map((customer: any) => ({
+      const transformedCustomers: Customer[] = (
+        customersData.results || []
+      ).map((customer: any) => ({
         id: customer.id,
-        name: customer.name || 'Unknown Customer',
+        name: customer.name || "Unknown Customer",
         email: customer.email,
         phone: customer.phone,
-        address: customer.address_1 || customer.address_2 || '',
+        address: customer.address_1 || customer.address_2 || "",
       }));
 
-      const transformedPaymentMethods: PaymentMethod[] = (paymentMethodsData.results || []).map((method: any) => ({
+      const transformedPaymentMethods: PaymentMethod[] = (
+        paymentMethodsData.results || []
+      ).map((method: any) => ({
         id: method.id,
-        name: method.name || 'Unknown Method',
+        name: method.name || "Unknown Method",
         is_online: method.is_online,
       }));
 
-      const transformedCurrencies: Currency[] = (currenciesData.results || []).map((currency: any) => ({
+      const transformedCurrencies: Currency[] = (
+        currenciesData.results || []
+      ).map((currency: any) => ({
         id: currency.id,
-        title: currency.title || 'Unknown Currency',
+        title: currency.title || "Unknown Currency",
         symbol: currency.symbol,
         code: currency.code,
         is_default: currency.is_default,
@@ -387,8 +440,10 @@ export default function POSPage() {
 
       // Update active session if we have one selected
       if (activeSession) {
-        const updatedSession = transformedSessions.find(s => s.id === activeSession.id);
-        if (updatedSession && updatedSession.status === 'opened') {
+        const updatedSession = transformedSessions.find(
+          (s) => s.id === activeSession.id
+        );
+        if (updatedSession && updatedSession.status === "opened") {
           setActiveSession(updatedSession);
         } else {
           // Session was closed, clear it
@@ -400,7 +455,6 @@ export default function POSPage() {
       if (transformedPaymentMethods.length > 0 && !paymentMethod) {
         setPaymentMethod(transformedPaymentMethods[0].id);
       }
-
     } catch (err) {
       console.error("Error fetching data:", err);
       setError("Failed to load data");
@@ -417,9 +471,12 @@ export default function POSPage() {
 
   // Get active session for a register
   const getActiveSessionForRegister = (registerId: string): Session | null => {
-    return sessions.find(
-      session => session.register === registerId && session.status === 'opened'
-    ) || null;
+    return (
+      sessions.find(
+        (session) =>
+          session.register === registerId && session.status === "opened"
+      ) || null
+    );
   };
 
   // Register selection handler
@@ -427,7 +484,7 @@ export default function POSPage() {
     setSelectedRegister(register);
     const sessionForRegister = getActiveSessionForRegister(register.id);
     setActiveSession(sessionForRegister);
-    
+
     // Only show session modal if NO active session exists
     if (!sessionForRegister) {
       setShowRegisterSelection(false);
@@ -441,7 +498,7 @@ export default function POSPage() {
   // Create new register
   const createNewRegister = async () => {
     if (!newRegisterTitle.trim()) {
-      showAlert('error', 'Validation Error', 'Please enter register name');
+      showAlert("error", "Validation Error", "Please enter register name");
       return;
     }
 
@@ -467,25 +524,29 @@ export default function POSPage() {
       setNewRegisterTitle("");
       setNewRegisterNotes("");
       setShowNewRegisterModal(false);
-      
-      showAlert('success', 'Success', 'Register created successfully!');
+
+      showAlert("success", "Success", "Register created successfully!");
     } catch (err) {
       console.error("Error creating register:", err);
-      showAlert('error', 'Error', 'Failed to create register');
+      showAlert("error", "Error", "Failed to create register");
     }
   };
 
   // Start new session
   const startNewSession = async () => {
     if (!selectedRegister) {
-      showAlert('error', 'Error', 'Please select a register first');
+      showAlert("error", "Error", "Please select a register first");
       return;
     }
 
     // Check if there's already an active session for this register
     const existingSession = getActiveSessionForRegister(selectedRegister.id);
     if (existingSession) {
-      showAlert('warning', 'Session Already Active', 'This register already has an active session!');
+      showAlert(
+        "warning",
+        "Session Already Active",
+        "This register already has an active session!"
+      );
       setActiveSession(existingSession);
       setShowSessionModal(false);
       return;
@@ -514,10 +575,10 @@ export default function POSPage() {
       }
 
       const newSession = await response.json();
-      
+
       // Refresh data to get updated register status
       await fetchData();
-      
+
       // Set the new active session
       const createdSession: Session = {
         id: newSession.id,
@@ -533,15 +594,19 @@ export default function POSPage() {
         register_title: newSession.register_title,
         company: newSession.company,
       };
-      
+
       setActiveSession(createdSession);
       setShowSessionModal(false);
       setOpeningBalance("0");
-      
-      showAlert('success', 'Session Opened', 'Session opened successfully!');
+
+      showAlert("success", "Session Opened", "Session opened successfully!");
     } catch (err) {
       console.error("Error starting session:", err);
-      showAlert('error', 'Error', 'Failed to start session: ' + (err as Error).message);
+      showAlert(
+        "error",
+        "Error",
+        "Failed to start session: " + (err as Error).message
+      );
     }
   };
 
@@ -550,9 +615,13 @@ export default function POSPage() {
     if (!activeSession) return;
 
     // Prompt for closing balance
-    const suggestedBalance = (activeSession.opening_balance + activeSession.total_sales).toFixed(2);
+    const suggestedBalance = (
+      activeSession.opening_balance + activeSession.total_sales
+    ).toFixed(2);
     const enteredBalance = prompt(
-      `Enter closing balance:\n\nSuggested: ${suggestedBalance}\nOpening: ${activeSession.opening_balance.toFixed(2)}\nSales: ${activeSession.total_sales.toFixed(2)}`,
+      `Enter closing balance:\n\nSuggested: ${suggestedBalance}\nOpening: ${activeSession.opening_balance.toFixed(
+        2
+      )}\nSales: ${activeSession.total_sales.toFixed(2)}`,
       suggestedBalance
     );
 
@@ -565,23 +634,28 @@ export default function POSPage() {
     }
 
     const confirmed = window.confirm(
-      `Close session with balance ${finalBalance.toFixed(2)}?\n\nThis action cannot be undone.`
+      `Close session with balance ${finalBalance.toFixed(
+        2
+      )}?\n\nThis action cannot be undone.`
     );
     if (!confirmed) return;
 
     try {
       const token = localStorage.getItem("access_token");
-      
-      const response = await fetch(`${API_URL}/api/v1/pos/sessions/${activeSession.id}/close/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          closing_balance: finalBalance,
-        }),
-      });
+
+      const response = await fetch(
+        `${API_URL}/api/v1/pos/sessions/${activeSession.id}/close/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            closing_balance: finalBalance,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -589,14 +663,18 @@ export default function POSPage() {
       }
 
       const closedSession = await response.json();
-      
+
       // Show success message with session summary
       alert(
         `Session closed successfully!\n\n` +
-        `Opening: ${activeSession.opening_balance.toFixed(2)}\n` +
-        `Sales: ${activeSession.total_sales.toFixed(2)}\n` +
-        `Closing: ${finalBalance.toFixed(2)}\n` +
-        `Difference: ${(finalBalance - activeSession.opening_balance - activeSession.total_sales).toFixed(2)}`
+          `Opening: ${activeSession.opening_balance.toFixed(2)}\n` +
+          `Sales: ${activeSession.total_sales.toFixed(2)}\n` +
+          `Closing: ${finalBalance.toFixed(2)}\n` +
+          `Difference: ${(
+            finalBalance -
+            activeSession.opening_balance -
+            activeSession.total_sales
+          ).toFixed(2)}`
       );
 
       // Refresh data and reset state
@@ -606,7 +684,6 @@ export default function POSPage() {
       setShowRegisterSelection(true);
       setClosingBalance("0");
       clearCart();
-      
     } catch (err) {
       console.error("Error closing session:", err);
       alert("Failed to close session: " + (err as Error).message);
@@ -616,15 +693,19 @@ export default function POSPage() {
   // Cart functions
   const addToCart = (product: Product) => {
     if (!activeSession) {
-      showAlert('warning', 'No Active Session', 'Please start a session first');
+      showAlert("warning", "No Active Session", "Please start a session first");
       return;
     }
 
     const currentStock = product.stockQuantity || 0;
     const currentInCart = getProductQuantityInCart(product.id);
-    
+
     if (currentInCart >= currentStock) {
-      showAlert('error', 'Out of Stock', `Sorry, only ${currentStock} items in stock!`);
+      showAlert(
+        "error",
+        "Out of Stock",
+        `Sorry, only ${currentStock} items in stock!`
+      );
       return;
     }
 
@@ -653,28 +734,36 @@ export default function POSPage() {
       return;
     }
 
-    const item = cart.find(item => item.id === itemId);
+    const item = cart.find((item) => item.id === itemId);
     if (item) {
-      const product = products.find(p => p.id === item.productId);
+      const product = products.find((p) => p.id === item.productId);
       if (product && quantity > (product.stockQuantity || 0)) {
-        showAlert('error', 'Insufficient Stock', `Sorry, only ${product.stockQuantity} items in stock!`);
+        showAlert(
+          "error",
+          "Insufficient Stock",
+          `Sorry, only ${product.stockQuantity} items in stock!`
+        );
         return;
       }
     }
 
-    setCart(cart.map((item) =>
-      item.id === itemId
-        ? { ...item, quantity, total: item.unitPrice * quantity }
-        : item
-    ));
+    setCart(
+      cart.map((item) =>
+        item.id === itemId
+          ? { ...item, quantity, total: item.unitPrice * quantity }
+          : item
+      )
+    );
   };
 
   const updatePrice = (itemId: string, newPrice: number) => {
-    setCart(cart.map((item) =>
-      item.id === itemId
-        ? { ...item, unitPrice: newPrice, total: newPrice * item.quantity }
-        : item
-    ));
+    setCart(
+      cart.map((item) =>
+        item.id === itemId
+          ? { ...item, unitPrice: newPrice, total: newPrice * item.quantity }
+          : item
+      )
+    );
   };
 
   const removeFromCart = (itemId: string) => {
@@ -686,11 +775,10 @@ export default function POSPage() {
     setSelectedCustomer(null);
     setShowPayment(false);
     setAmountPaid("");
-    setCartVisible(false);
   };
 
   const getProductQuantityInCart = (productId: string): number => {
-    const item = cart.find(item => item.productId === productId);
+    const item = cart.find((item) => item.productId === productId);
     return item ? item.quantity : 0;
   };
 
@@ -741,20 +829,20 @@ export default function POSPage() {
   // Process sale
   const processSale = async () => {
     if (!activeSession || !selectedRegister) {
-      showAlert('error', 'Error', 'Please check session and register');
+      showAlert("error", "Error", "Please check session and register");
       return;
     }
 
     if (cart.length === 0) {
-      showAlert('warning', 'Empty Cart', 'Cart is empty');
+      showAlert("warning", "Empty Cart", "Cart is empty");
       return;
     }
 
     try {
       const token = localStorage.getItem("access_token");
-      
+
       const saleData = {
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           product: item.productId,
           quantity: item.quantity,
           cost_price: item.unitPrice.toString(),
@@ -782,7 +870,9 @@ export default function POSPage() {
 
       const saleResult = await response.json();
 
-      const receiptNumber = `R${saleResult.id?.slice(-4) || '0000'}-${Date.now().toString().slice(-6)}`;
+      const receiptNumber = `R${saleResult.id?.slice(-4) || "0000"}-${Date.now()
+        .toString()
+        .slice(-6)}`;
       const sale = {
         id: saleResult.id,
         receiptNumber,
@@ -801,10 +891,13 @@ export default function POSPage() {
       setShowReceipt(true);
       clearCart();
       await fetchData();
-
     } catch (err) {
       console.error("Error processing sale:", err);
-      showAlert('error', 'Sale Failed', 'Failed to process sale: ' + (err as Error).message);
+      showAlert(
+        "error",
+        "Sale Failed",
+        "Failed to process sale: " + (err as Error).message
+      );
     }
   };
 
@@ -815,18 +908,21 @@ export default function POSPage() {
   const total = subtotal + taxAmount;
   const amountDue = total - parseFloat(amountPaid || "0");
 
+  
   // Filter products
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-    const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || product.category === selectedCategory;
+    const matchesSearch =
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Get register status badge
   const getRegisterStatusBadge = (register: Register) => {
     const session = getActiveSessionForRegister(register.id);
-    
+
     if (!register.active) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -835,7 +931,7 @@ export default function POSPage() {
         </span>
       );
     }
-    
+
     if (session) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -844,7 +940,7 @@ export default function POSPage() {
         </span>
       );
     }
-    
+
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
         <Lock className="w-3 h-3 mr-1" />
@@ -874,15 +970,19 @@ export default function POSPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
               <Store className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">POS Terminal</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              POS Terminal
+            </h1>
             <p className="text-gray-600">Select a register to start selling</p>
-            
+
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
               className="mt-4 inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <RefreshCw className={clsx("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
+              <RefreshCw
+                className={clsx("w-4 h-4 mr-2", isRefreshing && "animate-spin")}
+              />
               Refresh
             </button>
           </div>
@@ -891,7 +991,7 @@ export default function POSPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             {registers.map((register) => {
               const session = getActiveSessionForRegister(register.id);
-              
+
               return (
                 <button
                   key={register.id}
@@ -906,19 +1006,27 @@ export default function POSPage() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className={clsx(
-                        "w-12 h-12 rounded-xl flex items-center justify-center",
-                        session ? "bg-green-100" : "bg-gray-100"
-                      )}>
-                        <Store className={clsx(
-                          "w-6 h-6",
-                          session ? "text-green-600" : "text-gray-600"
-                        )} />
+                      <div
+                        className={clsx(
+                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          session ? "bg-green-100" : "bg-gray-100"
+                        )}
+                      >
+                        <Store
+                          className={clsx(
+                            "w-6 h-6",
+                            session ? "text-green-600" : "text-gray-600"
+                          )}
+                        />
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg text-gray-900">{register.title}</h3>
+                        <h3 className="font-bold text-lg text-gray-900">
+                          {register.title}
+                        </h3>
                         {register.location_title && (
-                          <p className="text-sm text-gray-500">{register.location_title}</p>
+                          <p className="text-sm text-gray-500">
+                            {register.location_title}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -928,13 +1036,17 @@ export default function POSPage() {
                   {session && (
                     <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-green-900">Active Session</span>
+                        <span className="text-sm font-medium text-green-900">
+                          Active Session
+                        </span>
                         <span className="text-xs text-green-600">
                           {new Date(session.start_at).toLocaleTimeString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-green-700">Total Sales</span>
+                        <span className="text-xs text-green-700">
+                          Total Sales
+                        </span>
                         <span className="text-lg font-bold text-green-900">
                           ${session.total_sales.toFixed(2)}
                         </span>
@@ -951,7 +1063,9 @@ export default function POSPage() {
                   )}
 
                   {register.notes && (
-                    <p className="mt-3 text-sm text-gray-500 line-clamp-2">{register.notes}</p>
+                    <p className="mt-3 text-sm text-gray-500 line-clamp-2">
+                      {register.notes}
+                    </p>
                   )}
                 </button>
               );
@@ -983,7 +1097,9 @@ export default function POSPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Register Name *</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Register Name *
+                  </label>
                   <input
                     type="text"
                     value={newRegisterTitle}
@@ -993,7 +1109,9 @@ export default function POSPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Notes</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Notes
+                  </label>
                   <textarea
                     value={newRegisterNotes}
                     onChange={(e) => setNewRegisterNotes(e.target.value)}
@@ -1025,362 +1143,591 @@ export default function POSPage() {
     );
   }
 
-  // Main POS View
+  // Main POS View - BU YERDA ASOSIY O'ZGARISHLAR
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">POS Terminal</h1>
-              
-              {/* Register Info */}
-              <button
-                onClick={() => {
-                  setShowRegisterSelection(true);
-                  setActiveSession(null);
-                  setSelectedRegister(null);
-                }}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
-              >
-                <Store className="h-4 w-4" />
-                <span className="font-medium">{selectedRegister?.title}</span>
-              </button>
+    <div className="min-h-screen bg-gray-100 flex">
+      {/* Main Content Area - Cart bilan bir qatorda */}
+      <div className="flex-1 flex flex-col">
+        {/* Header - Fixed va z-index bilan */}
+        <div className="bg-white border-b shadow-sm sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  POS Terminal
+                </h1>
 
-              {/* Session Status */}
-              {activeSession ? (
-                <div className="flex items-center space-x-3 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="font-medium">Session Active</span>
+                {/* Register Info */}
+                <button
+                  onClick={() => {
+                    setShowRegisterSelection(true);
+                    setActiveSession(null);
+                    setSelectedRegister(null);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                >
+                  <Store className="h-4 w-4" />
+                  <span className="font-medium">{selectedRegister?.title}</span>
+                </button>
+
+                {/* Session Status */}
+                {activeSession ? (
+                  <div className="flex items-center space-x-3 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="font-bold">
+                        ${(activeSession.total_sales || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const balance = prompt(
+                          "Enter closing balance:",
+                          (
+                            activeSession.opening_balance +
+                            activeSession.total_sales
+                          ).toFixed(2)
+                        );
+                        if (balance) {
+                          setClosingBalance(balance);
+                          closeSession();
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+                    >
+                      Close Session
+                    </button>
                   </div>
-                  <div className="h-4 w-px bg-green-300"></div>
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="font-bold">${(activeSession.total_sales || 0).toFixed(2)}</span>
-                  </div>
+                ) : (
                   <button
-                    onClick={() => {
-                      const balance = prompt("Enter closing balance:", 
-                        (activeSession.opening_balance + activeSession.total_sales).toFixed(2));
-                      if (balance) {
-                        setClosingBalance(balance);
-                        closeSession();
-                      }
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+                    onClick={() => setShowSessionModal(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
-                    Close Session
+                    Open Session
+                  </button>
+                )}
+              </div>
+
+              {/* Right side actions */}
+              <div className="flex items-center space-x-3">
+                {/* Customer Button */}
+                <button
+                  onClick={() => setShowCustomerModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">
+                    {selectedCustomer?.name || "No Customer"}
+                  </span>
+                </button>
+
+                {/* Cart Button - Endi bu faqat mobil uchun, desktopda cart doim ko'rinadi */}
+                <div className="lg:hidden">
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("cart-sidebar")
+                        ?.classList.toggle("hidden")
+                    }
+                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg relative hover:bg-blue-700 transition-colors"
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    <span className="font-bold">{cart.length}</span>
+                    {cart.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center font-bold shadow-lg">
+                        {cart.length}
+                      </span>
+                    )}
                   </button>
                 </div>
-              ) : (
+              </div>
+            </div>
+
+            {/* Search and Categories */}
+            <div className="mt-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-3 lg:space-y-0">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="Search products (name, SKU)..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Category Dropdown */}
+              <div className="relative">
                 <button
-                  onClick={() => setShowSessionModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                  className={clsx(
+                    "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-[200px] border-2",
+                    selectedCategory === "all"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
+                  )}
                 >
-                  Open Session
+                  <span className="flex items-center space-x-2">
+                    <Package className="w-4 h-4" />
+                    <span>
+                      {selectedCategory === "all"
+                        ? "All Categories"
+                        : categories.find((c) => c.id === selectedCategory)
+                            ?.title || "Select Category"}
+                    </span>
+                  </span>
+                  <svg
+                    className={clsx(
+                      "w-4 h-4 transition-transform ml-2",
+                      showCategoryDropdown && "rotate-180"
+                    )}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showCategoryDropdown && (
+                  <>
+                    {/* Backdrop to close dropdown */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowCategoryDropdown(false)}
+                    />
+
+                    <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 max-h-[400px] overflow-auto">
+                      {/* All Categories Option */}
+                      <button
+                        onClick={() => {
+                          setSelectedCategory("all");
+                          setShowCategoryDropdown(false);
+                        }}
+                        className={clsx(
+                          "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 font-medium",
+                          selectedCategory === "all" &&
+                            "bg-blue-50 text-blue-700"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center space-x-2">
+                            <Package className="w-4 h-4" />
+                            <span>All Categories</span>
+                          </span>
+                          {selectedCategory === "all" && (
+                            <Check className="w-4 h-4 text-blue-600" />
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500 ml-6">
+                          {products.length} products
+                        </span>
+                      </button>
+
+                      {/* Category List */}
+                      {categories.length > 0 ? (
+                        categories.map((category) => {
+                          const categoryProductCount = products.filter(
+                            (p) => p.category === category.id
+                          ).length;
+                          return (
+                            <button
+                              key={category.id}
+                              onClick={() => {
+                                setSelectedCategory(category.id);
+                                setShowCategoryDropdown(false);
+                              }}
+                              className={clsx(
+                                "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0",
+                                selectedCategory === category.id &&
+                                  "bg-blue-50 text-blue-700 font-medium"
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span>{category.title}</span>
+                                {selectedCategory === category.id && (
+                                  <Check className="w-4 h-4 text-blue-600" />
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {categoryProductCount} products
+                              </span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="px-4 py-8 text-center text-gray-500">
+                          <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">No categories available</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Quick Filter Badges */}
+              {selectedCategory !== "all" && (
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Clear Filter</span>
                 </button>
               )}
             </div>
-
-            {/* Right side actions */}
-            <div className="flex items-center space-x-3">
-              {/* Customer Button */}
-              <button
-                onClick={() => setShowCustomerModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"
-              >
-                <User className="h-4 w-4" />
-                <span className="font-medium">{selectedCustomer?.name || "No Customer"}</span>
-              </button>
-
-              {/* Cart Button */}
-              <button
-                onClick={() => setCartVisible(true)}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg relative hover:bg-blue-700 transition-colors"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="font-bold">{cart.length}</span>
-                {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center font-bold shadow-lg">
-                    {cart.length}
-                  </span>
-                )}
-              </button>
-            </div>
           </div>
+        </div>
 
-          {/* Search and Categories */}
-          <div className="mt-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-3 lg:space-y-0">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search products (name, SKU)..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            
-            {/* Category Dropdown */}
-            <div className="relative">
+        {/* Products Grid - To'g'ri joylashtirilgan */}
+        <div className="flex-1 container mx-auto px-4 py-6">
+          {!activeSession ? (
+            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
+                <AlertCircle className="w-10 h-10 text-yellow-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                No Active Session
+              </h3>
+              <p className="text-gray-500 mb-6">
+                You need to open a session to start selling
+              </p>
               <button
-                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                className={clsx(
-                  "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-[200px] border-2",
-                  selectedCategory === "all"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
-                )}
+                onClick={() => setShowSessionModal(true)}
+                className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
               >
-                <span className="flex items-center space-x-2">
-                  <Package className="w-4 h-4" />
-                  <span>
-                    {selectedCategory === "all" 
-                      ? "All Categories" 
-                      : categories.find(c => c.id === selectedCategory)?.title || "Select Category"}
-                  </span>
-                </span>
-                <svg 
-                  className={clsx("w-4 h-4 transition-transform ml-2", showCategoryDropdown && "rotate-180")}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <Unlock className="w-5 h-5 mr-2" />
+                Open Session
               </button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+              <div className="text-gray-400 text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                No Products Found
+              </h3>
+              <p className="text-gray-500">
+                No products match your search criteria
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {filteredProducts.map((product) => {
+                const quantityInCart = getProductQuantityInCart(product.id);
+                const stockQuantity = product.stockQuantity || 0;
+                const isOutOfStock = stockQuantity <= 0;
+                const canAddMore = quantityInCart < stockQuantity;
 
-              {/* Dropdown Menu */}
-              {showCategoryDropdown && (
-                <>
-                  {/* Backdrop to close dropdown */}
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowCategoryDropdown(false)}
-                  />
-                  
-                  <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 max-h-[400px] overflow-auto">
-                    {/* All Categories Option */}
-                    <button
-                      onClick={() => {
-                        setSelectedCategory("all");
-                        setShowCategoryDropdown(false);
-                      }}
-                      className={clsx(
-                        "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 font-medium",
-                        selectedCategory === "all" && "bg-blue-50 text-blue-700"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center space-x-2">
-                          <Package className="w-4 h-4" />
-                          <span>All Categories</span>
-                        </span>
-                        {selectedCategory === "all" && (
-                          <Check className="w-4 h-4 text-blue-600" />
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-500 ml-6">
-                        {products.length} products
-                      </span>
-                    </button>
-
-                    {/* Category List */}
-                    {categories.length > 0 ? (
-                      categories.map((category) => {
-                        const categoryProductCount = products.filter(p => p.category === category.id).length;
-                        return (
-                          <button
-                            key={category.id}
-                            onClick={() => {
-                              setSelectedCategory(category.id);
-                              setShowCategoryDropdown(false);
-                            }}
-                            className={clsx(
-                              "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0",
-                              selectedCategory === category.id && "bg-blue-50 text-blue-700 font-medium"
-                            )}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span>{category.title}</span>
-                              {selectedCategory === category.id && (
-                                <Check className="w-4 h-4 text-blue-600" />
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {categoryProductCount} products
-                            </span>
-                          </button>
-                        );
-                      })
-                    ) : (
-                      <div className="px-4 py-8 text-center text-gray-500">
-                        <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">No categories available</p>
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() =>
+                      !isOutOfStock && canAddMore && addToCart(product)
+                    }
+                    disabled={isOutOfStock || !canAddMore}
+                    className={clsx(
+                      "bg-white p-3 rounded-xl shadow-sm border-2 transition-all text-left relative group",
+                      isOutOfStock
+                        ? "border-gray-200 opacity-50 cursor-not-allowed"
+                        : canAddMore
+                        ? "border-gray-200 hover:border-blue-500 hover:shadow-lg"
+                        : "border-orange-300 bg-orange-50"
+                    )}
+                  >
+                    {quantityInCart > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg z-10">
+                        {quantityInCart}
                       </div>
                     )}
-                  </div>
-                </>
-              )}
-            </div>
 
-            {/* Quick Filter Badges (optional - shows count) */}
-            {selectedCategory !== "all" && (
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-              >
-                <X className="w-4 h-4" />
-                <span>Clear Filter</span>
-              </button>
-            )}
-          </div>
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-xl flex items-center justify-center z-20">
+                        <span className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
+                          Out of Stock
+                        </span>
+                      </div>
+                    )}
+
+                    {!isOutOfStock && !canAddMore && (
+                      <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-xl flex items-center justify-center z-20">
+                        <span className="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
+                          Max: {stockQuantity}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="aspect-square bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+
+                    <h3 className="font-semibold text-gray-900 text-2sm mb-1 line-clamp-2 leading-tight">
+                      {product.title}
+                    </h3>
+
+                    {product.sku && (
+                      <p className="text-[12px] text-gray-500 mb-1 font-mono truncate">
+                        {product.sku}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-2sm font-bold text-gray-900">
+                        ${product.price.toFixed(2)}
+                      </p>
+
+                      <div className="flex items-center space-x-1 text-[12px]">
+                        <Package className="h-3.5 w-3.5 text-gray-400" />
+                        <span
+                          className={clsx(
+                            "font-semibold",
+                            stockQuantity === 0
+                              ? "text-red-600"
+                              : stockQuantity < 10
+                              ? "text-orange-600"
+                              : "text-green-600"
+                          )}
+                        >
+                          {stockQuantity}
+                        </span>
+                      </div>
+                    </div>
+
+                    {!isOutOfStock && (
+                      <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div
+                          className={clsx(
+                            "h-1 rounded-full transition-all",
+                            stockQuantity === 0
+                              ? "bg-red-500"
+                              : stockQuantity < 10
+                              ? "bg-orange-500"
+                              : "bg-green-500"
+                          )}
+                          style={{
+                            width: `${Math.min(
+                              (stockQuantity / Math.max(stockQuantity, 20)) *
+                                100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 container mx-auto px-4 py-6">
-        {!activeSession ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
-              <AlertCircle className="w-10 h-10 text-yellow-600" />
+      {/* Cart Sidebar - Doimiy ko'rinib turishi va to'g'ri joylashtirilgan */}
+      <div className="w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col h-screen sticky top-0">
+        <div className="p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <h2 className="text-xl font-bold">Cart ({cart.length})</h2>
+          <button
+            onClick={() => {
+              // Mobil versiyada yopish imkoniyati
+              if (window.innerWidth < 1024) {
+                document
+                  .getElementById("cart-sidebar")
+                  ?.classList.add("hidden");
+              }
+            }}
+            className="lg:opacity-70 hover:opacity-100 transition-opacity"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4">
+          {cart.length === 0 ? (
+            <div className="text-center py-16">
+              <ShoppingCart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">Cart is empty</p>
+              <p className="text-sm text-gray-400 mt-2">Add products to cart</p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Active Session</h3>
-            <p className="text-gray-500 mb-6">You need to open a session to start selling</p>
-            <button
-              onClick={() => setShowSessionModal(true)}
-              className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
-            >
-              <Unlock className="w-5 h-5 mr-2" />
-              Open Session
-            </button>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-            <div className="text-gray-400 text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Products Found</h3>
-            <p className="text-gray-500">No products match your search criteria</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map((product) => {
-              const quantityInCart = getProductQuantityInCart(product.id);
-              const stockQuantity = product.stockQuantity || 0;
-              const isOutOfStock = stockQuantity <= 0;
-              const canAddMore = quantityInCart < stockQuantity;
+          ) : (
+            <div className="space-y-3">
+              {cart.map((item) => {
+                const product = products.find((p) => p.id === item.productId);
+                const stockQuantity = product?.stockQuantity || 0;
+                const isLowStock = item.quantity >= stockQuantity;
 
-              return (
-                <button
-                  key={product.id}
-                  onClick={() => !isOutOfStock && canAddMore && addToCart(product)}
-                  disabled={isOutOfStock || !canAddMore}
-                  className={clsx(
-                    "bg-white p-4 rounded-xl shadow-sm border-2 transition-all text-left relative group",
-                    isOutOfStock 
-                      ? "border-gray-200 opacity-50 cursor-not-allowed" 
-                      : canAddMore
-                        ? "border-gray-200 hover:border-blue-500 hover:shadow-lg"
-                        : "border-orange-300 bg-orange-50"
-                  )}
-                >
-                  {quantityInCart > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg z-10">
-                      {quantityInCart}
-                    </div>
-                  )}
-
-                  {isOutOfStock && (
-                    <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-xl flex items-center justify-center z-20">
-                      <span className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
-                        Out of Stock
-                      </span>
-                    </div>
-                  )}
-
-                  {!isOutOfStock && !canAddMore && (
-                    <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-xl flex items-center justify-center z-20">
-                      <span className="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
-                        Max: {stockQuantity}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Package className="h-12 w-12 text-gray-400" />
-                    )}
-                  </div>
-                  
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
-                    {product.title}
-                  </h3>
-                  
-                  {product.sku && (
-                    <p className="text-xs text-gray-500 mb-2 font-mono">{product.sku}</p>
-                  )}
-                  
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-lg font-bold text-gray-900">
-                      ${product.price.toFixed(2)}
-                    </p>
-                    
-                    <div className="flex items-center space-x-1 text-xs">
-                      <Package className="h-3 w-3 text-gray-400" />
-                      <span className={clsx(
-                        "font-semibold",
-                        stockQuantity === 0 ? "text-red-600" :
-                        stockQuantity < 10 ? "text-orange-600" : "text-green-600"
-                      )}>
-                        {stockQuantity}
-                      </span>
-                    </div>
-                  </div>
-
-                  {!isOutOfStock && (
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div 
-                        className={clsx(
-                          "h-1.5 rounded-full transition-all",
-                          stockQuantity === 0 ? "bg-red-500" :
-                          stockQuantity < 10 ? "bg-orange-500" : "bg-green-500"
+                return (
+                  <div
+                    key={item.id}
+                    className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors bg-white"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                          {item.name}
+                        </h4>
+                        {item.sku && (
+                          <p className="text-xs text-gray-500 font-mono mt-0.5">
+                            {item.sku}
+                          </p>
                         )}
-                        style={{ 
-                          width: `${Math.min((stockQuantity / Math.max(stockQuantity, 20)) * 100, 100)}%` 
-                        }}
-                      />
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-gray-400 hover:text-red-600 ml-2 transition-colors flex-shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                  )}
-                </button>
-              );
-            })}
+
+                    {isLowStock && (
+                      <div className="mb-2 p-1.5 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700 font-medium">
+                        ⚠️ Only {stockQuantity} in stock
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-gray-500">
+                        Unit Price
+                      </span>
+                      <button
+                        onClick={() => openPricePad(item.id)}
+                        className="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700"
+                      >
+                        ${item.unitPrice.toFixed(2)}
+                        <Calculator className="h-3 w-3 ml-1" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="w-7 h-7 bg-gray-200 rounded flex items-center justify-center hover:bg-gray-300 font-bold"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => openQuantityPad(item.id)}
+                          className="w-12 h-7 text-center text-xs font-bold bg-white border border-gray-300 rounded hover:border-blue-500"
+                        >
+                          {item.quantity}
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          disabled={isLowStock}
+                          className={clsx(
+                            "w-7 h-7 rounded flex items-center justify-center font-bold",
+                            isLowStock
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-gray-200 hover:bg-gray-300"
+                          )}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <span className="font-bold text-lg text-gray-900">
+                        ${item.total.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Cart summary */}
+        {cart.length > 0 && (
+          <div className="border-t bg-white p-4 sticky bottom-0">
+            <div className="space-y-2 text-sm mb-4">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal:</span>
+                <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Tax (8%):</span>
+                <span className="font-semibold">${taxAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300 text-gray-900">
+                <span>Total:</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {selectedCustomer && (
+              <div className="mb-3 p-2 bg-purple-50 rounded border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1">
+                    <User className="h-3 w-3 text-purple-600" />
+                    <span className="text-xs font-semibold text-purple-900">
+                      {selectedCustomer.name}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCustomer(null)}
+                    className="text-purple-600 hover:text-purple-800"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex space-x-2">
+              <button
+                onClick={clearCart}
+                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setShowPayment(true)}
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 text-sm"
+              >
+                Checkout
+              </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Session Modal */}
       {showSessionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Open New Session</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                Open New Session
+              </h3>
               <button onClick={() => setShowSessionModal(false)}>
                 <X className="h-6 w-6 text-gray-400 hover:text-gray-600" />
               </button>
             </div>
-            
+
             {!selectedRegister ? (
               <div className="text-center py-8">
                 <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                <p className="text-gray-600 mb-6">Please select a register first</p>
+                <p className="text-gray-600 mb-6">
+                  Please select a register first
+                </p>
                 <button
                   onClick={() => {
                     setShowSessionModal(false);
@@ -1396,11 +1743,17 @@ export default function POSPage() {
                 <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
                   <div className="flex items-center space-x-3 mb-2">
                     <Store className="w-5 h-5 text-blue-600" />
-                    <p className="text-sm font-medium text-blue-900">Register</p>
+                    <p className="text-sm font-medium text-blue-900">
+                      Register
+                    </p>
                   </div>
-                  <p className="font-bold text-lg text-blue-900">{selectedRegister.title}</p>
+                  <p className="font-bold text-lg text-blue-900">
+                    {selectedRegister.title}
+                  </p>
                   {selectedRegister.location_title && (
-                    <p className="text-sm text-blue-700 mt-1">{selectedRegister.location_title}</p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      {selectedRegister.location_title}
+                    </p>
                   )}
                 </div>
 
@@ -1419,7 +1772,9 @@ export default function POSPage() {
                       placeholder="0.00"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Enter the cash amount in the register</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Enter the cash amount in the register
+                  </p>
                 </div>
 
                 <div className="flex space-x-3">
@@ -1444,15 +1799,17 @@ export default function POSPage() {
 
       {/* Customer Modal */}
       {showCustomerModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">Select Customer</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                Select Customer
+              </h3>
               <button onClick={() => setShowCustomerModal(false)}>
                 <X className="h-6 w-6 text-gray-400 hover:text-gray-600" />
               </button>
             </div>
-            
+
             <div className="space-y-3 overflow-auto flex-1">
               {customers.length === 0 ? (
                 <div className="text-center py-12">
@@ -1474,7 +1831,9 @@ export default function POSPage() {
                         : "border-gray-200 hover:border-purple-300 hover:bg-purple-50"
                     )}
                   >
-                    <div className="font-semibold text-gray-900">{customer.name}</div>
+                    <div className="font-semibold text-gray-900">
+                      {customer.name}
+                    </div>
                     {(customer.phone || customer.email) && (
                       <div className="text-sm text-gray-500 mt-1 space-y-0.5">
                         {customer.phone && <div>📞 {customer.phone}</div>}
@@ -1509,163 +1868,9 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Cart Sidebar */}
-      {cartVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div className="bg-white w-full max-w-md h-full overflow-auto flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10">
-              <h2 className="text-xl font-bold">Cart ({cart.length})</h2>
-              <button onClick={() => setCartVisible(false)}>
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-auto p-4">
-              {cart.length === 0 ? (
-                <div className="text-center py-16">
-                  <ShoppingCart className="h-20 w-20 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">Cart is empty</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {cart.map((item) => {
-                    const product = products.find(p => p.id === item.productId);
-                    const stockQuantity = product?.stockQuantity || 0;
-                    const isLowStock = item.quantity >= stockQuantity;
-
-                    return (
-                      <div key={item.id} className="border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                            {item.sku && (
-                              <p className="text-xs text-gray-500 font-mono mt-0.5">{item.sku}</p>
-                            )}
-                          </div>
-                          <button 
-                            onClick={() => removeFromCart(item.id)}
-                            className="text-gray-400 hover:text-red-600 ml-2 transition-colors"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                        </div>
-
-                        {isLowStock && (
-                          <div className="mb-3 p-2 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-700 font-medium">
-                            ⚠️ Only {stockQuantity} in stock
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs font-medium text-gray-500">Unit Price</span>
-                          <button
-                            onClick={() => openPricePad(item.id)}
-                            className="flex items-center text-sm font-semibold text-blue-600 hover:text-blue-700"
-                          >
-                            ${item.unitPrice.toFixed(2)}
-                            <Calculator className="h-3 w-3 ml-1" />
-                          </button>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 font-bold"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => openQuantityPad(item.id)}
-                              className="w-16 h-9 text-center text-sm font-bold bg-white border-2 border-gray-300 rounded-lg hover:border-blue-500"
-                            >
-                              {item.quantity}
-                            </button>
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              disabled={isLowStock}
-                              className={clsx(
-                                "w-9 h-9 rounded-lg flex items-center justify-center font-bold",
-                                isLowStock
-                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                  : "bg-gray-200 hover:bg-gray-300"
-                              )}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <span className="font-bold text-xl text-gray-900">${item.total.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            
-            {/* Cart summary */}
-            {cart.length > 0 && (
-              <div className="border-t bg-white p-4 sticky bottom-0">
-                <div className="space-y-2 text-sm mb-4">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal:</span>
-                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Tax (8%):</span>
-                    <span className="font-semibold">${taxAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-xl pt-2 border-t-2 border-gray-300 text-gray-900">
-                    <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                </div>
-                
-                {selectedCustomer && (
-                  <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-semibold text-purple-900">
-                          {selectedCustomer.name}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setSelectedCustomer(null)}
-                        className="text-purple-600 hover:text-purple-800"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex space-x-3">
-                  <button
-                    onClick={clearCart}
-                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowPayment(true);
-                      setCartVisible(false);
-                    }}
-                    className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg"
-                  >
-                    Proceed to Payment
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Payment Modal */}
       {showPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h3 className="text-2xl font-bold mb-6 text-gray-900">Payment</h3>
 
@@ -1675,7 +1880,9 @@ export default function POSPage() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">Payment Method</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                Payment Method
+              </label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
@@ -1690,7 +1897,9 @@ export default function POSPage() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">Amount Paid</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                Amount Paid
+              </label>
               <div className="flex space-x-2">
                 <div className="relative flex-1">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -1700,7 +1909,6 @@ export default function POSPage() {
                     value={amountPaid}
                     onChange={(e) => setAmountPaid(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-lg"
-                    placeholder={total.toFixed(2)}
                   />
                 </div>
                 <button
@@ -1745,7 +1953,7 @@ export default function POSPage() {
 
       {/* Receipt Modal */}
       {showReceipt && lastSale && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="text-center mb-6">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1754,17 +1962,23 @@ export default function POSPage() {
               <h3 className="text-3xl font-bold text-gray-900 mb-2">
                 Sale Completed!
               </h3>
-              <p className="text-gray-600 font-medium">Receipt #{lastSale.receiptNumber}</p>
+              <p className="text-gray-600 font-medium">
+                Receipt #{lastSale.receiptNumber}
+              </p>
             </div>
 
             <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 mb-6">
               <div className="text-center mb-4 pb-4 border-b-2 border-gray-300">
-                <h4 className="font-bold text-xl text-gray-900">{company?.name || "Store Name"}</h4>
+                <h4 className="font-bold text-xl text-gray-900">
+                  {company?.name || "Store Name"}
+                </h4>
                 <p className="text-gray-600 text-sm mt-1">
                   {lastSale.timestamp.toLocaleString()}
                 </p>
                 {selectedRegister && (
-                  <p className="text-gray-500 text-xs mt-1">Register: {selectedRegister.title}</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Register: {selectedRegister.title}
+                  </p>
                 )}
               </div>
 
@@ -1772,8 +1986,12 @@ export default function POSPage() {
                 {lastSale.items.map((item: any) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <div className="flex-1">
-                      <span className="font-semibold">{item.quantity}x {item.name}</span>
-                      <div className="text-xs text-gray-500">@ ${item.unitPrice.toFixed(2)}</div>
+                      <span className="font-semibold">
+                        {item.quantity}x {item.name}
+                      </span>
+                      <div className="text-xs text-gray-500">
+                        @ ${item.unitPrice.toFixed(2)}
+                      </div>
                     </div>
                     <span className="font-bold">${item.total.toFixed(2)}</span>
                   </div>
@@ -1783,11 +2001,15 @@ export default function POSPage() {
               <div className="border-t-2 border-gray-300 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-700">
                   <span>Subtotal</span>
-                  <span className="font-semibold">${lastSale.subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">
+                    ${lastSale.subtotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-700">
                   <span>Tax (8%)</span>
-                  <span className="font-semibold">${lastSale.taxAmount.toFixed(2)}</span>
+                  <span className="font-semibold">
+                    ${lastSale.taxAmount.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between font-bold text-xl pt-2 border-t-2 border-gray-300 text-gray-900">
                   <span>Total</span>
@@ -1806,7 +2028,9 @@ export default function POSPage() {
                 {lastSale.amountPaid > lastSale.total && (
                   <div className="flex justify-between text-green-600 font-semibold">
                     <span>Change</span>
-                    <span>${(lastSale.amountPaid - lastSale.total).toFixed(2)}</span>
+                    <span>
+                      ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -1814,9 +2038,13 @@ export default function POSPage() {
               {lastSale.customer && (
                 <div className="mt-4 pt-4 border-t-2 border-gray-300">
                   <p className="text-xs text-gray-500 mb-1">Customer</p>
-                  <p className="font-semibold text-gray-900">{lastSale.customer.name}</p>
+                  <p className="font-semibold text-gray-900">
+                    {lastSale.customer.name}
+                  </p>
                   {lastSale.customer.phone && (
-                    <p className="text-sm text-gray-600">{lastSale.customer.phone}</p>
+                    <p className="text-sm text-gray-600">
+                      {lastSale.customer.phone}
+                    </p>
                   )}
                 </div>
               )}
@@ -1843,22 +2071,25 @@ export default function POSPage() {
 
       {/* Numberpad Component */}
       {showNumberpad && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <h3 className="text-xl font-bold mb-4 text-gray-900">
-              {numberpadMode === "amount_paid" ? "Enter Amount Paid" :
-               numberpadMode === "quantity" ? "Enter Quantity" : "Enter Price"}
+              {numberpadMode === "amount_paid"
+                ? "Enter Amount Paid"
+                : numberpadMode === "quantity"
+                ? "Enter Quantity"
+                : "Enter Price"}
             </h3>
-            
+
             <div className="text-3xl font-bold text-center mb-6 p-5 bg-gray-100 rounded-xl border-2 border-gray-300 text-gray-900">
               {numberpadValue || "0"}
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-4">
-              {[1,2,3,4,5,6,7,8,9].map((num) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <button
                   key={num}
-                  onClick={() => setNumberpadValue(prev => prev + num)}
+                  onClick={() => setNumberpadValue((prev) => prev + num)}
                   className="p-5 bg-gray-100 rounded-xl text-xl font-bold hover:bg-gray-200 active:bg-gray-300 transition-colors"
                 >
                   {num}
@@ -1867,7 +2098,7 @@ export default function POSPage() {
               <button
                 onClick={() => {
                   if (!numberpadValue.includes(".")) {
-                    setNumberpadValue(prev => prev + ".");
+                    setNumberpadValue((prev) => prev + ".");
                   }
                 }}
                 className="p-5 bg-gray-100 rounded-xl text-xl font-bold hover:bg-gray-200 active:bg-gray-300 transition-colors"
@@ -1875,13 +2106,13 @@ export default function POSPage() {
                 .
               </button>
               <button
-                onClick={() => setNumberpadValue(prev => prev + "0")}
+                onClick={() => setNumberpadValue((prev) => prev + "0")}
                 className="p-5 bg-gray-100 rounded-xl text-xl font-bold hover:bg-gray-200 active:bg-gray-300 transition-colors"
               >
                 0
               </button>
               <button
-                onClick={() => setNumberpadValue(prev => prev.slice(0, -1))}
+                onClick={() => setNumberpadValue((prev) => prev.slice(0, -1))}
                 className="p-5 bg-red-100 text-red-600 rounded-xl text-xl font-bold hover:bg-red-200 active:bg-red-300 transition-colors"
               >
                 ⌫
@@ -1919,7 +2150,7 @@ export default function POSPage() {
 
       {/* Input Prompt Modal */}
       {inputPrompt.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
             {/* Icon */}
             <div className="flex justify-center mb-4">
@@ -1931,7 +2162,7 @@ export default function POSPage() {
             <h3 className="text-2xl font-bold text-center mb-3 text-gray-900">
               {inputPrompt.title}
             </h3>
-            
+
             <p className="text-center text-gray-600 mb-6 whitespace-pre-line">
               {inputPrompt.message}
             </p>
@@ -1948,10 +2179,10 @@ export default function POSPage() {
                   className="w-full pl-10 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-bold text-center"
                   autoFocus
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && promptInputValue) {
+                    if (e.key === "Enter" && promptInputValue) {
                       inputPrompt.onConfirm(promptInputValue);
                       closePrompt();
-                    } else if (e.key === 'Escape') {
+                    } else if (e.key === "Escape") {
                       inputPrompt.onCancel?.();
                       closePrompt();
                     }
@@ -2025,6 +2256,23 @@ export default function POSPage() {
             left: 0;
             top: 0;
             width: 100%;
+          }
+        }
+
+        /* Mobil uchun cart sidebar */
+        @media (max-width: 1023px) {
+          #cart-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 60;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+          }
+          
+          #cart-sidebar:not(.hidden) {
+            transform: translateX(0);
           }
         }
       `}</style>

@@ -214,12 +214,19 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - FIXED: Butunlay yo'qolishi uchun */}
       <div
         className={clsx(
-          "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out z-40",
-          sidebarHidden ? "w-0" : "w-64"
+          "hidden md:flex md:flex-shrink-0 transition-all duration-300 ease-in-out",
+          sidebarHidden
+            ? "w-0 opacity-0 -translate-x-full"
+            : "w-64 opacity-100 translate-x-0"
         )}
+        style={{
+          position: sidebarHidden ? "fixed" : "relative",
+          left: sidebarHidden ? "-100%" : "0",
+          zIndex: sidebarHidden ? -1 : 40,
+        }}
       >
         <div className="flex flex-col w-64 h-full bg-white/80 backdrop-blur-xl border-r border-slate-200/50">
           <SidebarContent
@@ -236,8 +243,13 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-hidden flex flex-col min-w-0">
+      {/* Main content - FIXED: Kengayishi uchun */}
+      <div
+        className={clsx(
+          "flex-1 overflow-hidden flex flex-col min-w-0 transition-all duration-300 ease-in-out",
+          sidebarHidden ? "w-full" : "w-full md:w-[calc(100%-16rem)]"
+        )}
+      >
         {/* Mobile header */}
         <div className="md:hidden z-30 relative">
           <div className="flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50">
@@ -262,10 +274,25 @@ export default function Layout() {
               type="button"
               className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100/50 transition-all duration-200"
               onClick={toggleSidebar}
-              title={sidebarHidden ? t('showSidebar') : t('hideSidebar')}
+              title={sidebarHidden ? t("showSidebar") : t("hideSidebar")}
             >
-              {sidebarHidden ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+              {sidebarHidden ? (
+                <Eye className="h-5 w-5" />
+              ) : (
+                <EyeOff className="h-5 w-5" />
+              )}
             </button>
+            {sidebarHidden && (
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <Zap className="h-6 w-6 text-blue-600" />
+                  <div className="absolute inset-0 blur-lg bg-blue-400/30 -z-10"></div>
+                </div>
+                <span className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  Enterprise POS
+                </span>
+              </div>
+            )}
           </div>
 
           <LanguageSelector />
@@ -273,7 +300,14 @@ export default function Layout() {
 
         <main className="flex-1 relative overflow-y-auto focus:outline-none z-10">
           <div className="py-8">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-10">
+            <div
+              className={clsx(
+                "mx-auto transition-all duration-300 ease-in-out",
+                sidebarHidden
+                  ? "max-w-full px-4 sm:px-6 md:px-8 lg:px-10"
+                  : "max-w-7xl px-6 sm:px-8 md:px-10"
+              )}
+            >
               <Outlet />
             </div>
           </div>
@@ -287,7 +321,8 @@ function LanguageSelector() {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const selectedLanguage =
+    languages.find((lang) => lang.code === i18n.language) || languages[0];
 
   const handleLanguageChange = async (languageCode: string) => {
     try {
@@ -295,7 +330,7 @@ function LanguageSelector() {
       // Force a re-render by updating state
       setIsOpen(false);
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error("Error changing language:", error);
     }
   };
 
@@ -303,13 +338,13 @@ function LanguageSelector() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.language-selector')) {
+      if (!target.closest(".language-selector")) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -320,7 +355,12 @@ function LanguageSelector() {
       >
         <Globe className="h-4 w-4 text-slate-400" />
         <span>{selectedLanguage?.nativeName}</span>
-        <ChevronDown className={clsx("h-4 w-4 text-slate-400 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={clsx(
+            "h-4 w-4 text-slate-400 transition-transform",
+            isOpen && "rotate-180"
+          )}
+        />
       </button>
 
       {isOpen && (
@@ -338,7 +378,9 @@ function LanguageSelector() {
             >
               <div className="flex flex-col">
                 <span className="font-medium">{language.nativeName}</span>
-                <span className="text-xs text-slate-500 mt-0.5">{language.name}</span>
+                <span className="text-xs text-slate-500 mt-0.5">
+                  {language.name}
+                </span>
               </div>
             </button>
           ))}
@@ -352,14 +394,15 @@ function LanguageSelectorMobile() {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const selectedLanguage =
+    languages.find((lang) => lang.code === i18n.language) || languages[0];
 
   const handleLanguageChange = async (languageCode: string) => {
     try {
       await i18n.changeLanguage(languageCode);
       setIsOpen(false);
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error("Error changing language:", error);
     }
   };
 
@@ -367,13 +410,13 @@ function LanguageSelectorMobile() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.language-selector-mobile')) {
+      if (!target.closest(".language-selector-mobile")) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -383,8 +426,15 @@ function LanguageSelectorMobile() {
         className="flex items-center space-x-1 px-3 py-2 text-sm text-slate-700 bg-white/50 border border-slate-200 rounded-lg hover:bg-white/80 transition-all backdrop-blur-sm z-40 relative"
       >
         <Globe className="h-4 w-4" />
-        <span className="text-xs font-medium">{selectedLanguage.code.toUpperCase()}</span>
-        <ChevronDown className={clsx("h-3 w-3 text-slate-400 transition-transform", isOpen && "rotate-180")} />
+        <span className="text-xs font-medium">
+          {selectedLanguage.code.toUpperCase()}
+        </span>
+        <ChevronDown
+          className={clsx(
+            "h-3 w-3 text-slate-400 transition-transform",
+            isOpen && "rotate-180"
+          )}
+        />
       </button>
 
       {isOpen && (
@@ -453,13 +503,13 @@ function SidebarContent({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.company-selector')) {
+      if (!target.closest(".company-selector")) {
         setShowCompanyDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -471,8 +521,12 @@ function SidebarContent({
             <div className="absolute inset-0 blur-lg bg-blue-400/30 -z-10"></div>
           </div>
           <div>
-            <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Enterprise</span>
-            <div className="text-xs font-medium text-slate-500 -mt-1">POS System</div>
+            <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              Enterprise
+            </span>
+            <div className="text-xs font-medium text-slate-500 -mt-1">
+              POS System
+            </div>
           </div>
         </div>
       </div>
@@ -487,11 +541,14 @@ function SidebarContent({
             <div className="flex items-center space-x-2 flex-1 min-w-0">
               <Building className="h-4 w-4 text-slate-400 flex-shrink-0" />
               <span className="text-slate-900 truncate font-medium">
-                {selectedCompany?.title || t('selectCompany')}
+                {selectedCompany?.title || t("selectCompany")}
               </span>
             </div>
             <ChevronDown
-              className={clsx("h-4 w-4 text-slate-400 transition-transform flex-shrink-0", showCompanyDropdown && "rotate-180")}
+              className={clsx(
+                "h-4 w-4 text-slate-400 transition-transform flex-shrink-0",
+                showCompanyDropdown && "rotate-180"
+              )}
             />
           </div>
           {selectedCompany?.address && (
@@ -568,7 +625,9 @@ function SidebarContent({
             </div>
           </div>
           <div className="ml-3">
-            <p className="text-sm font-semibold text-slate-900">{displayName}</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {displayName}
+            </p>
             <p className="text-xs text-slate-500 capitalize">{userRole}</p>
           </div>
         </div>
@@ -577,7 +636,7 @@ function SidebarContent({
           className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/50 rounded-xl transition-all duration-200"
         >
           <LogOut className="mr-3 h-4 w-4" />
-          <span>{t('signOut')}</span>
+          <span>{t("signOut")}</span>
         </button>
       </div>
     </div>
