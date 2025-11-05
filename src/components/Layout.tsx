@@ -137,7 +137,7 @@ export default function Layout() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -299,13 +299,13 @@ export default function Layout() {
         </div>
 
         <main className="flex-1 relative overflow-y-auto focus:outline-none z-10">
-          <div className="py-8">
+          <div className="py-4">
             <div
               className={clsx(
                 "mx-auto transition-all duration-300 ease-in-out",
                 sidebarHidden
-                  ? "max-w-full px-4 sm:px-6 md:px-8 lg:px-10"
-                  : "max-w-7xl px-6 sm:px-8 md:px-10"
+                  ? "max-w-full px-4 sm:px-4 md:px-4 lg:px-5"
+                  : "max-w-7xl px-4 sm:px-4 md:px-4"
               )}
             >
               <Outlet />
@@ -517,7 +517,7 @@ function SidebarContent({
       <div className="flex items-center justify-between flex-shrink-0 px-6 mb-8">
         <div className="flex items-center space-x-2">
           <div className="relative">
-            <Zap className="h-8 w-8 text-blue-600" />
+            <Zap className="h-8 w-8 text-blue-600" />   
             <div className="absolute inset-0 blur-lg bg-blue-400/30 -z-10"></div>
           </div>
           <div>

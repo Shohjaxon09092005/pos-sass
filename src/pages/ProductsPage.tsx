@@ -67,7 +67,9 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -129,10 +131,11 @@ export default function ProductsPage() {
         if (data && data.results && Array.isArray(data.results)) {
           const apiProducts: ApiProduct[] = data.results;
           const formattedProducts: Product[] = apiProducts.map((product) => {
-            const cs = typeof product.current_stock === 'number'
-              ? product.current_stock
-              : parseFloat((product.current_stock as any) ?? '0') || 0;
-            return ({
+            const cs =
+              typeof product.current_stock === "number"
+                ? product.current_stock
+                : parseFloat((product.current_stock as any) ?? "0") || 0;
+            return {
               id: product.id,
               title: product.title,
               notes: product.notes,
@@ -150,17 +153,18 @@ export default function ProductsPage() {
               isActive: true,
               current_stock: cs,
               stockQuantity: cs,
-            });
+            };
           });
           setProducts(formattedProducts);
         } else if (Array.isArray(data)) {
           // Agar to'g'ridan-to'g'ri array kelgan bo'lsa
           const apiProducts: ApiProduct[] = data;
           const formattedProducts: Product[] = apiProducts.map((product) => {
-            const cs = typeof product.current_stock === 'number'
-              ? product.current_stock
-              : parseFloat((product.current_stock as any) ?? '0') || 0;
-            return ({
+            const cs =
+              typeof product.current_stock === "number"
+                ? product.current_stock
+                : parseFloat((product.current_stock as any) ?? "0") || 0;
+            return {
               id: product.id,
               title: product.title,
               notes: product.notes,
@@ -178,7 +182,7 @@ export default function ProductsPage() {
               isActive: true,
               current_stock: cs,
               stockQuantity: cs,
-            });
+            };
           });
           setProducts(formattedProducts);
         } else {
@@ -320,7 +324,9 @@ export default function ProductsPage() {
       );
 
       // Initial/Input Stock for creation
-      const inputStockValue = (e.currentTarget.elements.namedItem("input_stock") as HTMLInputElement)?.value;
+      const inputStockValue = (
+        e.currentTarget.elements.namedItem("input_stock") as HTMLInputElement
+      )?.value;
       if (inputStockValue !== undefined) {
         formData.append("input_stock", inputStockValue || "0");
       }
@@ -427,7 +433,9 @@ export default function ProductsPage() {
       );
 
       // Input Stock (optional for update)
-      const inputStockValue = (e.currentTarget.elements.namedItem("input_stock") as HTMLInputElement)?.value;
+      const inputStockValue = (
+        e.currentTarget.elements.namedItem("input_stock") as HTMLInputElement
+      )?.value;
       if (inputStockValue !== undefined) {
         formData.append("input_stock", inputStockValue || "0");
       }
@@ -693,81 +701,88 @@ export default function ProductsPage() {
         </button>
       </div>
       {/* Stats - Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        {/* Total Products */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs md:text-sm font-medium text-gray-600">
                 Total Products
               </p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 md:mt-2">
                 {dashboardData?.total_products ?? products.length}
               </p>
             </div>
-            <div className="bg-blue-500 p-3 rounded-lg">
-              <Package className="h-6 w-6 text-white" />
+            <div className="bg-blue-500 p-2 md:p-3 rounded-lg">
+              <Package className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Active Products */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs md:text-sm font-medium text-gray-600">
                 Active Products
               </p>
-              <p className="text-2xl font-bold text-green-600 mt-2">
+              <p className="text-xl md:text-2xl font-bold text-green-600 mt-1 md:mt-2">
                 {dashboardData?.active_products ?? 0}
               </p>
             </div>
-            <div className="bg-green-500 p-3 rounded-lg">
-              <Package className="h-6 w-6 text-white" />
+            <div className="bg-green-500 p-2 md:p-3 rounded-lg">
+              <Package className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Inactive Products */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs md:text-sm font-medium text-gray-600">
                 Inactive Products
               </p>
-              <p className="text-2xl font-bold text-gray-600 mt-2">
+              <p className="text-xl md:text-2xl font-bold text-gray-600 mt-1 md:mt-2">
                 {dashboardData?.inactive_products ?? 0}
               </p>
             </div>
-            <div className="bg-gray-500 p-3 rounded-lg">
-              <Package className="h-6 w-6 text-white" />
+            <div className="bg-gray-500 p-2 md:p-3 rounded-lg">
+              <Package className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Total Value */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Value</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-xs md:text-sm font-medium text-gray-600">
+                Total Value
+              </p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 md:mt-2">
                 ${dashboardData?.total_value?.toFixed(2) ?? "0.00"}
               </p>
             </div>
-            <div className="bg-green-500 p-3 rounded-lg">
-              <DollarSign className="h-6 w-6 text-white" />
+            <div className="bg-green-500 p-2 md:p-3 rounded-lg">
+              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Low Stock Items */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs md:text-sm font-medium text-gray-600">
                 Low Stock Items
               </p>
-              <p className="text-2xl font-bold text-orange-600 mt-2">
+              <p className="text-xl md:text-2xl font-bold text-orange-600 mt-1 md:mt-2">
                 {dashboardData?.low_stock_products ?? 0}
               </p>
             </div>
-            <div className="bg-orange-500 p-3 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-white" />
+            <div className="bg-orange-500 p-2 md:p-3 rounded-lg">
+              <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
           </div>
         </div>
@@ -927,7 +942,10 @@ export default function ProductsPage() {
       {/* Add Product Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] ">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"  style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Add New Product
@@ -1153,7 +1171,10 @@ export default function ProductsPage() {
       {/* Edit Product Modal */}
       {editingProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Edit Product</h3>
               <button
@@ -1346,7 +1367,11 @@ export default function ProductsPage() {
                   </label>
                   <input
                     type="number"
-                    value={editingProduct.current_stock ?? editingProduct.stockQuantity ?? 0}
+                    value={
+                      editingProduct.current_stock ??
+                      editingProduct.stockQuantity ??
+                      0
+                    }
                     readOnly
                     disabled
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
@@ -1402,7 +1427,10 @@ export default function ProductsPage() {
       {/* // Product Detail Modal - rasmni ko'rsatish qismini yangilaymiz */}
       {showDetailModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
                 Mahsulot Tafsilotlari

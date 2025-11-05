@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CreditCard, Check, Star, ArrowRight, Download, Plus, Search, Filter, Trash2, Edit, FileText, DollarSign, Users, BarChart3 } from 'lucide-react';
+import { CreditCard, Check, Star, ArrowRight, Download, Plus, Search, Filter, Trash2, Edit, FileText, DollarSign, Users, BarChart3, Building, Monitor, User } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 
@@ -66,10 +66,23 @@ interface Subscription {
   updated_at: string;
 }
 
-type ActiveTab = 'overview' | 'plans' | 'invoices' | 'payments' | 'plans';
+// Company tipini kengaytiramiz
+interface CompanyWithCounts {
+  id: string;
+  name: string;
+  // Boshqa mavjud propertylar...
+  branches_count?: number;
+  registers_count?: number;
+  employees_count?: number;
+}
+
+type ActiveTab = 'overview' | 'plans' | 'invoices' | 'payments';
 
 export default function BillingPage() {
-  const { company, user } = useAuth();
+  const { company: authCompany } = useAuth();
+  // Company ni yangi tipga o'tkazamiz
+  const company = authCompany as CompanyWithCounts | null;
+  
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   
@@ -81,10 +94,52 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Stats states - alohida API orqali olishimiz mumkin
+  const [companyStats, setCompanyStats] = useState({
+    branches_count: 0,
+    registers_count: 0,
+    employees_count: 0
+  });
+
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [methodFilter, setMethodFilter] = useState<string>('all');
+
+  // Company stats ni olish uchun funksiya
+  const fetchCompanyStats = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      // Bu yerda company stats ni olish uchun API endpoint ishlatishimiz mumkin
+      // Agar bunday API bo'lmasa, mock data ishlatamiz
+      const response = await fetch(`${API_URL}/api/v1/company/stats/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCompanyStats(data);
+      } else {
+        // Agar API mavjud bo'lmasa, mock data ishlatamiz
+        setCompanyStats({
+          branches_count: company?.branches_count || 1,
+          registers_count: company?.registers_count || 2,
+          employees_count: company?.employees_count || 5
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching company stats:', err);
+      // Xato bo'lsa ham mock data ishlatamiz
+      setCompanyStats({
+        branches_count: company?.branches_count || 1,
+        registers_count: company?.registers_count || 2,
+        employees_count: company?.employees_count || 5
+      });
+    }
+  };
 
   // Fetch all data
   const fetchInvoices = async () => {
@@ -109,7 +164,7 @@ export default function BillingPage() {
   const fetchPayments = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/payments/`, {
+      const response = await fetch(`${API_URL}/api/v1/billing/payments/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -188,6 +243,32 @@ export default function BillingPage() {
     }
   };
 
+  const deletePayment = async (paymentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this payment?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/billing/payments/${paymentId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setPayments(payments.filter(payment => payment.id !== paymentId));
+        setError(null);
+      } else {
+        throw new Error('Failed to delete payment');
+      }
+    } catch (err) {
+      console.error('Error deleting payment:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete payment');
+    }
+  };
+
   // Load all data on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -197,7 +278,8 @@ export default function BillingPage() {
           fetchInvoices(),
           fetchPayments(),
           fetchBillingPlans(),
-          fetchCurrentSubscription()
+          fetchCurrentSubscription(),
+          fetchCompanyStats()
         ]);
       } catch (err) {
         setError('Failed to load data');
@@ -218,14 +300,28 @@ export default function BillingPage() {
   const totalIncome = positivePayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const totalExpenses = negativePayments.reduce((sum, payment) => sum + Math.abs(parseFloat(payment.amount)), 0);
 
-  // Mock usage data
-  const usage = {
-    companies: 1,
-    branches: 2,
-    registers: 4,
-    employees: 8,
-    ordersThisMonth: 1247,
+  // Company usage limits based on current plan
+  const getUsageLimits = () => {
+    if (!currentSubscription || !company) {
+      return {
+        companies: { used: 1, limit: 1 },
+        branches: { used: companyStats.branches_count, limit: -1 }, // -1 means unlimited
+        registers: { used: companyStats.registers_count, limit: -1 },
+        employees: { used: companyStats.employees_count, limit: -1 }
+      };
+    }
+
+    const currentPlan = billingPlans.find(p => p.id === currentSubscription.plan);
+    
+    return {
+      companies: { used: 1, limit: 1 }, // Only one company per subscription
+      branches: { used: companyStats.branches_count, limit: currentPlan?.seats_included || -1 },
+      registers: { used: companyStats.registers_count, limit: (currentPlan?.seats_included || 1) * 2 }, // 2 registers per seat
+      employees: { used: companyStats.employees_count, limit: (currentPlan?.seats_included || 1) * 5 } // 5 employees per seat
+    };
   };
+
+  const usage = getUsageLimits();
 
   const handlePlanSelection = (plan: BillingPlan) => {
     if (currentSubscription && currentSubscription.plan === plan.id) {
@@ -251,7 +347,8 @@ export default function BillingPage() {
   const currentPlan = getCurrentPlanDetails();
 
   const getUsagePercentage = (used: number, limit: number) => {
-    if (limit === -1) return 0;
+    if (limit === -1) return 25; // Show 25% for unlimited to indicate usage
+    if (limit === 0) return 0;
     return Math.min((used / limit) * 100, 100);
   };
 
@@ -311,6 +408,10 @@ export default function BillingPage() {
 
   const getAmountColor = (amount: string) => {
     return parseFloat(amount) >= 0 ? 'text-green-600' : 'text-red-600';
+  };
+
+  const formatLimit = (limit: number) => {
+    return limit === -1 ? '∞' : limit.toString();
   };
 
   // Filter data based on search and filters
@@ -493,16 +594,19 @@ export default function BillingPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">Seats</span>
+                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                          <Building className="h-4 w-4" />
+                          Companies
+                        </span>
                         <span className="text-xs text-gray-500">
-                          {currentSubscription.seats} / {currentPlan.seats_included}
+                          {usage.companies.used} / {formatLimit(usage.companies.limit)}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ 
-                            width: `${getUsagePercentage(currentSubscription.seats, currentPlan.seats_included)}%` 
+                            width: `${getUsagePercentage(usage.companies.used, usage.companies.limit)}%` 
                           }}
                         />
                       </div>
@@ -510,45 +614,60 @@ export default function BillingPage() {
 
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">Branches</span>
-                        <span className="text-xs text-gray-500">
-                          {usage.branches} / ∞
+                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                          <Building className="h-4 w-4" />
+                          Branches
                         </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all"
-                          style={{ width: '20%' }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">Employees</span>
                         <span className="text-xs text-gray-500">
-                          {usage.employees} / ∞
+                          {usage.branches.used} / {formatLimit(usage.branches.limit)}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-green-500 h-2 rounded-full transition-all"
-                          style={{ width: '20%' }}
+                          style={{ 
+                            width: `${getUsagePercentage(usage.branches.used, usage.branches.limit)}%` 
+                          }}
                         />
                       </div>
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">Orders</span>
+                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                          <Monitor className="h-4 w-4" />
+                          Registers
+                        </span>
                         <span className="text-xs text-gray-500">
-                          {usage.ordersThisMonth.toLocaleString()} / ∞
+                          {usage.registers.used} / {formatLimit(usage.registers.limit)}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-purple-500 h-2 rounded-full transition-all"
-                          style={{ width: '20%' }}
+                          style={{ 
+                            width: `${getUsagePercentage(usage.registers.used, usage.registers.limit)}%` 
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          Employees
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {usage.employees.used} / {formatLimit(usage.employees.limit)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-orange-500 h-2 rounded-full transition-all"
+                          style={{ 
+                            width: `${getUsagePercentage(usage.employees.used, usage.employees.limit)}%` 
+                          }}
                         />
                       </div>
                     </div>
@@ -623,7 +742,7 @@ export default function BillingPage() {
                         </div>
                         <div className="text-right">
                           <p className={`font-semibold ${getAmountColor(payment.amount)}`}>
-                            ${parseFloat(payment.amount).toFixed(2)}
+                            ${Math.abs(parseFloat(payment.amount)).toFixed(2)}
                           </p>
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPaymentMethodColor(payment.method)}`}>
                             {payment.method}
@@ -794,7 +913,7 @@ export default function BillingPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`text-sm font-semibold ${getAmountColor(payment.amount)}`}>
-                              ${parseFloat(payment.amount).toFixed(2)}
+                              ${Math.abs(parseFloat(payment.amount)).toFixed(2)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -901,10 +1020,34 @@ export default function BillingPage() {
                         </p>
                       </div>
 
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <span className="text-sm font-medium text-gray-700">Seats Included</span>
+                      <div className="mb-6 space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Seats Included
+                          </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Building className="h-4 w-4" />
+                            Branches
+                          </span>
+                          <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            Registers
+                          </span>
+                          <span className="text-lg font-bold text-gray-900">{plan.seats_included * 2}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Employees
+                          </span>
+                          <span className="text-lg font-bold text-gray-900">{plan.seats_included * 5}</span>
                         </div>
                       </div>
 

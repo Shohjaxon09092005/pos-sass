@@ -18,3 +18,7 @@
     background: rgba(0,0,0,0.4);
   }
 }
+* {
+  margin: 0;
+  padding: 0;
+}

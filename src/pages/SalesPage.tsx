@@ -12,7 +12,7 @@ import {
   Search,
   Calendar,
 } from "lucide-react";
-
+import { Printer } from 'lucide-react'; // or your icon library
 // Types based on API response
 interface SaleItem {
   id: string;
@@ -175,8 +175,9 @@ interface Filters {
   date_to: string;
 }
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-
+import { useAuth } from "../context/AuthContext";
 export default function SalesPage() {
+  const { user, company } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -399,7 +400,81 @@ export default function SalesPage() {
     setCurrentPage(page);
     fetchData(page, filters);
   };
+  const handlePrintSaleDetail = () => {
+    const printElement = document.getElementById("print-sale-detail");
+    if (printElement) {
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt #${selectedSale ? selectedSale.id : ""}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 20px;
+                font-size: 14px;
+                color: #000;
+              }
+              .receipt-container { 
+                max-width: 300px; 
+                margin: 0 auto; 
+              }
+              .text-center { text-align: center; }
+              .border-t { border-top: 1px solid #000; }
+              .border-b { border-bottom: 1px solid #000; }
+              .border-gray-400 { border-color: #666; }
+              .border-gray-200 { border-color: #ddd; }
+              .flex { display: flex; }
+              .flex-1 { flex: 1; }
+              .justify-between { justify-content: space-between; }
+              .font-bold { font-weight: bold; }
+              .font-medium { font-weight: 500; }
+              .font-semibold { font-weight: 600; }
+              .text-sm { font-size: 12px; }
+              .text-xs { font-size: 10px; }
+              .text-lg { font-size: 16px; }
+              .text-xl { font-size: 18px; }
+              .text-gray-600 { color: #666; }
+              .text-red-600 { color: #dc2626; }
+              .text-green-600 { color: #16a34a; }
+              .mb-2 { margin-bottom: 8px; }
+              .mb-4 { margin-bottom: 16px; }
+              .mt-1 { margin-top: 4px; }
+              .mt-3 { margin-top: 12px; }
+              .mt-6 { margin-top: 24px; }
+              .my-3 { margin-top: 12px; margin-bottom: 12px; }
+              .py-1 { padding-top: 4px; padding-bottom: 4px; }
+              .py-3 { padding-top: 12px; padding-bottom: 12px; }
+              .pt-2 { padding-top: 8px; }
+              .pt-4 { padding-top: 16px; }
+              .pb-4 { padding-bottom: 16px; }
+              .p-6 { padding: 24px; }
+              .space-y-2 > * + * { margin-top: 8px; }
+              .last\\:border-b-0:last-child { border-bottom: none; }
+              .capitalize { text-transform: capitalize; }
+            </style>
+          </head>
+          <body>
+            <div class="receipt-container">
+              ${printElement.innerHTML}
+            </div>
+          </body>
+        </html>
+      `);
+        printWindow.document.close();
 
+        printWindow.onload = function () {
+          printWindow.focus();
+          printWindow.print();
+          printWindow.onafterprint = function () {
+            printWindow.close();
+          };
+        };
+      }
+    }
+  };
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -651,7 +726,7 @@ export default function SalesPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-66">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -855,7 +930,10 @@ export default function SalesPage() {
       {/* Sale Detail Modal */}
       {showSaleDetail && selectedSale && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Sale Details</h3>
               <button
@@ -993,9 +1071,108 @@ export default function SalesPage() {
               >
                 Close
               </button>
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+              <button
+                onClick={handlePrintSaleDetail}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center"
+              >
+                <Printer className="h-4 w-4 mr-2" />
                 Print Receipt
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden Print-Only Sale Detail Receipt */}
+      {selectedSale && (
+        <div className="hidden">
+          <div id="print-sale-detail" className="p-6 max-w-xs">
+            <div className="text-center mb-4 border-b pb-4">
+              <h2 className="text-xl font-bold">
+                {company?.title || "Store Name"}
+              </h2>
+              <p className="text-sm">Receipt #{selectedSale.id}</p>
+              <p className="text-xs">
+                {format(
+                  parseISO(selectedSale.created_at),
+                  "MMM dd, yyyy HH:mm"
+                )}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="font-medium">Payment Method:</span>
+                <span className="capitalize">
+                  {getPaymentMethod(selectedSale)}
+                </span>
+              </div>
+            </div>
+
+            <div className="border-t border-b border-gray-400 py-3 my-3">
+              <h3 className="font-bold text-sm mb-2">ITEMS:</h3>
+              {selectedSale.items.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between text-sm py-1 border-b border-gray-200 last:border-b-0"
+                >
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {getProductName(item.product)}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      SKU: {getProductSKU(item.product)} | $
+                      {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "}
+                      {Math.abs(item.quantity)}
+                    </div>
+                  </div>
+                  <div className="font-semibold">
+                    ${getItemTotal(item).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>
+                  $
+                  {(
+                    parseFloat(selectedSale.amount_total) -
+                    parseFloat(selectedSale.amount_due || "0")
+                  ).toFixed(2)}
+                </span>
+              </div>
+
+              {parseFloat(selectedSale.amount_due || "0") !== 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>Due Amount:</span>
+                  <span>
+                    ${parseFloat(selectedSale.amount_due || "0").toFixed(2)}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex justify-between font-bold text-lg border-t border-gray-400 pt-2">
+                <span>Total:</span>
+                <span>${parseFloat(selectedSale.amount_total).toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-green-600">
+                <span>Amount Paid:</span>
+                <span>${parseFloat(selectedSale.amount_paid).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="text-center mt-6 text-xs border-t border-gray-400 pt-4">
+              <p>Thank you for your business!</p>
+              <p className="mt-1">
+                {format(
+                  parseISO(selectedSale.created_at),
+                  "MMM dd, yyyy HH:mm:ss"
+                )}
+              </p>
             </div>
           </div>
         </div>

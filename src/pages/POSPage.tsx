@@ -24,7 +24,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { clsx } from "clsx";
-
+import { Menu } from "lucide-react";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Types (o'zgarmadi)
@@ -117,10 +117,7 @@ const safeParseFloat = (value: any): number => {
 };
 
 // Mock auth context
-const useAuth = () => ({
-  user: { id: "1", name: "Demo User" },
-  company: { id: "1", name: "Demo Company" },
-});
+import { useAuth } from "../context/AuthContext";
 
 export default function POSPage() {
   const { user, company } = useAuth();
@@ -145,7 +142,8 @@ export default function POSPage() {
   >(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [lastSale, setLastSale] = useState<any>(null);
-
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // API data states
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -908,7 +906,6 @@ export default function POSPage() {
   const total = subtotal + taxAmount;
   const amountDue = total - parseFloat(amountPaid || "0");
 
-  
   // Filter products
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
@@ -918,6 +915,68 @@ export default function POSPage() {
       product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+  const handlePrintReceipt = () => {
+    // Show the hidden print receipt
+    const printElement = document.getElementById("print-receipt");
+    if (printElement) {
+      // Create a new window for printing
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        console.error("Failed to open print window");
+        return;
+      }
+      printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt #${lastSale.receiptNumber}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 20px;
+              font-size: 14px;
+            }
+            .receipt-container { 
+              max-width: 300px; 
+              margin: 0 auto; 
+            }
+            .text-center { text-align: center; }
+            .border-t { border-top: 1px solid #000; }
+            .border-b { border-bottom: 1px solid #000; }
+            .flex { display: flex; }
+            .justify-between { justify-content: space-between; }
+            .font-bold { font-weight: bold; }
+            .text-sm { font-size: 12px; }
+            .text-xs { font-size: 10px; }
+            .my-2 { margin-top: 8px; margin-bottom: 8px; }
+            .py-2 { padding-top: 8px; padding-bottom: 8px; }
+            .pt-2 { padding-top: 8px; }
+            .mt-4 { margin-top: 16px; }
+            .mt-6 { margin-top: 24px; }
+            .space-y-1 > * + * { margin-top: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-container">
+            ${printElement.innerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+      printWindow.document.close();
+
+      // Wait for content to load then print
+      if (printWindow) {
+        printWindow.onload = function () {
+          printWindow?.focus();
+          printWindow?.print();
+          printWindow.onafterprint = function () {
+            printWindow?.close();
+          };
+        };
+      }
+    }
+  };
 
   // Get register status badge
   const getRegisterStatusBadge = (register: Register) => {
@@ -965,28 +1024,6 @@ export default function POSPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
-              <Store className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              POS Terminal
-            </h1>
-            <p className="text-gray-600">Select a register to start selling</p>
-
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="mt-4 inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <RefreshCw
-                className={clsx("w-4 h-4 mr-2", isRefreshing && "animate-spin")}
-              />
-              Refresh
-            </button>
-          </div>
-
           {/* Register Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             {registers.map((register) => {
@@ -1147,564 +1184,810 @@ export default function POSPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Main Content Area - Cart bilan bir qatorda */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:flex-row">
         {/* Header - Fixed va z-index bilan */}
-        <div className="bg-white border-b shadow-sm sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  POS Terminal
-                </h1>
-
-                {/* Register Info */}
-                <button
-                  onClick={() => {
-                    setShowRegisterSelection(true);
-                    setActiveSession(null);
-                    setSelectedRegister(null);
-                  }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
-                >
-                  <Store className="h-4 w-4" />
-                  <span className="font-medium">{selectedRegister?.title}</span>
-                </button>
-
-                {/* Session Status */}
-                {activeSession ? (
-                  <div className="flex items-center space-x-3 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-4 w-4" />
-                      <span className="font-bold">
-                        ${(activeSession.total_sales || 0).toFixed(2)}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const balance = prompt(
-                          "Enter closing balance:",
-                          (
-                            activeSession.opening_balance +
-                            activeSession.total_sales
-                          ).toFixed(2)
-                        );
-                        if (balance) {
-                          setClosingBalance(balance);
-                          closeSession();
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
-                    >
-                      Close Session
-                    </button>
-                  </div>
-                ) : (
+        <div className="bg-white border-b shadow-sm sticky top-0 z-50 lg:z-40">
+          <div className="container mx-auto px-3 lg:px-4 py-3">
+            {/* Mobil Header */}
+            <div className="lg:hidden">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setShowSessionModal(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 rounded-lg bg-gray-100"
                   >
-                    Open Session
+                    <Menu className="h-5 w-5" />
                   </button>
-                )}
-              </div>
+                  <h1 className="text-lg font-bold text-gray-900">
+                    POS Terminal
+                  </h1>
+                </div>
 
-              {/* Right side actions */}
-              <div className="flex items-center space-x-3">
-                {/* Customer Button */}
-                <button
-                  onClick={() => setShowCustomerModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"
-                >
-                  <User className="h-4 w-4" />
-                  <span className="font-medium">
-                    {selectedCustomer?.name || "No Customer"}
-                  </span>
-                </button>
-
-                {/* Cart Button - Endi bu faqat mobil uchun, desktopda cart doim ko'rinadi */}
-                <div className="lg:hidden">
+                <div className="flex items-center space-x-2">
+                  {/* Customer Button - Mobil */}
                   <button
-                    onClick={() =>
-                      document
-                        .getElementById("cart-sidebar")
-                        ?.classList.toggle("hidden")
-                    }
-                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg relative hover:bg-blue-700 transition-colors"
+                    onClick={() => setShowCustomerModal(true)}
+                    className="flex items-center space-x-1 px-2 py-1.5 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors text-xs"
                   >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span className="font-bold">{cart.length}</span>
+                    <User className="h-3 w-3" />
+                    <span className="max-w-[60px] truncate">
+                      {selectedCustomer?.name || "No Customer"}
+                    </span>
+                  </button>
+
+                  {/* Cart Button - Mobil */}
+                  <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="flex items-center space-x-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg relative hover:bg-blue-700 transition-colors"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    <span className="font-bold text-sm">{cart.length}</span>
                     {cart.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center font-bold shadow-lg">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">
                         {cart.length}
                       </span>
                     )}
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Search and Categories */}
-            <div className="mt-4 flex flex-col lg:flex-row lg:items-center lg:space-x-4 space-y-3 lg:space-y-0">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="text"
-                  placeholder="Search products (name, SKU)..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Category Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                  className={clsx(
-                    "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-[200px] border-2",
-                    selectedCategory === "all"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
-                  )}
-                >
-                  <span className="flex items-center space-x-2">
-                    <Package className="w-4 h-4" />
-                    <span>
-                      {selectedCategory === "all"
-                        ? "All Categories"
-                        : categories.find((c) => c.id === selectedCategory)
-                            ?.title || "Select Category"}
-                    </span>
-                  </span>
-                  <svg
-                    className={clsx(
-                      "w-4 h-4 transition-transform ml-2",
-                      showCategoryDropdown && "rotate-180"
-                    )}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {/* Mobil Session Info */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setShowRegisterSelection(true);
+                      setActiveSession(null);
+                      setSelectedRegister(null);
+                    }}
+                    className="flex items-center space-x-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-xs"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
+                    <Store className="h-3 w-3" />
+                    <span className="max-w-[80px] truncate">
+                      {selectedRegister?.title}
+                    </span>
+                  </button>
 
-                {/* Dropdown Menu */}
-                {showCategoryDropdown && (
-                  <>
-                    {/* Backdrop to close dropdown */}
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowCategoryDropdown(false)}
-                    />
-
-                    <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 max-h-[400px] overflow-auto">
-                      {/* All Categories Option */}
-                      <button
-                        onClick={() => {
-                          setSelectedCategory("all");
-                          setShowCategoryDropdown(false);
-                        }}
-                        className={clsx(
-                          "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 font-medium",
-                          selectedCategory === "all" &&
-                            "bg-blue-50 text-blue-700"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center space-x-2">
-                            <Package className="w-4 h-4" />
-                            <span>All Categories</span>
-                          </span>
-                          {selectedCategory === "all" && (
-                            <Check className="w-4 h-4 text-blue-600" />
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 ml-6">
-                          {products.length} products
-                        </span>
-                      </button>
-
-                      {/* Category List */}
-                      {categories.length > 0 ? (
-                        categories.map((category) => {
-                          const categoryProductCount = products.filter(
-                            (p) => p.category === category.id
-                          ).length;
-                          return (
-                            <button
-                              key={category.id}
-                              onClick={() => {
-                                setSelectedCategory(category.id);
-                                setShowCategoryDropdown(false);
-                              }}
-                              className={clsx(
-                                "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0",
-                                selectedCategory === category.id &&
-                                  "bg-blue-50 text-blue-700 font-medium"
-                              )}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span>{category.title}</span>
-                                {selectedCategory === category.id && (
-                                  <Check className="w-4 h-4 text-blue-600" />
-                                )}
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {categoryProductCount} products
-                              </span>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <div className="px-4 py-8 text-center text-gray-500">
-                          <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                          <p className="text-sm">No categories available</p>
-                        </div>
-                      )}
+                  {activeSession ? (
+                    <div className="flex items-center space-x-1 bg-green-50 text-green-700 px-2 py-1 rounded-lg border border-green-200 text-xs">
+                      <TrendingUp className="h-3 w-3" />
+                      <span className="font-bold">
+                        ${(activeSession.total_sales || 0).toFixed(2)}
+                      </span>
                     </div>
-                  </>
+                  ) : (
+                    <button
+                      onClick={() => setShowSessionModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-lg font-medium transition-colors text-xs"
+                    >
+                      Open Session
+                    </button>
+                  )}
+                </div>
+
+                {activeSession && (
+                  <button
+                    onClick={closeSession}
+                    className="text-red-600 hover:text-red-800 text-xs font-medium"
+                  >
+                    Close
+                  </button>
                 )}
               </div>
 
-              {/* Quick Filter Badges */}
-              {selectedCategory !== "all" && (
+              {/* Search and Categories - Mobil */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                </div>
+
+                {/* Category Dropdown - Mobil */}
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      setShowCategoryDropdown(!showCategoryDropdown)
+                    }
+                    className={clsx(
+                      "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors w-full border-2",
+                      selectedCategory === "all"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
+                    )}
+                  >
+                    <span className="flex items-center space-x-2">
+                      <Package className="w-4 h-4" />
+                      <span className="text-xs">
+                        {selectedCategory === "all"
+                          ? "All Categories"
+                          : categories.find((c) => c.id === selectedCategory)
+                              ?.title || "Select Category"}
+                      </span>
+                    </span>
+                    <svg
+                      className={clsx(
+                        "w-4 h-4 transition-transform ml-2",
+                        showCategoryDropdown && "rotate-180"
+                      )}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {showCategoryDropdown && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowCategoryDropdown(false)}
+                      />
+                      <div className="absolute top-full mt-1 left-0 right-0 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 max-h-60 overflow-auto">
+                        <button
+                          onClick={() => {
+                            setSelectedCategory("all");
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={clsx(
+                            "w-full text-left px-3 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-100 font-medium text-sm",
+                            selectedCategory === "all" &&
+                              "bg-blue-50 text-blue-700"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center space-x-2">
+                              <Package className="w-4 h-4" />
+                              <span>All Categories</span>
+                            </span>
+                            {selectedCategory === "all" && (
+                              <Check className="w-4 h-4 text-blue-600" />
+                            )}
+                          </div>
+                        </button>
+
+                        {categories.map((category) => (
+                          <button
+                            key={category.id}
+                            onClick={() => {
+                              setSelectedCategory(category.id);
+                              setShowCategoryDropdown(false);
+                            }}
+                            className={clsx(
+                              "w-full text-left px-3 py-2.5 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 text-sm",
+                              selectedCategory === category.id &&
+                                "bg-blue-50 text-blue-700 font-medium"
+                            )}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{category.title}</span>
+                              {selectedCategory === category.id && (
+                                <Check className="w-4 h-4 text-blue-600" />
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Header */}
+            <div className="hidden lg:block">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    POS Terminal
+                  </h1>
+
+                  {/* Register Info */}
+                  <button
+                    onClick={() => {
+                      setShowRegisterSelection(true);
+                      setActiveSession(null);
+                      setSelectedRegister(null);
+                    }}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                  >
+                    <Store className="h-4 w-4" />
+                    <span className="font-medium">
+                      {selectedRegister?.title}
+                    </span>
+                  </button>
+
+                  {/* Session Status */}
+                  {activeSession ? (
+                    <div className="flex items-center space-x-3 bg-green-50 text-green-700 px-4 py-2 rounded-lg border border-green-200">
+                      <div className="flex items-center space-x-2">
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="font-bold">
+                          ${(activeSession.total_sales || 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const balance = prompt(
+                            "Enter closing balance:",
+                            (
+                              activeSession.opening_balance +
+                              activeSession.total_sales
+                            ).toFixed(2)
+                          );
+                          if (balance) {
+                            setClosingBalance(balance);
+                            closeSession();
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+                      >
+                        Close Session
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowSessionModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      Open Session
+                    </button>
+                  )}
+                </div>
+
+                {/* Right side actions */}
+                <div className="flex items-center space-x-3">
+                  {/* Customer Button */}
+                  <button
+                    onClick={() => setShowCustomerModal(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">
+                      {selectedCustomer?.name || "No Customer"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Search and Categories - Desktop */}
+              <div className="mt-4 flex items-center space-x-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <input
+                    type="text"
+                    placeholder="Search products (name, SKU)..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Category Dropdown - Desktop */}
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      setShowCategoryDropdown(!showCategoryDropdown)
+                    }
+                    className={clsx(
+                      "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-[200px] border-2",
+                      selectedCategory === "all"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
+                    )}
+                  >
+                    <span className="flex items-center space-x-2">
+                      <Package className="w-4 h-4" />
+                      <span>
+                        {selectedCategory === "all"
+                          ? "All Categories"
+                          : categories.find((c) => c.id === selectedCategory)
+                              ?.title || "Select Category"}
+                      </span>
+                    </span>
+                    <svg
+                      className={clsx(
+                        "w-4 h-4 transition-transform ml-2",
+                        showCategoryDropdown && "rotate-180"
+                      )}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showCategoryDropdown && (
+                    <>
+                      {/* Backdrop to close dropdown */}
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowCategoryDropdown(false)}
+                      />
+
+                      <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 max-h-[400px] overflow-auto">
+                        {/* All Categories Option */}
+                        <button
+                          onClick={() => {
+                            setSelectedCategory("all");
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={clsx(
+                            "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 font-medium",
+                            selectedCategory === "all" &&
+                              "bg-blue-50 text-blue-700"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center space-x-2">
+                              <Package className="w-4 h-4" />
+                              <span>All Categories</span>
+                            </span>
+                            {selectedCategory === "all" && (
+                              <Check className="w-4 h-4 text-blue-600" />
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 ml-6">
+                            {products.length} products
+                          </span>
+                        </button>
+
+                        {/* Category List */}
+                        {categories.length > 0 ? (
+                          categories.map((category) => {
+                            const categoryProductCount = products.filter(
+                              (p) => p.category === category.id
+                            ).length;
+                            return (
+                              <button
+                                key={category.id}
+                                onClick={() => {
+                                  setSelectedCategory(category.id);
+                                  setShowCategoryDropdown(false);
+                                }}
+                                className={clsx(
+                                  "w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0",
+                                  selectedCategory === category.id &&
+                                    "bg-blue-50 text-blue-700 font-medium"
+                                )}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span>{category.title}</span>
+                                  {selectedCategory === category.id && (
+                                    <Check className="w-4 h-4 text-blue-600" />
+                                  )}
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {categoryProductCount} products
+                                </span>
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="px-4 py-8 text-center text-gray-500">
+                            <Package className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                            <p className="text-sm">No categories available</p>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Quick Filter Badges */}
+                {selectedCategory !== "all" && (
+                  <button
+                    onClick={() => setSelectedCategory("all")}
+                    className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Clear Filter</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* Main Content Area */}
+          <div className="flex-1 flex">
+            {/* Products Grid */}
+            <div className="flex-1 container mx-auto px-3 lg:px-4 py-4 lg:py-6">
+              {!activeSession ? (
+                <div className="bg-white rounded-xl lg:rounded-2xl shadow-sm p-6 lg:p-12 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 bg-yellow-100 rounded-full mb-4">
+                    <AlertCircle className="w-8 h-8 lg:w-10 lg:h-10 text-yellow-600" />
+                  </div>
+                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                    No Active Session
+                  </h3>
+                  <p className="text-gray-500 mb-4 lg:mb-6">
+                    You need to open a session to start selling
+                  </p>
+                  <button
+                    onClick={() => setShowSessionModal(true)}
+                    className="inline-flex items-center px-4 py-3 lg:px-6 lg:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg lg:rounded-xl font-semibold transition-colors shadow-lg text-sm lg:text-base"
+                  >
+                    <Unlock className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
+                    Open Session
+                  </button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="bg-white rounded-xl lg:rounded-2xl shadow-sm p-6 lg:p-12 text-center">
+                  <div className="text-gray-400 text-4xl lg:text-6xl mb-4">
+                    🔍
+                  </div>
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">
+                    No Products Found
+                  </h3>
+                  <p className="text-gray-500 text-sm lg:text-base">
+                    No products match your search criteria
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
+                  {filteredProducts.map((product) => {
+                    const quantityInCart = getProductQuantityInCart(product.id);
+                    const stockQuantity = product.stockQuantity || 0;
+                    const isOutOfStock = stockQuantity <= 0;
+                    const canAddMore = quantityInCart < stockQuantity;
+
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() =>
+                          !isOutOfStock && canAddMore && addToCart(product)
+                        }
+                        disabled={isOutOfStock || !canAddMore}
+                        className={clsx(
+                          "bg-white p-3 lg:p-4 rounded-xl shadow-sm border-2 transition-all text-left relative group flex flex-col h-full",
+                          isOutOfStock
+                            ? "border-gray-200 opacity-50 cursor-not-allowed"
+                            : canAddMore
+                            ? "border-gray-200 hover:border-blue-500 hover:shadow-lg hover:scale-[1.02]"
+                            : "border-orange-300 bg-orange-50"
+                        )}
+                      >
+                        {quantityInCart > 0 && (
+                          <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg z-10">
+                            {quantityInCart}
+                          </div>
+                        )}
+
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-xl flex items-center justify-center z-20">
+                            <span className="bg-red-500 text-white px-3 py-1.5 rounded text-sm font-bold shadow-lg">
+                              Out of Stock
+                            </span>
+                          </div>
+                        )}
+
+                        {!isOutOfStock && !canAddMore && (
+                          <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-xl flex items-center justify-center z-20">
+                            <span className="bg-white text-orange-600 px-3 py-1.5 rounded text-sm font-bold shadow-lg">
+                              Max: {stockQuantity}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Product Image */}
+                        <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <Package className="h-8 w-8 text-gray-400" />
+                          )}
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 flex flex-col">
+                          <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2 leading-tight min-h-[2.5rem]">
+                            {product.title}
+                          </h3>
+
+                          {product.sku && (
+                            <p className="text-xs text-gray-500 mb-2 font-mono truncate">
+                              SKU: {product.sku}
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-base font-bold text-gray-900">
+                              ${product.price.toFixed(2)}
+                            </p>
+
+                            <div className="flex items-center space-x-1 text-xs">
+                              <Package className="h-3.5 w-3.5 text-gray-400" />
+                              <span
+                                className={clsx(
+                                  "font-semibold",
+                                  stockQuantity === 0
+                                    ? "text-red-600"
+                                    : stockQuantity < 10
+                                    ? "text-orange-600"
+                                    : "text-green-600"
+                                )}
+                              >
+                                {stockQuantity}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stock Progress Bar */}
+                          {!isOutOfStock && (
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                              <div
+                                className={clsx(
+                                  "h-1.5 rounded-full transition-all",
+                                  stockQuantity === 0
+                                    ? "bg-red-500"
+                                    : stockQuantity < 10
+                                    ? "bg-orange-500"
+                                    : "bg-green-500"
+                                )}
+                                style={{
+                                  width: `${Math.min(
+                                    (stockQuantity /
+                                      Math.max(stockQuantity, 20)) *
+                                      100,
+                                    100
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          {/* Add to Cart Button */}
+                          {!isOutOfStock && canAddMore && (
+                            <div className="mt-auto pt-2">
+                              <div
+                                className={clsx(
+                                  "w-full py-2 text-center rounded-lg font-medium text-sm transition-colors",
+                                  quantityInCart > 0
+                                    ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                                )}
+                              >
+                                {quantityInCart > 0
+                                  ? "Added to Cart"
+                                  : "Add to Cart"}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Cart Sidebar */}
+            <div
+              className={clsx(
+                // Mobil: fixed va header dan pastda, desktop: relative
+                "lg:relative bg-white shadow-2xl border-l border-gray-200 flex flex-col h-full z-50 transition-transform duration-300 lg:transition-none",
+                isCartOpen
+                  ? "fixed inset-0 top-[80px] lg:top-0 lg:translate-x-0"
+                  : "fixed inset-0 top-[0px] translate-x-full lg:relative lg:translate-x-0",
+                "lg:w-96 lg:block"
+              )}
+            >
+              <div className="p-3 lg:p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                <h2 className="text-lg lg:text-xl font-bold">
+                  Cart ({cart.length})
+                </h2>
                 <button
-                  onClick={() => setSelectedCategory("all")}
-                  className="flex items-center space-x-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  onClick={() => setIsCartOpen(false)}
+                  className="lg:opacity-70 hover:opacity-100 transition-opacity"
                 >
-                  <X className="w-4 h-4" />
-                  <span>Clear Filter</span>
+                  <X className="h-5 w-5" />
                 </button>
+              </div>
+
+              <div className="flex-1 overflow-auto p-3 lg:p-4">
+                {cart.length === 0 ? (
+                  <div className="text-center py-12 lg:py-16">
+                    <ShoppingCart className="h-12 w-12 lg:h-16 lg:w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-sm lg:text-base">
+                      Cart is empty
+                    </p>
+                    <p className="text-xs lg:text-sm text-gray-400 mt-2">
+                      Add products to cart
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 lg:space-y-3">
+                    {cart.map((item) => {
+                      const product = products.find(
+                        (p) => p.id === item.productId
+                      );
+                      const stockQuantity = product?.stockQuantity || 0;
+                      const isLowStock = item.quantity >= stockQuantity;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="border border-gray-200 rounded-lg p-2 lg:p-3 hover:border-blue-300 transition-colors bg-white"
+                        >
+                          <div className="flex justify-between items-start mb-1 lg:mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-xs lg:text-sm leading-tight">
+                                {item.name}
+                              </h4>
+                              {item.sku && (
+                                <p className="text-[10px] lg:text-xs text-gray-500 font-mono mt-0.5">
+                                  {item.sku}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-gray-400 hover:text-red-600 ml-2 transition-colors flex-shrink-0"
+                            >
+                              <X className="h-3 w-3 lg:h-4 lg:w-4" />
+                            </button>
+                          </div>
+
+                          {isLowStock && (
+                            <div className="mb-1 lg:mb-2 p-1 lg:p-1.5 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700 font-medium">
+                              ⚠️ Only {stockQuantity} in stock
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between mb-1 lg:mb-2">
+                            <span className="text-xs font-medium text-gray-500">
+                              Unit Price
+                            </span>
+                            <button
+                              onClick={() => openPricePad(item.id)}
+                              className="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              ${item.unitPrice.toFixed(2)}
+                              <Calculator className="h-3 w-3 ml-1" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                                className="w-6 h-6 lg:w-7 lg:h-7 bg-gray-200 rounded flex items-center justify-center hover:bg-gray-300 font-bold"
+                              >
+                                <Minus className="h-2 w-2 lg:h-3 lg:w-3" />
+                              </button>
+                              <button
+                                onClick={() => openQuantityPad(item.id)}
+                                className="w-10 h-6 lg:w-12 lg:h-7 text-center text-xs font-bold bg-white border border-gray-300 rounded hover:border-blue-500"
+                              >
+                                {item.quantity}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                                disabled={isLowStock}
+                                className={clsx(
+                                  "w-6 h-6 lg:w-7 lg:h-7 rounded flex items-center justify-center font-bold",
+                                  isLowStock
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : "bg-gray-200 hover:bg-gray-300"
+                                )}
+                              >
+                                <Plus className="h-2 w-2 lg:h-3 lg:w-3" />
+                              </button>
+                            </div>
+                            <span className="font-bold text-base lg:text-lg text-gray-900">
+                              ${item.total.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Cart summary */}
+              {cart.length > 0 && (
+                <div className="border-t bg-white p-3 lg:p-4 sticky bottom-0">
+                  <div className="space-y-1 lg:space-y-2 text-xs lg:text-sm mb-3 lg:mb-4">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal:</span>
+                      <span className="font-semibold">
+                        ${subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Tax (8%):</span>
+                      <span className="font-semibold">
+                        ${taxAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-bold text-base lg:text-lg pt-2 border-t border-gray-300 text-gray-900">
+                      <span>Total:</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {selectedCustomer && (
+                    <div className="mb-2 lg:mb-3 p-2 bg-purple-50 rounded border border-purple-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1">
+                          <User className="h-3 w-3 text-purple-600" />
+                          <span className="text-xs font-semibold text-purple-900">
+                            {selectedCustomer.name}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setSelectedCustomer(null)}
+                          className="text-purple-600 hover:text-purple-800"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={clearCart}
+                      className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-xs lg:text-sm"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPayment(true);
+                        setIsCartOpen(false);
+                      }}
+                      className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 text-xs lg:text-sm"
+                    >
+                      Checkout
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Products Grid - To'g'ri joylashtirilgan */}
-        <div className="flex-1 container mx-auto px-4 py-6">
-          {!activeSession ? (
-            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
-                <AlertCircle className="w-10 h-10 text-yellow-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                No Active Session
-              </h3>
-              <p className="text-gray-500 mb-6">
-                You need to open a session to start selling
-              </p>
-              <button
-                onClick={() => setShowSessionModal(true)}
-                className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
-              >
-                <Unlock className="w-5 h-5 mr-2" />
-                Open Session
-              </button>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-              <div className="text-gray-400 text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                No Products Found
-              </h3>
-              <p className="text-gray-500">
-                No products match your search criteria
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {filteredProducts.map((product) => {
-                const quantityInCart = getProductQuantityInCart(product.id);
-                const stockQuantity = product.stockQuantity || 0;
-                const isOutOfStock = stockQuantity <= 0;
-                const canAddMore = quantityInCart < stockQuantity;
-
-                return (
-                  <button
-                    key={product.id}
-                    onClick={() =>
-                      !isOutOfStock && canAddMore && addToCart(product)
-                    }
-                    disabled={isOutOfStock || !canAddMore}
-                    className={clsx(
-                      "bg-white p-3 rounded-xl shadow-sm border-2 transition-all text-left relative group",
-                      isOutOfStock
-                        ? "border-gray-200 opacity-50 cursor-not-allowed"
-                        : canAddMore
-                        ? "border-gray-200 hover:border-blue-500 hover:shadow-lg"
-                        : "border-orange-300 bg-orange-50"
-                    )}
-                  >
-                    {quantityInCart > 0 && (
-                      <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg z-10">
-                        {quantityInCart}
-                      </div>
-                    )}
-
-                    {isOutOfStock && (
-                      <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-xl flex items-center justify-center z-20">
-                        <span className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
-                          Out of Stock
-                        </span>
-                      </div>
-                    )}
-
-                    {!isOutOfStock && !canAddMore && (
-                      <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-xl flex items-center justify-center z-20">
-                        <span className="bg-white text-orange-600 px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
-                          Max: {stockQuantity}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="aspect-square bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-                      {product.image ? (
-                        <img
-                          src={product.image}
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Package className="h-8 w-8 text-gray-400" />
-                      )}
-                    </div>
-
-                    <h3 className="font-semibold text-gray-900 text-2sm mb-1 line-clamp-2 leading-tight">
-                      {product.title}
-                    </h3>
-
-                    {product.sku && (
-                      <p className="text-[12px] text-gray-500 mb-1 font-mono truncate">
-                        {product.sku}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-2sm font-bold text-gray-900">
-                        ${product.price.toFixed(2)}
-                      </p>
-
-                      <div className="flex items-center space-x-1 text-[12px]">
-                        <Package className="h-3.5 w-3.5 text-gray-400" />
-                        <span
-                          className={clsx(
-                            "font-semibold",
-                            stockQuantity === 0
-                              ? "text-red-600"
-                              : stockQuantity < 10
-                              ? "text-orange-600"
-                              : "text-green-600"
-                          )}
-                        >
-                          {stockQuantity}
-                        </span>
-                      </div>
-                    </div>
-
-                    {!isOutOfStock && (
-                      <div className="w-full bg-gray-200 rounded-full h-1">
-                        <div
-                          className={clsx(
-                            "h-1 rounded-full transition-all",
-                            stockQuantity === 0
-                              ? "bg-red-500"
-                              : stockQuantity < 10
-                              ? "bg-orange-500"
-                              : "bg-green-500"
-                          )}
-                          style={{
-                            width: `${Math.min(
-                              (stockQuantity / Math.max(stockQuantity, 20)) *
-                                100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Cart Sidebar - Doimiy ko'rinib turishi va to'g'ri joylashtirilgan */}
-      <div className="w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col h-screen sticky top-0">
-        <div className="p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-          <h2 className="text-xl font-bold">Cart ({cart.length})</h2>
-          <button
-            onClick={() => {
-              // Mobil versiyada yopish imkoniyati
-              if (window.innerWidth < 1024) {
-                document
-                  .getElementById("cart-sidebar")
-                  ?.classList.add("hidden");
-              }
-            }}
-            className="lg:opacity-70 hover:opacity-100 transition-opacity"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-auto p-4">
-          {cart.length === 0 ? (
-            <div className="text-center py-16">
-              <ShoppingCart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">Cart is empty</p>
-              <p className="text-sm text-gray-400 mt-2">Add products to cart</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {cart.map((item) => {
-                const product = products.find((p) => p.id === item.productId);
-                const stockQuantity = product?.stockQuantity || 0;
-                const isLowStock = item.quantity >= stockQuantity;
-
-                return (
-                  <div
-                    key={item.id}
-                    className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors bg-white"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 text-sm leading-tight">
-                          {item.name}
-                        </h4>
-                        {item.sku && (
-                          <p className="text-xs text-gray-500 font-mono mt-0.5">
-                            {item.sku}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-gray-400 hover:text-red-600 ml-2 transition-colors flex-shrink-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    {isLowStock && (
-                      <div className="mb-2 p-1.5 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700 font-medium">
-                        ⚠️ Only {stockQuantity} in stock
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500">
-                        Unit Price
-                      </span>
-                      <button
-                        onClick={() => openPricePad(item.id)}
-                        className="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700"
-                      >
-                        ${item.unitPrice.toFixed(2)}
-                        <Calculator className="h-3 w-3 ml-1" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
-                          className="w-7 h-7 bg-gray-200 rounded flex items-center justify-center hover:bg-gray-300 font-bold"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <button
-                          onClick={() => openQuantityPad(item.id)}
-                          className="w-12 h-7 text-center text-xs font-bold bg-white border border-gray-300 rounded hover:border-blue-500"
-                        >
-                          {item.quantity}
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
-                          disabled={isLowStock}
-                          className={clsx(
-                            "w-7 h-7 rounded flex items-center justify-center font-bold",
-                            isLowStock
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-gray-200 hover:bg-gray-300"
-                          )}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
-                      <span className="font-bold text-lg text-gray-900">
-                        ${item.total.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Cart summary */}
-        {cart.length > 0 && (
-          <div className="border-t bg-white p-4 sticky bottom-0">
-            <div className="space-y-2 text-sm mb-4">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal:</span>
-                <span className="font-semibold">${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax (8%):</span>
-                <span className="font-semibold">${taxAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300 text-gray-900">
-                <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {selectedCustomer && (
-              <div className="mb-3 p-2 bg-purple-50 rounded border border-purple-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1">
-                    <User className="h-3 w-3 text-purple-600" />
-                    <span className="text-xs font-semibold text-purple-900">
-                      {selectedCustomer.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSelectedCustomer(null)}
-                    className="text-purple-600 hover:text-purple-800"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex space-x-2">
-              <button
-                onClick={clearCart}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm"
-              >
-                Clear
-              </button>
-              <button
-                onClick={() => setShowPayment(true)}
-                className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 text-sm"
-              >
-                Checkout
-              </button>
-            </div>
+        {/* Mobile Cart Floating Button */}
+        {!isCartOpen && (
+          <div className="lg:hidden fixed bottom-6 right-6 z-40">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-blue-700 transition-all transform hover:scale-110"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {cart.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                  {cart.length}
+                </span>
+              )}
+            </button>
           </div>
         )}
       </div>
@@ -1906,9 +2189,10 @@ export default function POSPage() {
                   <input
                     type="number"
                     step="0.01"
-                    value={amountPaid}
+                    value={amountPaid || total.toFixed(2)} // Avtomatik total qiymati
                     onChange={(e) => setAmountPaid(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-lg"
+                    placeholder={total.toFixed(2)} // Placeholder sifatida ham
                   />
                 </div>
                 <button
@@ -1918,14 +2202,28 @@ export default function POSPage() {
                   <Calculator className="h-6 w-6 text-gray-600" />
                 </button>
               </div>
+
+              {/* Avtomatik to'lov variantlari */}
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <button
+                  onClick={() => setAmountPaid(total.toFixed(2))}
+                  className="py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors text-sm"
+                >
+                  To'liq to'lov
+                </button>
+              </div>
+
               {amountDue > 0 && (
                 <p className="text-red-600 text-sm font-semibold mt-2">
                   Amount Due: ${amountDue.toFixed(2)}
                 </p>
               )}
-              {parseFloat(amountPaid || "0") > total && (
+              {parseFloat(amountPaid || total.toFixed(2)) > total && (
                 <p className="text-green-600 text-sm font-semibold mt-2">
-                  Change: ${(parseFloat(amountPaid) - total).toFixed(2)}
+                  Change: $
+                  {(parseFloat(amountPaid || total.toFixed(2)) - total).toFixed(
+                    2
+                  )}
                 </p>
               )}
             </div>
@@ -1954,116 +2252,213 @@ export default function POSPage() {
       {/* Receipt Modal */}
       {showReceipt && lastSale && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="h-10 w-10 text-green-600" />
+          <div
+            className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl"
+            style={{ marginTop: "50px" }}
+          >
+            {/* Header - Fixed */}
+            <div className="p-6 border-b border-gray-200 bg-white">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  Sale Completed!
+                </h3>
+                <p className="text-gray-600 font-medium">
+                  Receipt #{lastSale.receiptNumber}
+                </p>
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                Sale Completed!
-              </h3>
-              <p className="text-gray-600 font-medium">
-                Receipt #{lastSale.receiptNumber}
-              </p>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 mb-6">
-              <div className="text-center mb-4 pb-4 border-b-2 border-gray-300">
-                <h4 className="font-bold text-xl text-gray-900">
-                  {company?.name || "Store Name"}
-                </h4>
-                <p className="text-gray-600 text-sm mt-1">
-                  {lastSale.timestamp.toLocaleString()}
-                </p>
-                {selectedRegister && (
-                  <p className="text-gray-500 text-xs mt-1">
-                    Register: {selectedRegister.title}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
+                <div className="text-center mb-4 pb-4 border-b-2 border-gray-300">
+                  <h4 className="font-bold text-xl text-gray-900">
+                    {company?.title || "Store Name"}
+                  </h4>
+                  <p className="text-gray-600 text-sm mt-1">
+                    {lastSale.timestamp.toLocaleString()}
                   </p>
-                )}
-              </div>
-
-              <div className="space-y-2 mb-4">
-                {lastSale.items.map((item: any) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <div className="flex-1">
-                      <span className="font-semibold">
-                        {item.quantity}x {item.name}
-                      </span>
-                      <div className="text-xs text-gray-500">
-                        @ ${item.unitPrice.toFixed(2)}
-                      </div>
-                    </div>
-                    <span className="font-bold">${item.total.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t-2 border-gray-300 pt-4 space-y-2 text-sm">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">
-                    ${lastSale.subtotal.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Tax (8%)</span>
-                  <span className="font-semibold">
-                    ${lastSale.taxAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between font-bold text-xl pt-2 border-t-2 border-gray-300 text-gray-900">
-                  <span>Total</span>
-                  <span>${lastSale.total.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-blue-600 font-semibold">
-                  <span>Paid</span>
-                  <span>${lastSale.amountPaid.toFixed(2)}</span>
-                </div>
-                {lastSale.amountDue > 0 && (
-                  <div className="flex justify-between text-red-600 font-semibold">
-                    <span>Amount Due</span>
-                    <span>${lastSale.amountDue.toFixed(2)}</span>
-                  </div>
-                )}
-                {lastSale.amountPaid > lastSale.total && (
-                  <div className="flex justify-between text-green-600 font-semibold">
-                    <span>Change</span>
-                    <span>
-                      ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {lastSale.customer && (
-                <div className="mt-4 pt-4 border-t-2 border-gray-300">
-                  <p className="text-xs text-gray-500 mb-1">Customer</p>
-                  <p className="font-semibold text-gray-900">
-                    {lastSale.customer.name}
-                  </p>
-                  {lastSale.customer.phone && (
-                    <p className="text-sm text-gray-600">
-                      {lastSale.customer.phone}
+                  {selectedRegister && (
+                    <p className="text-gray-500 text-xs mt-1">
+                      Register: {selectedRegister.title}
                     </p>
                   )}
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  {lastSale.items.map((item: any) => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <div className="flex-1">
+                        <span className="font-semibold">
+                          {item.quantity}x {item.name}
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          @ ${item.unitPrice.toFixed(2)}
+                        </div>
+                      </div>
+                      <span className="font-bold">
+                        ${item.total.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t-2 border-gray-300 pt-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Subtotal</span>
+                    <span className="font-semibold">
+                      ${lastSale.subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Tax (8%)</span>
+                    <span className="font-semibold">
+                      ${lastSale.taxAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t-2 border-gray-300 text-gray-900">
+                    <span>Total</span>
+                    <span>${lastSale.total.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-blue-600 font-semibold">
+                    <span>Paid</span>
+                    <span>${lastSale.amountPaid.toFixed(2)}</span>
+                  </div>
+                  {lastSale.amountDue > 0 && (
+                    <div className="flex justify-between text-red-600 font-semibold">
+                      <span>Amount Due</span>
+                      <span>${lastSale.amountDue.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {lastSale.amountPaid > lastSale.total && (
+                    <div className="flex justify-between text-green-600 font-semibold">
+                      <span>Change</span>
+                      <span>
+                        ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {lastSale.customer && (
+                  <div className="mt-4 pt-4 border-t-2 border-gray-300">
+                    <p className="text-xs text-gray-500 mb-1">Customer</p>
+                    <p className="font-semibold text-gray-900">
+                      {lastSale.customer.name}
+                    </p>
+                    {lastSale.customer.phone && (
+                      <p className="text-sm text-gray-600">
+                        {lastSale.customer.phone}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="p-6 border-t border-gray-200 bg-white">
+              <div className="flex space-x-3">
+                <button
+                  onClick={handlePrintReceipt}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Printer className="h-5 w-5" />
+                  <span>Print Receipt</span>
+                </button>
+                <button
+                  onClick={() => setShowReceipt(false)}
+                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden Print-Only Receipt */}
+      {lastSale && (
+        <div className="hidden">
+          <div id="print-receipt" className="p-8 max-w-xs">
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold">
+                {company?.title || "Store Name"}
+              </h2>
+              <p className="text-sm">Receipt #{lastSale.receiptNumber}</p>
+              <p className="text-xs">{lastSale.timestamp.toLocaleString()}</p>
+              {selectedRegister && (
+                <p className="text-xs">Register: {selectedRegister.title}</p>
+              )}
+            </div>
+
+            <div className="border-t border-b border-gray-400 py-2 my-2">
+              {lastSale.items.map((item: any) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between text-sm py-1"
+                >
+                  <div>
+                    <span>
+                      {item.quantity}x {item.name}
+                    </span>
+                    <div className="text-xs">
+                      @ ${item.unitPrice.toFixed(2)}
+                    </div>
+                  </div>
+                  <span>${item.total.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>${lastSale.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax (8%):</span>
+                <span>${lastSale.taxAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold border-t border-gray-400 pt-1">
+                <span>Total:</span>
+                <span>${lastSale.total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Paid:</span>
+                <span>${lastSale.amountPaid.toFixed(2)}</span>
+              </div>
+              {lastSale.amountDue > 0 && (
+                <div className="flex justify-between">
+                  <span>Amount Due:</span>
+                  <span>${lastSale.amountDue.toFixed(2)}</span>
+                </div>
+              )}
+              {lastSale.amountPaid > lastSale.total && (
+                <div className="flex justify-between">
+                  <span>Change:</span>
+                  <span>
+                    ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
+                  </span>
                 </div>
               )}
             </div>
 
-            <div className="flex space-x-3">
-              <button
-                onClick={() => window.print()}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
-              >
-                <Printer className="h-5 w-5" />
-                <span>Print Receipt</span>
-              </button>
-              <button
-                onClick={() => setShowReceipt(false)}
-                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-              >
-                Close
-              </button>
+            {lastSale.customer && (
+              <div className="mt-4 pt-2 border-t border-gray-400">
+                <p className="text-xs">Customer: {lastSale.customer.name}</p>
+                {lastSale.customer.phone && (
+                  <p className="text-xs">Phone: {lastSale.customer.phone}</p>
+                )}
+              </div>
+            )}
+
+            <div className="text-center mt-6 text-xs">
+              <p>Thank you for your business!</p>
             </div>
           </div>
         </div>
@@ -2275,6 +2670,21 @@ export default function POSPage() {
             transform: translateX(0);
           }
         }
+          @media print {
+    body * {
+      visibility: hidden;
+    }
+    #print-receipt, #print-receipt * {
+      visibility: visible;
+    }
+    #print-receipt {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      max-width: none;
+    }
+  }
       `}</style>
     </div>
   );

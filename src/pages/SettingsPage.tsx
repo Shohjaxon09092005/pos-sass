@@ -1,66 +1,391 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   User, 
   Building, 
-  CreditCard, 
   Shield, 
   Bell, 
-  Globe,
-  Mail,
-  Phone,
-  MapPin,
   Save,
+  Eye,
+  EyeOff,
   Plus,
+  Trash2,
+  Edit,
   X
 } from 'lucide-react';
 
-export default function SettingsPage() {
-  const { user, company, currentBranch } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showAddBranchModal, setShowAddBranchModal] = useState(false);
+// Use the same Company interface from AuthContext
+interface Company {
+  id: number;
+  title: string;
+  address: string;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  owner: number;
+  allowed_users: number[];
+}
 
-  const tabs = [
+interface User {
+  id: number;
+  email: string;
+  username: string;
+  billing_role: string;
+  tenant: any;
+  groups: any[];
+  first_name: string;
+  last_name: string;
+  companies: Company[];
+  selected_company: number;
+}
+
+interface AuthContextType {
+  user: User | null;
+  company: Company | null;
+  companies: Company[];
+  selectedCompanyId: number | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  setSelectedCompany: (companyId: number) => void;
+  fetchCompanies: () => Promise<void>;
+  fetchUserData: () => Promise<void>;
+  updateCompany: (companyId: number, companyData: Partial<Company>) => Promise<void>;
+}
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+export default function SettingsPage() {
+  const { user, company, fetchUserData, updateCompany, fetchCompanies } = useAuth();
+  const [activeTab, setActiveTab] = useState('profile');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+
+  // User profile state
+  const [profile, setProfile] = useState({
+    first_name: '',
+    last_name: '',
+    email: ''
+  });
+
+  // Company state
+  const [companyData, setCompanyData] = useState({
+    title: '',
+    email: '',
+    phone: '',
+    address: '',
+    website: ''
+  });
+
+  // New company state
+  const [newCompany, setNewCompany] = useState({
+    title: '',
+    email: '',
+    phone: '',
+    address: '',
+    website: ''
+  });
+
+  // Password state
+  const [password, setPassword] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_new_password: ''
+  });
+
+  // Notification preferences
+  const [notifications, setNotifications] = useState({
+    daily_sales: true,
+    low_stock: true,
+    new_orders: true,
+    payments: true,
+    system_updates: true
+  });
+
+  // Initialize form data
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email || ''
+      });
+
+      // Set company data from user's companies
+      const userCompany = user.companies?.[0];
+      if (userCompany) {
+        setCompanyData({
+          title: userCompany.title || '',
+          email: userCompany.email || '',
+          phone: userCompany.phone || '',
+          address: userCompany.address || '',
+          website: userCompany.website || ''
+        });
+      }
+    }
+  }, [user?.id]);
+
+  const showMessage = useCallback((type: string, text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+  }, []);
+
+  // Profile API calls
+  const handleSaveProfile = useCallback(async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/users/me/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profile)
+      });
+
+      if (response.ok) {
+        await fetchUserData();
+        showMessage('success', 'Profile updated successfully');
+      } else {
+        const error = await response.json();
+        showMessage('error', error.detail || 'Failed to update profile');
+      }
+    } catch (error) {
+      showMessage('error', 'Error updating profile');
+    }
+    setLoading(false);
+  }, [user, profile, fetchUserData, showMessage]);
+
+  // Company API calls
+  const handleSaveCompany = useCallback(async () => {
+    if (!user || !user.companies?.[0]) {
+      showMessage('error', 'No company found');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCompany = user.companies[0];
+      
+      // Prepare company data for API - convert empty strings to null for nullable fields
+      const apiCompanyData = {
+        title: companyData.title,
+        email: companyData.email || null,
+        phone: companyData.phone || null,
+        address: companyData.address,
+        website: companyData.website || null
+      };
+
+      await updateCompany(userCompany.id, apiCompanyData);
+      await fetchUserData();
+      showMessage('success', 'Company updated successfully');
+    } catch (error) {
+      showMessage('error', 'Error updating company');
+    }
+    setLoading(false);
+  }, [user, companyData, updateCompany, fetchUserData, showMessage]);
+
+  // Create new company
+  const handleCreateCompany = useCallback(async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/companies/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: newCompany.title,
+          email: newCompany.email || null,
+          phone: newCompany.phone || null,
+          address: newCompany.address,
+          website: newCompany.website || null
+        })
+      });
+
+      if (response.ok) {
+        await fetchUserData();
+        setShowAddCompanyModal(false);
+        setNewCompany({ title: '', email: '', phone: '', address: '', website: '' });
+        showMessage('success', 'Company created successfully');
+      } else {
+        const error = await response.json();
+        showMessage('error', error.detail || 'Failed to create company');
+      }
+    } catch (error) {
+      showMessage('error', 'Error creating company');
+    }
+    setLoading(false);
+  }, [user, newCompany, fetchUserData, showMessage]);
+
+  // Delete company
+  const handleDeleteCompany = useCallback(async (companyId: number) => {
+    if (!user) return;
+    
+    if (!window.confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/companies/${companyId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        await fetchUserData();
+        showMessage('success', 'Company deleted successfully');
+      } else {
+        const error = await response.json();
+        showMessage('error', error.detail || 'Failed to delete company');
+      }
+    } catch (error) {
+      showMessage('error', 'Error deleting company');
+    }
+    setLoading(false);
+  }, [user, fetchUserData, showMessage]);
+
+  // Password API calls
+  const handleChangePassword = useCallback(async () => {
+    if (password.new_password !== password.confirm_new_password) {
+      showMessage('error', 'New passwords do not match');
+      return;
+    }
+
+    if (password.new_password.length < 8) {
+      showMessage('error', 'New password must be at least 8 characters long');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/users/set_password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_password: password.current_password,
+          new_password: password.new_password,
+          confirm_new_password: password.confirm_new_password
+        })
+      });
+
+      if (response.ok) {
+        showMessage('success', 'Password updated successfully');
+        setPassword({ current_password: '', new_password: '', confirm_new_password: '' });
+      } else {
+        const error = await response.json();
+        showMessage('error', error.detail || 'Failed to update password');
+      }
+    } catch (error) {
+      showMessage('error', 'Error updating password');
+    }
+    setLoading(false);
+  }, [password, showMessage]);
+
+  // Notification preferences (local storage for demo)
+  const handleSaveNotifications = useCallback(() => {
+    localStorage.setItem('notificationSettings', JSON.stringify(notifications));
+    showMessage('success', 'Notification preferences saved');
+  }, [notifications, showMessage]);
+
+  const togglePasswordVisibility = useCallback((field: keyof typeof showPassword) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  }, []);
+
+  // Input change handlers with useCallback
+  const handleProfileChange = useCallback((field: keyof typeof profile) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProfile(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  const handleCompanyDataChange = useCallback((field: keyof typeof companyData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setCompanyData(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  const handleNewCompanyChange = useCallback((field: keyof typeof newCompany) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setNewCompany(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  const handlePasswordChange = useCallback((field: keyof typeof password) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(prev => ({ ...prev, [field]: e.target.value }));
+  }, []);
+
+  const handleNotificationChange = useCallback((key: keyof typeof notifications) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: e.target.checked
+    }));
+  }, []);
+
+  const tabs = useMemo(() => [
     { id: 'profile', name: 'Profile', icon: User },
     { id: 'company', name: 'Company', icon: Building },
-    { id: 'branches', name: 'Branches', icon: MapPin },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'security', name: 'Security', icon: Shield },
-  ];
+  ], []);
 
-  const ProfileSettings = () => (
+  const ProfileSettings = useCallback(() => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              First Name
             </label>
             <input
               type="text"
-              defaultValue={user?.name}
+              value={profile.first_name}
+              onChange={handleProfileChange('first_name')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your first name"
             />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name
+            </label>
+            <input
+              type="text"
+              value={profile.last_name}
+              onChange={handleProfileChange('last_name')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your last name"
+            />
+          </div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
             </label>
             <input
               type="email"
-              defaultValue={user?.email}
+              value={profile.email}
+              onChange={handleProfileChange('email')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              defaultValue="+1-555-0123"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your email address"
             />
           </div>
           <div>
@@ -69,7 +394,18 @@ export default function SettingsPage() {
             </label>
             <input
               type="text"
-              value={user?.role || ''}
+              value={user?.billing_role || ''}
+              disabled
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 capitalize"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Username
+            </label>
+            <input
+              type="text"
+              value={user?.username || ''}
               disabled
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
             />
@@ -77,251 +413,287 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Preferences</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
-              <p className="text-sm text-gray-500">Receive email updates about your account</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-medium text-gray-900">Push Notifications</h4>
-              <p className="text-sm text-gray-500">Receive push notifications on your devices</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
       <div className="flex justify-end">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
-          <Save className="h-5 w-5" />
-          <span>Save Changes</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  const CompanySettings = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Company Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Company Name
-            </label>
-            <input
-              type="text"
-              defaultValue={company?.name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              defaultValue={company?.email}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              defaultValue={company?.phone}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Plan
-            </label>
-            <input
-              type="text"
-              value={company?.plan || ''}
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 capitalize"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address
-            </label>
-            <textarea
-              rows={3}
-              defaultValue={company?.address}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
-          <Save className="h-5 w-5" />
-          <span>Save Changes</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  const BranchSettings = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Branch Locations</h3>
         <button 
-          onClick={() => setShowAddBranchModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
+          onClick={handleSaveProfile}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
-          Add Branch
+          <Save className="h-5 w-5" />
+          <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+        </button>
+      </div>
+    </div>
+  ), [profile, user, loading, handleSaveProfile, handleProfileChange]);
+
+  const CompanySettings = useCallback(() => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium text-gray-900">Company Information</h3>
+        <button
+          onClick={() => setShowAddCompanyModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Company</span>
         </button>
       </div>
 
-      <div className="space-y-4">
-        <div className="bg-gray-50 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-medium text-gray-900">{currentBranch?.name}</h4>
-            <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-              Current
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Current Companies List */}
+      {user?.companies && user.companies.length > 0 && (
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900">Your Companies</h4>
+          {user.companies.map((comp) => (
+            <div key={comp.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h5 className="font-medium text-gray-900">{comp.title}</h5>
+                  <p className="text-sm text-gray-600 mt-1">{comp.address}</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {comp.phone && (
+                      <span className="text-sm text-gray-500">📞 {comp.phone}</span>
+                    )}
+                    {comp.email && (
+                      <span className="text-sm text-gray-500">✉️ {comp.email}</span>
+                    )}
+                    {comp.website && (
+                      <span className="text-sm text-gray-500">🌐 {comp.website}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex space-x-2 ml-4">
+                  <button
+                    onClick={() => handleDeleteCompany(comp.id)}
+                    disabled={loading}
+                    className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                    title="Delete Company"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Current Company */}
+      {user?.companies && user.companies.length > 0 && (
+        <div className="border-t pt-6">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">Edit Company</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Branch Name
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Name *
               </label>
               <input
                 type="text"
-                defaultValue={currentBranch?.name}
+                value={companyData.title}
+                onChange={handleCompanyDataChange('title')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter company name"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={companyData.email}
+                onChange={handleCompanyDataChange('email')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="company@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
               </label>
               <input
                 type="tel"
-                defaultValue={currentBranch?.phone}
+                value={companyData.phone}
+                onChange={handleCompanyDataChange('phone')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                value={companyData.website}
+                onChange={handleCompanyDataChange('website')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://example.com"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address *
               </label>
               <textarea
-                rows={2}
-                defaultValue={currentBranch?.address}
+                rows={3}
+                value={companyData.address}
+                onChange={handleCompanyDataChange('address')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter company address"
+                required
               />
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
-          <Save className="h-5 w-5" />
-          <span>Save Changes</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  const SecuritySettings = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Password & Security</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Password
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm New Password
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-medium text-gray-900">Enable 2FA</h4>
-              <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-              Enable
+          
+          <div className="flex justify-end mt-6">
+            <button 
+              onClick={handleSaveCompany}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+            >
+              <Save className="h-5 w-5" />
+              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
             </button>
           </div>
         </div>
+      )}
+    </div>
+  ), [user, companyData, loading, handleSaveCompany, handleDeleteCompany, handleCompanyDataChange]);
+
+  const SecuritySettings = useCallback(() => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Password & Security</h3>
+        <div className="space-y-4 max-w-md">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Current Password *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.current ? "text" : "password"}
+                value={password.current_password}
+                onChange={handlePasswordChange('current_password')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                placeholder="Enter current password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility('current')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+              >
+                {showPassword.current ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Password *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.new ? "text" : "password"}
+                value={password.new_password}
+                onChange={handlePasswordChange('new_password')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                placeholder="Enter new password"
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility('new')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+              >
+                {showPassword.new ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm New Password *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.confirm ? "text" : "password"}
+                value={password.confirm_new_password}
+                onChange={handlePasswordChange('confirm_new_password')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                placeholder="Confirm new password"
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility('confirm')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+              >
+                {showPassword.confirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+        <button 
+          onClick={handleChangePassword}
+          disabled={loading || !password.current_password || !password.new_password || !password.confirm_new_password}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+        >
           <Save className="h-5 w-5" />
-          <span>Update Password</span>
+          <span>{loading ? 'Updating...' : 'Update Password'}</span>
         </button>
       </div>
     </div>
-  );
+  ), [password, showPassword, loading, handleChangePassword, togglePasswordVisibility, handlePasswordChange]);
 
-  const NotificationSettings = () => (
+  const NotificationSettings = useCallback(() => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
         <div className="space-y-4">
           {[
-            { name: 'Daily Sales Summary', description: 'Receive daily reports about your sales performance' },
-            { name: 'Low Stock Alerts', description: 'Get notified when products are running low' },
-            { name: 'New Orders', description: 'Notification for every new order placed' },
-            { name: 'Payment Alerts', description: 'Updates about payment processing and failures' },
-            { name: 'System Updates', description: 'Important system updates and maintenance notifications' },
-          ].map((notification, index) => (
-            <div key={index} className="flex items-center justify-between py-3">
-              <div>
+            { 
+              key: 'daily_sales' as keyof typeof notifications, 
+              name: 'Daily Sales Summary', 
+              description: 'Receive daily reports about your sales performance' 
+            },
+            { 
+              key: 'low_stock' as keyof typeof notifications, 
+              name: 'Low Stock Alerts', 
+              description: 'Get notified when products are running low' 
+            },
+            { 
+              key: 'new_orders' as keyof typeof notifications, 
+              name: 'New Orders', 
+              description: 'Notification for every new order placed' 
+            },
+            { 
+              key: 'payments' as keyof typeof notifications, 
+              name: 'Payment Alerts', 
+              description: 'Updates about payment processing and failures' 
+            },
+            { 
+              key: 'system_updates' as keyof typeof notifications, 
+              name: 'System Updates', 
+              description: 'Important system updates and maintenance notifications' 
+            },
+          ].map((notification) => (
+            <div key={notification.key} className="flex items-center justify-between py-3">
+              <div className="flex-1">
                 <h4 className="text-sm font-medium text-gray-900">{notification.name}</h4>
                 <p className="text-sm text-gray-500">{notification.description}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked={index < 3} />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={notifications[notification.key]}
+                  onChange={handleNotificationChange(notification.key)}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -330,155 +702,190 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex justify-end">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+        <button 
+          onClick={handleSaveNotifications}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+        >
           <Save className="h-5 w-5" />
           <span>Save Preferences</span>
         </button>
       </div>
     </div>
-  );
+  ), [notifications, handleSaveNotifications, handleNotificationChange]);
 
-  const renderContent = () => {
+  const renderContent = useCallback(() => {
     switch (activeTab) {
       case 'profile': return <ProfileSettings />;
       case 'company': return <CompanySettings />;
-      case 'branches': return <BranchSettings />;
       case 'security': return <SecuritySettings />;
       case 'notifications': return <NotificationSettings />;
       default: return <ProfileSettings />;
     }
-  };
+  }, [activeTab, ProfileSettings, CompanySettings, SecuritySettings, NotificationSettings]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-600">Manage your account and system preferences</p>
-      </div>
-
-      <div className="flex flex-col lg:flex-row lg:space-x-8">
-        {/* Sidebar */}
-        <div className="lg:w-64 mb-6 lg:mb-0">
-          <nav className="space-y-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <tab.icon className="mr-3 h-5 w-5" />
-                {tab.name}
-              </button>
-            ))}
-          </nav>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-sm text-gray-600">Manage your account and system preferences</p>
         </div>
 
-        {/* Content */}
-        <div className="flex-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            {renderContent()}
+        {/* Message Alert */}
+        {message.text && (
+          <div className={`rounded-lg p-4 ${
+            message.type === 'success' 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row lg:space-x-8">
+          {/* Sidebar */}
+          <div className="lg:w-64 mb-6 lg:mb-0">
+            <nav className="space-y-1 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <tab.icon className="mr-3 h-5 w-5" />
+                  {tab.name}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              {renderContent()}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Add Branch Modal */}
-      {showAddBranchModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Add New Branch</h3>
-              <button
-                onClick={() => setShowAddBranchModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Branch Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter branch name"
-                />
+        {/* Add Company Modal */}
+        {showAddCompanyModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-md">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900">Add New Company</h3>
+                <button
+                  onClick={() => setShowAddCompanyModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="+1-555-0123"
-                />
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Company Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newCompany.title}
+                    onChange={handleNewCompanyChange('title')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter company name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address *
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={newCompany.address}
+                    onChange={handleNewCompanyChange('address')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter company address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={newCompany.phone}
+                    onChange={handleNewCompanyChange('phone')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={newCompany.email}
+                    onChange={handleNewCompanyChange('email')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="company@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Website
+                  </label>
+                  <input
+                    type="url"
+                    value={newCompany.website}
+                    onChange={handleNewCompanyChange('website')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://example.com"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="branch@company.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address *
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter branch address"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Timezone
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="America/New_York">Eastern Time</option>
-                  <option value="America/Chicago">Central Time</option>
-                  <option value="America/Denver">Mountain Time</option>
-                  <option value="America/Los_Angeles">Pacific Time</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setShowAddBranchModal(false)}
+                  onClick={() => setShowAddCompanyModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  onClick={handleCreateCompany}
+                  disabled={loading || !newCompany.title || !newCompany.address}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                 >
-                  Add Branch
+                  {loading ? 'Creating...' : 'Create Company'}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
