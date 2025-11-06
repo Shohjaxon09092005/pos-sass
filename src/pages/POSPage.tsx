@@ -111,7 +111,7 @@ interface Currency {
 
 // Safe number parser
 const safeParseFloat = (value: any): number => {
-  if (value === null || value === undefined) return 0;
+  if (value === null || value === undefined || value === "") return 0;
   const parsed = parseFloat(value);
   return isNaN(parsed) ? 0 : parsed;
 };
@@ -170,6 +170,18 @@ export default function POSPage() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [showCustomerModalInPayment, setShowCustomerModalInPayment] =
+    useState(false);
+  const [paymentAmounts, setPaymentAmounts] = useState<{
+    [key: string]: number;
+  }>({});
+  const [activePaymentMethod, setActivePaymentMethod] = useState<string>("");
+  const [numberpadFor, setNumberpadFor] = useState<string>("");
+  const [touchedMethods, setTouchedMethods] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isCreditSale, setIsCreditSale] = useState(false);
+  const [showCreditConfirmation, setShowCreditConfirmation] = useState(false);
   // Alert/Notification state
   const [alertModal, setAlertModal] = useState<{
     show: boolean;
@@ -768,11 +780,14 @@ export default function POSPage() {
     setCart(cart.filter((item) => item.id !== itemId));
   };
 
+  // Cartni tozalash - YANGILANGAN
   const clearCart = () => {
     setCart([]);
     setSelectedCustomer(null);
     setShowPayment(false);
     setAmountPaid("");
+    setIsCreditSale(false);
+    resetPaymentAmounts();
   };
 
   const getProductQuantityInCart = (productId: string): number => {
@@ -824,7 +839,7 @@ export default function POSPage() {
     setNumberpadMode(null);
   };
 
-  // Process sale
+  // processSale funksiyasini to'g'rilash
   const processSale = async () => {
     if (!activeSession || !selectedRegister) {
       showAlert("error", "Error", "Please check session and register");
@@ -839,18 +854,56 @@ export default function POSPage() {
     try {
       const token = localStorage.getItem("access_token");
 
+      // Sale payments ma'lumotlarini to'g'ri formatda tayyorlash
+      const sale_payments = paymentMethods
+        .filter((method) => (paymentAmounts[method.id] || 0) > 0)
+        .map((method) => ({
+          notes: `Payment via ${method.name}`,
+          amount: (paymentAmounts[method.id] || 0).toString(),
+          method: method.id,
+        }));
+
+      // Qarzga savdo bo'lsa, qoldiqni qo'shish
+      const remainingAmount = total - totalPaid;
+      if (remainingAmount > 0 && selectedCustomer) {
+        // Credit payment methodini topish
+        const creditMethod =
+          paymentMethods.find(
+            (m) =>
+              m.name.toLowerCase().includes("credit") ||
+              m.name.toLowerCase().includes("balance")
+          ) || paymentMethods[0];
+
+        sale_payments.push({
+          notes: `Credit balance - Customer: ${selectedCustomer.name}`,
+          amount: remainingAmount.toFixed(2),
+          method: creditMethod.id,
+        });
+      }
+
+      // Items ma'lumotlarini to'g'ri formatda tayyorlash
+      const items = cart.map((item) => ({
+        product: item.productId,
+        quantity: item.quantity.toString(),
+        cost_price: (item.unitPrice || 0).toString(),
+        source_location: selectedRegister?.location || "",
+      }));
+
       const saleData = {
-        items: cart.map((item) => ({
-          product: item.productId,
-          quantity: item.quantity,
-          cost_price: item.unitPrice.toString(),
-        })),
-        notes: `POS sale - ${new Date().toLocaleString()}`,
+        items: items,
+        notes: `POS sale - ${new Date().toLocaleString()}${
+          remainingAmount > 0 ? " (CREDIT)" : ""
+        }`,
         session: activeSession.id,
         register: selectedRegister.id,
         customer: selectedCustomer?.id || null,
-        amount_paid: amountPaid || total.toFixed(2),
+        company: company?.id || 0,
+        source_location: selectedRegister?.location || "",
+        sale_payments: sale_payments,
+        status: remainingAmount > 0 ? "credit" : "paid",
       };
+
+      console.log("Sending sale data:", JSON.stringify(saleData, null, 2));
 
       const response = await fetch(`${API_URL}/api/v1/pos/sales/`, {
         method: "POST",
@@ -863,6 +916,7 @@ export default function POSPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error("Sale error response:", errorText);
         throw new Error(`Failed to process sale: ${errorText}`);
       }
 
@@ -871,24 +925,37 @@ export default function POSPage() {
       const receiptNumber = `R${saleResult.id?.slice(-4) || "0000"}-${Date.now()
         .toString()
         .slice(-6)}`;
+
+      // To'liq lastSale obyektini yaratish
       const sale = {
         id: saleResult.id,
         receiptNumber,
         items: cart,
-        subtotal,
-        taxAmount,
-        total,
-        amountPaid: parseFloat(amountPaid || total.toString()),
-        amountDue: total - parseFloat(amountPaid || total.toString()),
+        subtotal: subtotal || 0,
+        total: total || 0,
+        paymentAmounts: { ...paymentAmounts },
+        totalPaid: totalPaid || 0,
+        change: change || 0,
         customer: selectedCustomer,
         timestamp: new Date(),
+        isCredit: remainingAmount > 0,
+        amountDue: Math.max(0, remainingAmount),
+        // Yangi qo'shimcha maydonlar
+        amountPaid: totalPaid || 0,
+        taxAmount: 0, // Agar soliq bo'lsa, hisoblang
       };
+
+      console.log("Last sale object:", sale);
 
       setLastSale(sale);
       setShowPayment(false);
       setShowReceipt(true);
       clearCart();
       await fetchData();
+
+      // Reset payment states
+      resetPaymentAmounts();
+      setShowCreditConfirmation(false);
     } catch (err) {
       console.error("Error processing sale:", err);
       showAlert(
@@ -899,12 +966,202 @@ export default function POSPage() {
     }
   };
 
-  // Calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
-  const taxRate = 0.08;
-  const taxAmount = subtotal * taxRate;
-  const total = subtotal + taxAmount;
-  const amountDue = total - parseFloat(amountPaid || "0");
+  // Calculations - XATOLARNI TO'G'IRLASH
+  const subtotal = cart.reduce((sum, item) => sum + (item.total || 0), 0);
+  const total = subtotal;
+  const totalPaid = Object.values(paymentAmounts || {}).reduce(
+    (sum, amount) => sum + (amount || 0),
+    0
+  );
+  const change = Math.max(0, (totalPaid || 0) - (total || 0));
+  const amountDue = Math.max(0, (total || 0) - (totalPaid || 0));
+
+  // Payment modalini ochish - YANGILANGAN
+  const handleOpenPayment = () => {
+    setShowPayment(true);
+    resetPaymentAmounts();
+
+    // Birinchi to'lov usulini active qilish
+    if (paymentMethods.length > 0) {
+      setActivePaymentMethod(paymentMethods[0].id);
+      setNumberpadFor(paymentMethods[0].id);
+    }
+  };
+  // To'lov usuli tanlanganda avtomatik qolgan summani yozish
+  useEffect(() => {
+    if (activePaymentMethod && !touchedMethods[activePaymentMethod]) {
+      const alreadyPaid = (Object.entries(paymentAmounts) as [string, number][])
+        .filter(([methodId]) => methodId !== activePaymentMethod)
+        .reduce((sum, [_, amount]) => sum + (amount || 0), 0);
+
+      const remaining = Math.max(0, total - alreadyPaid);
+
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [activePaymentMethod]: remaining,
+      }));
+      setTouchedMethods((prev) => ({
+        ...prev,
+        [activePaymentMethod]: true,
+      }));
+    }
+  }, [activePaymentMethod, total, touchedMethods]);
+
+  // Customer modalini payment ichida ochish
+  const handleOpenCustomerModalInPayment = () => {
+    setShowCustomerModalInPayment(true);
+  };
+
+  // Tezkor tugmalar uchun funksiya - TO'G'IRLANGAN
+  const handleQuickAmount = (amount: number) => {
+    if (activePaymentMethod) {
+      const currentAmount = paymentAmounts[activePaymentMethod] || 0;
+      const newAmount = currentAmount + amount;
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [activePaymentMethod]: newAmount,
+      }));
+      setTouchedMethods((prev) => ({
+        ...prev,
+        [activePaymentMethod]: true,
+      }));
+    }
+  };
+  // To'lov ma'lumotlarini reset qilish - yangi funksiya
+  const resetPaymentAmounts = () => {
+    const resetAmounts: { [key: string]: number } = {};
+    paymentMethods.forEach((method) => {
+      resetAmounts[method.id] = 0;
+    });
+    setPaymentAmounts(resetAmounts);
+    setTouchedMethods({});
+  };
+
+  // Numberpad funksiyalari - TO'G'IRLANGAN
+  // handleNumberpadClick funksiyasini to'g'rilash
+  const handleNumberpadClick = (value: string) => {
+    if (!activePaymentMethod) return;
+
+    let currentAmount = paymentAmounts[activePaymentMethod] || 0;
+    let currentString = currentAmount === 0 ? "" : currentAmount.toString();
+
+    if (value === "⌫") {
+      // Backspace - oxirgi belgini o'chirish
+      if (currentString.length === 0) return;
+
+      const newString = currentString.slice(0, -1);
+      if (newString === "" || newString === "0") {
+        setPaymentAmounts((prev) => ({
+          ...prev,
+          [activePaymentMethod]: 0,
+        }));
+      } else {
+        const newAmount = parseFloat(newString);
+        setPaymentAmounts((prev) => ({
+          ...prev,
+          [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
+        }));
+      }
+    } else if (value === "C") {
+      // Clear
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [activePaymentMethod]: 0,
+      }));
+    } else if (value === ".") {
+      // Nuqta qo'shish - faqat bir marta
+      if (!currentString.includes(".")) {
+        const newString = currentString === "" ? "0." : currentString + ".";
+        setPaymentAmounts((prev) => ({
+          ...prev,
+          [activePaymentMethod]: parseFloat(newString) || 0,
+        }));
+      }
+    } else {
+      // Raqam qo'shish
+      if (currentString.includes(".")) {
+        // Agar nuqta bor bo'lsa, faqat 2 ta raqamgacha ruxsat berish
+        const decimalParts = currentString.split(".");
+        if (decimalParts[1].length < 2) {
+          const newString = currentString + value;
+          const newAmount = parseFloat(newString);
+          setPaymentAmounts((prev) => ({
+            ...prev,
+            [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
+          }));
+        }
+      } else {
+        // Butun qismga raqam qo'shish
+        const newString = currentString === "" ? value : currentString + value;
+        const newAmount = parseFloat(newString);
+        setPaymentAmounts((prev) => ({
+          ...prev,
+          [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
+        }));
+      }
+    }
+  };
+
+  // Validate tugmasi muammosini to'g'rilash
+  const handleValidatePayment = () => {
+    if (!total || total === 0) {
+      showAlert("error", "Empty Cart", "Please add items to cart first");
+      return;
+    }
+
+    // Hech qanday to'lov kiritilmaganligini tekshirish
+    const hasAnyPayment = Object.values(paymentAmounts).some(
+      (amount) => amount > 0
+    );
+    if (!hasAnyPayment) {
+      showAlert("error", "No Payment", "Please enter payment amount");
+      return;
+    }
+
+    // Qarzga savdo tekshiruvi - customer tanlanmagan bo'lsa
+    if (totalPaid < total && !selectedCustomer) {
+      showAlert(
+        "error",
+        "Customer Required",
+        "Please select a customer for credit sales when payment is less than total amount"
+      );
+      return;
+    }
+
+    // Qarzga savdo tasdiqlash
+    if (totalPaid < total && selectedCustomer) {
+      setShowCreditConfirmation(true);
+      return;
+    }
+
+    // Normal to'lovni davom ettirish
+    processPayment();
+  };
+
+  // Qarzga savdoni tasdiqlash
+  const confirmCreditSale = () => {
+    setShowCreditConfirmation(false);
+    setIsCreditSale(true);
+    processPayment();
+  };
+  // To'lovni amalga oshirish
+  const processPayment = async () => {
+    try {
+      setAmountPaid(totalPaid.toFixed(2));
+      await processSale();
+    } catch (error) {
+      console.error("Payment processing error:", error);
+      showAlert("error", "Payment Error", "Failed to process payment");
+    }
+  };
+
+  // Change hisoblash
+
+  // Faol to'lov usuli nomini olish
+  const getActivePaymentMethodName = () => {
+    const method = paymentMethods.find((m) => m.id === activePaymentMethod);
+    return method ? method.name : "";
+  };
 
   // Filter products
   const filteredProducts = products.filter((product) => {
@@ -915,34 +1172,40 @@ export default function POSPage() {
       product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+  // Print qilish funksiyasini to'g'rilash
   const handlePrintReceipt = () => {
-    // Show the hidden print receipt
+    if (!lastSale) return;
+
     const printElement = document.getElementById("print-receipt");
     if (printElement) {
-      // Create a new window for printing
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         console.error("Failed to open print window");
+        showAlert("error", "Print Error", "Failed to open print window");
         return;
       }
+
+      // To'liq chek HTML ni yaratish
       printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Receipt #${lastSale.receiptNumber}</title>
           <style>
             body { 
-              font-family: Arial, sans-serif; 
+              font-family: 'Courier New', monospace; 
               margin: 0; 
-              padding: 20px;
+              padding: 15px;
               font-size: 14px;
+              line-height: 1.3;
             }
             .receipt-container { 
-              max-width: 300px; 
+              max-width: 280px; 
               margin: 0 auto; 
             }
             .text-center { text-align: center; }
-            .border-t { border-top: 1px solid #000; }
-            .border-b { border-bottom: 1px solid #000; }
+            .border-t { border-top: 1px dashed #000; }
+            .border-b { border-bottom: 1px dashed #000; }
             .flex { display: flex; }
             .justify-between { justify-content: space-between; }
             .font-bold { font-weight: bold; }
@@ -954,27 +1217,143 @@ export default function POSPage() {
             .mt-4 { margin-top: 16px; }
             .mt-6 { margin-top: 24px; }
             .space-y-1 > * + * { margin-top: 4px; }
+            .w-full { width: 100%; }
+            .credit-notice { 
+              background: #fff3cd; 
+              border: 1px solid #ffeaa7; 
+              padding: 8px; 
+              margin: 10px 0;
+              border-radius: 4px;
+            }
           </style>
         </head>
         <body>
           <div class="receipt-container">
-            ${printElement.innerHTML}
+            <div class="text-center">
+              <h2 class="font-bold text-lg">${
+                company?.title || "Store Name"
+              }</h2>
+              <p class="text-sm">Receipt #${lastSale.receiptNumber}</p>
+              <p class="text-xs">${lastSale.timestamp.toLocaleString()}</p>
+              ${
+                selectedRegister
+                  ? `<p class="text-xs">Register: ${selectedRegister.title}</p>`
+                  : ""
+              }
+            </div>
+            
+            <div class="border-t border-b py-2 my-2">
+              ${lastSale.items
+                .map(
+                  (item: any) => `
+                <div class="flex justify-between text-sm py-1">
+                  <div class="flex-1">
+                    <div>${item.quantity}x ${item.name}</div>
+                    <div class="text-xs">@ $${item.unitPrice.toFixed(2)}</div>
+                  </div>
+                  <span class="font-bold">$${item.total.toFixed(2)}</span>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span>Subtotal:</span>
+                <span>$${lastSale.subtotal.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between font-bold border-t border-gray-400 pt-1">
+                <span>Total:</span>
+                <span>$${lastSale.total.toFixed(2)}</span>
+              </div>
+              
+              ${Object.entries(lastSale.paymentAmounts || {})
+                .filter(([_, amount]) => (Number(amount) || 0) > 0)
+                .map(([methodId, amount]) => {
+                  const method = paymentMethods.find((m) => m.id === methodId);
+                  return `
+                    <div class="flex justify-between text-xs">
+                      <span>${method?.name || "Payment"}:</span>
+                      <span>$${(Number(amount) || 0).toFixed(2)}</span>
+                    </div>
+                  `;
+                })
+                .join("")}
+              
+              <div class="flex justify-between font-bold border-t border-gray-400 pt-1">
+                <span>Total Paid:</span>
+                <span>$${lastSale.totalPaid.toFixed(2)}</span>
+              </div>
+              
+              ${
+                lastSale.change > 0
+                  ? `
+                <div class="flex justify-between text-green-600 font-bold">
+                  <span>Change:</span>
+                  <span>$${lastSale.change.toFixed(2)}</span>
+                </div>
+              `
+                  : ""
+              }
+              
+              ${
+                lastSale.amountDue > 0
+                  ? `
+                <div class="flex justify-between text-red-600 font-bold">
+                  <span>Amount Due:</span>
+                  <span>$${lastSale.amountDue.toFixed(2)}</span>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+
+            ${
+              lastSale.customer
+                ? `
+              <div class="mt-4 pt-2 border-t border-gray-400">
+                <p class="text-xs">Customer: ${lastSale.customer.name}</p>
+                ${
+                  lastSale.customer.phone
+                    ? `<p class="text-xs">Phone: ${lastSale.customer.phone}</p>`
+                    : ""
+                }
+              </div>
+            `
+                : ""
+            }
+
+            ${
+              lastSale.isCredit
+                ? `
+              <div class="credit-notice text-center mt-4">
+                <p class="font-bold text-sm">CREDIT SALE</p>
+                <p class="text-xs">Balance: $${lastSale.amountDue.toFixed(
+                  2
+                )}</p>
+              </div>
+            `
+                : ""
+            }
+
+            <div class="text-center mt-6 text-xs">
+              <p>Thank you for your business!</p>
+            </div>
           </div>
         </body>
       </html>
     `);
+
       printWindow.document.close();
 
-      // Wait for content to load then print
-      if (printWindow) {
-        printWindow.onload = function () {
-          printWindow?.focus();
-          printWindow?.print();
-          printWindow.onafterprint = function () {
-            printWindow?.close();
-          };
+      // Print va yopish
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.onafterprint = () => {
+          printWindow.close();
         };
-      }
+      }, 500);
     }
   };
 
@@ -1447,18 +1826,7 @@ export default function POSPage() {
                 </div>
 
                 {/* Right side actions */}
-                <div className="flex items-center space-x-3">
-                  {/* Customer Button */}
-                  <button
-                    onClick={() => setShowCustomerModal(true)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="font-medium">
-                      {selectedCustomer?.name || "No Customer"}
-                    </span>
-                  </button>
-                </div>
+                <div className="flex items-center space-x-3"></div>
               </div>
 
               {/* Search and Categories - Desktop */}
@@ -1914,19 +2282,7 @@ export default function POSPage() {
               {cart.length > 0 && (
                 <div className="border-t bg-white p-3 lg:p-4 sticky bottom-0">
                   <div className="space-y-1 lg:space-y-2 text-xs lg:text-sm mb-3 lg:mb-4">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Subtotal:</span>
-                      <span className="font-semibold">
-                        ${subtotal.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>Tax (8%):</span>
-                      <span className="font-semibold">
-                        ${taxAmount.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between font-bold text-base lg:text-lg pt-2 border-t border-gray-300 text-gray-900">
+                    <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total:</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
@@ -1959,10 +2315,7 @@ export default function POSPage() {
                       Clear
                     </button>
                     <button
-                      onClick={() => {
-                        setShowPayment(true);
-                        setIsCartOpen(false);
-                      }}
+                      onClick={handleOpenPayment}
                       className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 text-xs lg:text-sm"
                     >
                       Checkout
@@ -2151,123 +2504,417 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Payment Modal */}
       {showPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6 text-gray-900">Payment</h3>
-
-            <div className="mb-6 p-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white">
-              <p className="text-sm opacity-90 mb-1">Total Amount</p>
-              <p className="text-4xl font-bold">${total.toFixed(2)}</p>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                Payment Method
-              </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
-              >
+        <div
+          className="fixed inset-0 bg-white z-[99] flex flex-col"
+          style={{ marginTop: "60px", overflowY: "auto" }}
+        >
+          <div
+            className="flex flex-1 overflow-hidden"
+            style={{ height: "calc(100vh - 80px)" }}
+          >
+            {/* Left Panel - Calculator */}
+            <div className="flex-1 bg-gray-100 p-6 flex flex-col">
+              {/* Payment Method Selection */}
+              <div className="grid grid-cols-3 gap-2 mb-6">
                 {paymentMethods.map((method) => (
-                  <option key={method.id} value={method.id}>
+                  <button
+                    key={method.id}
+                    onClick={() => {
+                      setActivePaymentMethod(method.id);
+                      setNumberpadFor(method.id);
+                    }}
+                    className={`p-3 rounded-lg font-semibold border-2 transition-colors ${
+                      activePaymentMethod === method.id
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
+                    }`}
+                  >
                     {method.name}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </div>
+              </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                Amount Paid
-              </label>
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={amountPaid || total.toFixed(2)} // Avtomatik total qiymati
-                    onChange={(e) => setAmountPaid(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-lg"
-                    placeholder={total.toFixed(2)} // Placeholder sifatida ham
-                  />
+              {/* Quick Amount Buttons */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[10, 20, 50].map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => handleQuickAmount(amount)}
+                    className="bg-blue-100 text-blue-700 rounded-lg p-4 font-bold text-lg hover:bg-blue-200 transition-colors"
+                  >
+                    +{amount}
+                  </button>
+                ))}
+              </div>
+
+              {/* Numberpad Display */}
+              <div className="bg-white rounded-xl p-4 mb-4 border-2 border-gray-300">
+                <div className="text-sm text-gray-500 mb-1">
+                  {getActivePaymentMethodName()}
                 </div>
-                <button
-                  onClick={openAmountPaidPad}
-                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  <Calculator className="h-6 w-6 text-gray-600" />
-                </button>
-              </div>
-
-              {/* Avtomatik to'lov variantlari */}
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                <button
-                  onClick={() => setAmountPaid(total.toFixed(2))}
-                  className="py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200 transition-colors text-sm"
-                >
-                  To'liq to'lov
-                </button>
-              </div>
-
-              {amountDue > 0 && (
-                <p className="text-red-600 text-sm font-semibold mt-2">
-                  Amount Due: ${amountDue.toFixed(2)}
-                </p>
-              )}
-              {parseFloat(amountPaid || total.toFixed(2)) > total && (
-                <p className="text-green-600 text-sm font-semibold mt-2">
-                  Change: $
-                  {(parseFloat(amountPaid || total.toFixed(2)) - total).toFixed(
-                    2
+                <div className="text-3xl font-mono text-right text-gray-900 font-bold">
+                  $
+                  {(paymentAmounts[activePaymentMethod] || 0).toLocaleString(
+                    "en-US",
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }
                   )}
-                </p>
-              )}
+                </div>
+              </div>
+
+              {/* Numberpad - Yangilangan */}
+              <div className="grid grid-cols-3 gap-3 flex-1">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0, "⌫"].map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => handleNumberpadClick(item.toString())}
+                    className={`rounded-xl p-4 text-xl font-bold transition-colors ${
+                      item === "⌫"
+                        ? "bg-orange-500 text-white hover:bg-orange-600"
+                        : item === "."
+                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300 border-2 border-gray-300"
+                        : "bg-white text-gray-900 hover:bg-gray-200 border-2 border-gray-300"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+                {/* Clear Button */}
+                <button
+                  onClick={() => handleNumberpadClick("C")}
+                  className="bg-red-500 text-white rounded-xl p-4 text-xl font-bold hover:bg-red-600 transition-colors"
+                >
+                  C
+                </button>
+                {/* Next Button */}
+                <button
+                  onClick={() => {
+                    const currentIndex = paymentMethods.findIndex(
+                      (m) => m.id === activePaymentMethod
+                    );
+                    const nextIndex =
+                      (currentIndex + 1) % paymentMethods.length;
+                    setActivePaymentMethod(paymentMethods[nextIndex].id);
+                    setNumberpadFor(paymentMethods[nextIndex].id);
+                  }}
+                  className="bg-green-600 text-white rounded-xl p-4 text-xl font-bold hover:bg-green-700 transition-colors"
+                >
+                  →
+                </button>
+              </div>
             </div>
 
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowPayment(false)}
-                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={processSale}
-                className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-lg"
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <Check className="w-5 h-5" />
-                  <span>Confirm Sale</span>
+            {/* Right Panel - Payment Summary */}
+            <div
+              className="flex-1 bg-white p-6 flex flex-col border-l"
+              style={{ overflowY: "auto" }}
+            >
+              {/* Customer Selection */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3 text-gray-900">
+                  Customer Account{" "}
+                  {!selectedCustomer && <span className="text-red-500">*</span>}
+                </h3>
+                <button
+                  onClick={handleOpenCustomerModalInPayment}
+                  className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
+                    selectedCustomer
+                      ? "border-blue-500 bg-blue-50 hover:border-blue-600"
+                      : "border-dashed border-gray-300 hover:border-blue-500"
+                  }`}
+                >
+                  {selectedCustomer ? (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-gray-900">
+                          {selectedCustomer.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {selectedCustomer.phone || selectedCustomer.email}
+                        </div>
+                      </div>
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-gray-500">
+                      <span>
+                        Select Customer{" "}
+                        {totalPaid < total && (
+                          <span className="text-red-500">
+                            (Required for credit)
+                          </span>
+                        )}
+                      </span>
+                      <User className="w-5 h-5" />
+                    </div>
+                  )}
+                </button>
+                {!selectedCustomer && totalPaid < total && (
+                  <p className="text-red-500 text-sm mt-2">
+                    Customer selection is required for credit sales
+                  </p>
+                )}
+              </div>
+
+              {/* Invoice Summary */}
+              <div className="mb-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-lg font-bold text-gray-900">
+                    <span>Total:</span>
+                    <span>${(total || 0).toFixed(2)}</span>
+                  </div>
                 </div>
-              </button>
+              </div>
+
+              {/* Payment Breakdown */}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-3 text-gray-900">
+                  Payment
+                </h3>
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => {
+                    const amount = paymentAmounts[method.id] || 0;
+                    if (amount === 0) return null;
+
+                    return (
+                      <div
+                        key={method.id}
+                        className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200"
+                      >
+                        <span className="font-semibold text-blue-900">
+                          {method.name}:
+                        </span>
+                        <span className="font-bold text-blue-900">
+                          ${(amount || 0).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {Object.values(paymentAmounts).every(
+                    (amount) => (amount || 0) === 0
+                  ) && (
+                    <div className="text-center py-4 text-gray-500">
+                      No payments entered
+                    </div>
+                  )}
+
+                  <div className="border-t border-gray-300 pt-3 space-y-2">
+                    <div className="flex justify-between text-lg font-semibold">
+                      <span className="text-gray-700">Total Paid:</span>
+                      <span className="text-blue-600">
+                        ${(totalPaid || 0).toFixed(2)}
+                      </span>
+                    </div>
+
+                    {amountDue > 0 ? (
+                      <div className="flex justify-between text-red-600 font-bold">
+                        <span>Amount Due:</span>
+                        <span>${(amountDue || 0).toFixed(2)}</span>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between text-green-600 font-bold">
+                        <span>Change:</span>
+                        <span>${(change || 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Qarzga savdo xabari */}
+                  {amountDue > 0 && selectedCustomer && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                      <div className="flex items-center">
+                        <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+                        <span className="text-yellow-800 font-semibold">
+                          Credit Sale: ${(amountDue || 0).toFixed(2)} will be
+                          added to customer's account
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mt-6">
+                <button
+                  onClick={() => setShowPayment(false)}
+                  className="px-16 py-6 bg-red-600 text-white rounded-xl font-semibold text-xl hover:bg-red-700 hover:scale-105 hover:shadow-xl transition-all duration-300"
+                >
+                  Back
+                </button>
+
+                <button
+                  onClick={handleValidatePayment}
+                  className={`px-16 py-6 rounded-xl font-semibold text-xl transition-all duration-300 shadow-lg ${
+                    totalPaid === 0 || (totalPaid < total && !selectedCustomer)
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700 hover:scale-105 hover:shadow-xl"
+                  }`}
+                  disabled={
+                    totalPaid === 0 || (totalPaid < total && !selectedCustomer)
+                  }
+                >
+                  {totalPaid < total && selectedCustomer
+                    ? "Credit Sale"
+                    : "Validate"}
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Qarzga savdo tasdiqlash modali */}
+          {showCreditConfirmation && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110] p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-yellow-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Confirm Credit Sale
+                  </h3>
+                  <p className="text-gray-600 mb-2">
+                    Customer will owe:{" "}
+                    <span className="font-bold text-red-600">
+                      ${(amountDue || 0).toFixed(2)}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Customer:{" "}
+                    <span className="font-semibold">
+                      {selectedCustomer?.name}
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    This amount will be added to customer's balance
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowCreditConfirmation(false)}
+                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmCreditSale}
+                    className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700"
+                  >
+                    Confirm Credit Sale
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Customer Modal */}
+          {showCustomerModalInPayment && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110] p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Select Customer
+                  </h3>
+                  <button onClick={() => setShowCustomerModalInPayment(false)}>
+                    <X className="h-6 w-6 text-gray-400 hover:text-gray-600" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 overflow-auto flex-1">
+                  {customers.length === 0 ? (
+                    <div className="text-center py-12">
+                      <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                      <p className="text-gray-500">No customers found</p>
+                    </div>
+                  ) : (
+                    customers.map((customer) => (
+                      <button
+                        key={customer.id}
+                        onClick={() => {
+                          setSelectedCustomer(customer);
+                          setShowCustomerModalInPayment(false);
+                        }}
+                        className={clsx(
+                          "w-full text-left p-4 rounded-xl border-2 transition-all",
+                          selectedCustomer?.id === customer.id
+                            ? "border-purple-600 bg-purple-50 shadow-md"
+                            : "border-gray-200 hover:border-purple-300 hover:bg-purple-50"
+                        )}
+                      >
+                        <div className="font-semibold text-gray-900">
+                          {customer.name}
+                        </div>
+                        {(customer.phone || customer.email) && (
+                          <div className="text-sm text-gray-500 mt-1 space-y-0.5">
+                            {customer.phone && <div>📞 {customer.phone}</div>}
+                            {customer.email && <div>✉️ {customer.email}</div>}
+                          </div>
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+
+                <div className="flex space-x-3 mt-6 pt-4 border-t">
+                  <button
+                    onClick={() => setShowCustomerModalInPayment(false)}
+                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium"
+                  >
+                    Close
+                  </button>
+                  {selectedCustomer && (
+                    <button
+                      onClick={() => {
+                        setSelectedCustomer(null);
+                        setShowCustomerModalInPayment(false);
+                      }}
+                      className="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700"
+                    >
+                      Remove Customer
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Receipt Modal */}
+      {/* Receipt Modal - YANGILANGAN */}
       {showReceipt && lastSale && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-          <div
-            className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl"
-            style={{ marginTop: "50px" }}
-          >
-            {/* Header - Fixed */}
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+            {/* Header */}
             <div className="p-6 border-b border-gray-200 bg-white">
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="h-8 w-8 text-green-600" />
+                <div
+                  className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                    lastSale.isCredit ? "bg-yellow-100" : "bg-green-100"
+                  }`}
+                >
+                  {lastSale.isCredit ? (
+                    <Clock className="h-8 w-8 text-yellow-600" />
+                  ) : (
+                    <Check className="h-8 w-8 text-green-600" />
+                  )}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Sale Completed!
+                  {lastSale.isCredit
+                    ? "Credit Sale Completed!"
+                    : "Sale Completed!"}
                 </h3>
                 <p className="text-gray-600 font-medium">
                   Receipt #{lastSale.receiptNumber}
                 </p>
+                {lastSale.isCredit && (
+                  <p className="text-yellow-600 font-semibold mt-1">
+                    Amount Due: ${lastSale.amountDue.toFixed(2)}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -2306,43 +2953,35 @@ export default function POSPage() {
                   ))}
                 </div>
 
-                <div className="border-t-2 border-gray-300 pt-4 space-y-2 text-sm">
-                  <div className="flex justify-between text-gray-700">
-                    <span>Subtotal</span>
-                    <span className="font-semibold">
-                      ${lastSale.subtotal.toFixed(2)}
-                    </span>
+                {/* Payment breakdown in receipt */}
+                <div className="border-t border-gray-300 pt-4 space-y-2 text-sm">
+                  {paymentMethods.map((method) => {
+                    const amount = lastSale.paymentAmounts[method.id] || 0;
+                    if (amount === 0) return null;
+
+                    return (
+                      <div
+                        key={method.id}
+                        className="flex justify-between text-gray-700"
+                      >
+                        <span>{method.name}:</span>
+                        <span className="font-semibold">
+                          ${amount.toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300 text-gray-900">
+                    <span>Total Paid:</span>
+                    <span>${lastSale.totalPaid.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span>Tax (8%)</span>
-                    <span className="font-semibold">
-                      ${lastSale.taxAmount.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg pt-2 border-t-2 border-gray-300 text-gray-900">
-                    <span>Total</span>
-                    <span>${lastSale.total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-blue-600 font-semibold">
-                    <span>Paid</span>
-                    <span>${lastSale.amountPaid.toFixed(2)}</span>
-                  </div>
-                  {lastSale.amountDue > 0 && (
-                    <div className="flex justify-between text-red-600 font-semibold">
-                      <span>Amount Due</span>
-                      <span>${lastSale.amountDue.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {lastSale.amountPaid > lastSale.total && (
-                    <div className="flex justify-between text-green-600 font-semibold">
-                      <span>Change</span>
-                      <span>
-                        ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
-                      </span>
+                  {lastSale.change > 0 && (
+                    <div className="flex justify-between text-green-600 font-bold">
+                      <span>Change:</span>
+                      <span>${lastSale.change.toFixed(2)}</span>
                     </div>
                   )}
                 </div>
-
                 {lastSale.customer && (
                   <div className="mt-4 pt-4 border-t-2 border-gray-300">
                     <p className="text-xs text-gray-500 mb-1">Customer</p>
@@ -2356,10 +2995,29 @@ export default function POSPage() {
                     )}
                   </div>
                 )}
+                {/* Qarzga savdo ma'lumoti */}
+                {lastSale.isCredit && (
+                  <div className="mt-4 pt-4 border-t-2 border-yellow-300 bg-yellow-50 rounded-lg p-3">
+                    <div className="flex items-center justify-center mb-2">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+                      <span className="font-bold text-yellow-800">
+                        CREDIT SALE
+                      </span>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-yellow-700 font-semibold">
+                        Balance Due: ${lastSale.amountDue.toFixed(2)}
+                      </p>
+                      <p className="text-yellow-600 text-sm mt-1">
+                        Customer: {lastSale.customer?.name}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Fixed Footer */}
+            {/* Footer */}
             <div className="p-6 border-t border-gray-200 bg-white">
               <div className="flex space-x-3">
                 <button
@@ -2370,10 +3028,15 @@ export default function POSPage() {
                   <span>Print Receipt</span>
                 </button>
                 <button
-                  onClick={() => setShowReceipt(false)}
+                  onClick={() => {
+                    setShowReceipt(false);
+                    // Yangi savdoga tayyorlash
+                    setIsCreditSale(false);
+                    resetPaymentAmounts();
+                  }}
                   className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                 >
-                  Close
+                  New Sale
                 </button>
               </div>
             </div>
