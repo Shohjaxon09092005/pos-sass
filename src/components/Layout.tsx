@@ -261,7 +261,7 @@ export default function Layout() {
               <Menu className="h-6 w-6" />
             </button>
             <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-              Enterprise POS
+              OSSON POS
             </h1>
             <LanguageSelectorMobile />
           </div>
@@ -289,7 +289,7 @@ export default function Layout() {
                   <div className="absolute inset-0 blur-lg bg-blue-400/30 -z-10"></div>
                 </div>
                 <span className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                  Enterprise POS
+                  OSSON POS
                 </span>
               </div>
             )}
@@ -522,7 +522,7 @@ function SidebarContent({
           </div>
           <div>
             <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-              Enterprise
+              OSSON
             </span>
             <div className="text-xs font-medium text-slate-500 -mt-1">
               POS System

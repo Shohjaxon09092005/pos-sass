@@ -66,6 +66,45 @@ interface Subscription {
   updated_at: string;
 }
 
+interface Tenant {
+  id: number;
+  name: string;
+  domain: string;
+  seats: number;
+  companies: number;
+  orders: number;
+  registers: number;
+  created_at: string;
+  updated_at: string;
+  remain_seats: number;
+  remain_companies: number;
+  remain_orders: number;
+  remian_registers: number;
+}
+
+interface UserData {
+  email: string;
+  id: number;
+  username: string;
+  billing_role: string;
+  tenant: Tenant;
+  groups: string;
+  first_name: string;
+  last_name: string;
+  companies: Array<{
+    id: number;
+    title: string;
+    address: string;
+    phone: string;
+    email: string;
+    website: string;
+    allowed_users: number[];
+    created_at: string;
+    updated_at: string;
+  }>;
+  selected_company: number;
+}
+
 // Company tipini kengaytiramiz
 interface CompanyWithCounts {
   id: string;
@@ -91,6 +130,7 @@ export default function BillingPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [billingPlans, setBillingPlans] = useState<BillingPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -105,6 +145,26 @@ export default function BillingPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [methodFilter, setMethodFilter] = useState<string>('all');
+
+  // Fetch user data with tenant information
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/v1/users/me/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data: UserData = await response.json();
+        setUserData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
 
   // Company stats ni olish uchun funksiya
   const fetchCompanyStats = async () => {
@@ -243,38 +303,13 @@ export default function BillingPage() {
     }
   };
 
-  const deletePayment = async (paymentId: string) => {
-    if (!window.confirm('Are you sure you want to delete this payment?')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/api/v1/billing/payments/${paymentId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setPayments(payments.filter(payment => payment.id !== paymentId));
-        setError(null);
-      } else {
-        throw new Error('Failed to delete payment');
-      }
-    } catch (err) {
-      console.error('Error deleting payment:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete payment');
-    }
-  };
-
   // Load all data on component mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
         await Promise.all([
+          fetchUserData(),
           fetchInvoices(),
           fetchPayments(),
           fetchBillingPlans(),
@@ -300,6 +335,44 @@ export default function BillingPage() {
   const totalIncome = positivePayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
   const totalExpenses = negativePayments.reduce((sum, payment) => sum + Math.abs(parseFloat(payment.amount)), 0);
 
+  // Get usage data from tenant
+  const getUsageData = () => {
+    if (!userData?.tenant) {
+      return {
+        seats: { used: 0, total: 0, remaining: 0 },
+        companies: { used: 0, total: 0, remaining: 0 },
+        orders: { used: 0, total: 0, remaining: 0 },
+        registers: { used: 0, total: 0, remaining: 0 }
+      };
+    }
+
+    const { tenant } = userData;
+    return {
+      seats: { 
+        used: tenant.seats - tenant.remain_seats, 
+        total: tenant.seats, 
+        remaining: tenant.remain_seats 
+      },
+      companies: { 
+        used: tenant.companies - tenant.remain_companies, 
+        total: tenant.companies, 
+        remaining: tenant.remain_companies 
+      },
+      orders: { 
+        used: tenant.orders - tenant.remain_orders, 
+        total: tenant.orders, 
+        remaining: tenant.remain_orders 
+      },
+      registers: { 
+        used: tenant.registers - tenant.remian_registers, 
+        total: tenant.registers, 
+        remaining: tenant.remian_registers 
+      }
+    };
+  };
+
+  const usage = getUsageData();
+
   // Company usage limits based on current plan
   const getUsageLimits = () => {
     if (!currentSubscription || !company) {
@@ -321,7 +394,7 @@ export default function BillingPage() {
     };
   };
 
-  const usage = getUsageLimits();
+  const planUsage = getUsageLimits();
 
   const handlePlanSelection = (plan: BillingPlan) => {
     if (currentSubscription && currentSubscription.plan === plan.id) {
@@ -505,65 +578,6 @@ export default function BillingPage() {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Stats Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-blue-600">Total Revenue</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${totalRevenue.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="bg-blue-500 p-3 rounded-lg">
-                      <DollarSign className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-orange-600">Outstanding Balance</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${outstandingBalance.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="bg-orange-500 p-3 rounded-lg">
-                      <FileText className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-green-600">Total Income</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${totalIncome.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="bg-green-500 p-3 rounded-lg">
-                      <Download className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200 p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-red-600">Total Expenses</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${totalExpenses.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="bg-red-500 p-3 rounded-lg">
-                      <CreditCard className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Current Plan Section */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -590,25 +604,28 @@ export default function BillingPage() {
                   )}
                 </div>
 
-                {currentPlan && currentSubscription && (
+                {userData?.tenant && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                          <Building className="h-4 w-4" />
-                          Companies
+                          <Users className="h-4 w-4" />
+                          Seats
                         </span>
                         <span className="text-xs text-gray-500">
-                          {usage.companies.used} / {formatLimit(usage.companies.limit)}
+                          {usage.seats.used} / {usage.seats.total}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-blue-500 h-2 rounded-full transition-all"
                           style={{ 
-                            width: `${getUsagePercentage(usage.companies.used, usage.companies.limit)}%` 
+                            width: `${getUsagePercentage(usage.seats.used, usage.seats.total)}%` 
                           }}
                         />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {usage.seats.remaining} remaining
                       </div>
                     </div>
 
@@ -616,19 +633,45 @@ export default function BillingPage() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
                           <Building className="h-4 w-4" />
-                          Branches
+                          Companies
                         </span>
                         <span className="text-xs text-gray-500">
-                          {usage.branches.used} / {formatLimit(usage.branches.limit)}
+                          {usage.companies.used} / {usage.companies.total}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-green-500 h-2 rounded-full transition-all"
                           style={{ 
-                            width: `${getUsagePercentage(usage.branches.used, usage.branches.limit)}%` 
+                            width: `${getUsagePercentage(usage.companies.used, usage.companies.total)}%` 
                           }}
                         />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {usage.companies.remaining} remaining
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                          <FileText className="h-4 w-4" />
+                          Orders
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {usage.orders.used} / {usage.orders.total}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-purple-500 h-2 rounded-full transition-all"
+                          style={{ 
+                            width: `${getUsagePercentage(usage.orders.used, usage.orders.total)}%` 
+                          }}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {usage.orders.remaining} remaining
                       </div>
                     </div>
 
@@ -639,36 +682,19 @@ export default function BillingPage() {
                           Registers
                         </span>
                         <span className="text-xs text-gray-500">
-                          {usage.registers.used} / {formatLimit(usage.registers.limit)}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-purple-500 h-2 rounded-full transition-all"
-                          style={{ 
-                            width: `${getUsagePercentage(usage.registers.used, usage.registers.limit)}%` 
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          Employees
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {usage.employees.used} / {formatLimit(usage.employees.limit)}
+                          {usage.registers.used} / {usage.registers.total}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-orange-500 h-2 rounded-full transition-all"
                           style={{ 
-                            width: `${getUsagePercentage(usage.employees.used, usage.employees.limit)}%` 
+                            width: `${getUsagePercentage(usage.registers.used, usage.registers.total)}%` 
                           }}
                         />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {usage.registers.remaining} remaining
                       </div>
                     </div>
                   </div>
@@ -899,7 +925,6 @@ export default function BillingPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -923,14 +948,6 @@ export default function BillingPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="text-sm text-gray-900">{format(new Date(payment.created_at), 'MMM dd, yyyy HH:mm')}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <button 
-                              onClick={() => deletePayment(payment.id)}
-                              className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1031,7 +1048,7 @@ export default function BillingPage() {
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                             <Building className="h-4 w-4" />
-                            Branches
+                            Companies
                           </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
                         </div>
@@ -1044,10 +1061,10 @@ export default function BillingPage() {
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Employees
+                            <FileText className="h-4 w-4" />
+                            Orders
                           </span>
-                          <span className="text-lg font-bold text-gray-900">{plan.seats_included * 5}</span>
+                          <span className="text-lg font-bold text-gray-900">{plan.seats_included * 100}</span>
                         </div>
                       </div>
 

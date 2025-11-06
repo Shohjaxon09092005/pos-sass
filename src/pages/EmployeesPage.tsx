@@ -72,7 +72,7 @@ export default function EmployeesPage() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/users/`, {
+      const response = await fetch(`${API_BASE_URL}/users-list/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
