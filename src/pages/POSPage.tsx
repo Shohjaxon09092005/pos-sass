@@ -990,7 +990,7 @@ export default function POSPage() {
   // To'lov usuli tanlanganda avtomatik qolgan summani yozish
   useEffect(() => {
     if (activePaymentMethod && !touchedMethods[activePaymentMethod]) {
-      const alreadyPaid = (Object.entries(paymentAmounts) as [string, number][])
+      const alreadyPaid = Object.entries(paymentAmounts)
         .filter(([methodId]) => methodId !== activePaymentMethod)
         .reduce((sum, [_, amount]) => sum + (amount || 0), 0);
 
@@ -1000,12 +1000,13 @@ export default function POSPage() {
         ...prev,
         [activePaymentMethod]: remaining,
       }));
+
       setTouchedMethods((prev) => ({
         ...prev,
         [activePaymentMethod]: true,
       }));
     }
-  }, [activePaymentMethod, total, touchedMethods]);
+  }, [activePaymentMethod, total]);
 
   // Customer modalini payment ichida ochish
   const handleOpenCustomerModalInPayment = () => {
@@ -1037,8 +1038,6 @@ export default function POSPage() {
     setTouchedMethods({});
   };
 
-  // Numberpad funksiyalari - TO'G'IRLANGAN
-  // handleNumberpadClick funksiyasini to'g'rilash
   const handleNumberpadClick = (value: string) => {
     if (!activePaymentMethod) return;
 
@@ -1046,22 +1045,13 @@ export default function POSPage() {
     let currentString = currentAmount === 0 ? "" : currentAmount.toString();
 
     if (value === "⌫") {
-      // Backspace - oxirgi belgini o'chirish
-      if (currentString.length === 0) return;
-
+      // Backspace
       const newString = currentString.slice(0, -1);
-      if (newString === "" || newString === "0") {
-        setPaymentAmounts((prev) => ({
-          ...prev,
-          [activePaymentMethod]: 0,
-        }));
-      } else {
-        const newAmount = parseFloat(newString);
-        setPaymentAmounts((prev) => ({
-          ...prev,
-          [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
-        }));
-      }
+      const newAmount = parseFloat(newString.replace(",", "."));
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
+      }));
     } else if (value === "C") {
       // Clear
       setPaymentAmounts((prev) => ({
@@ -1069,36 +1059,22 @@ export default function POSPage() {
         [activePaymentMethod]: 0,
       }));
     } else if (value === ".") {
-      // Nuqta qo'shish - faqat bir marta
+      // faqat bitta nuqta
       if (!currentString.includes(".")) {
-        const newString = currentString === "" ? "0." : currentString + ".";
+        currentString = currentString === "" ? "0." : currentString + ".";
         setPaymentAmounts((prev) => ({
           ...prev,
-          [activePaymentMethod]: parseFloat(newString) || 0,
+          [activePaymentMethod]: parseFloat(currentString) || 0,
         }));
       }
     } else {
-      // Raqam qo'shish
-      if (currentString.includes(".")) {
-        // Agar nuqta bor bo'lsa, faqat 2 ta raqamgacha ruxsat berish
-        const decimalParts = currentString.split(".");
-        if (decimalParts[1].length < 2) {
-          const newString = currentString + value;
-          const newAmount = parseFloat(newString);
-          setPaymentAmounts((prev) => ({
-            ...prev,
-            [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
-          }));
-        }
-      } else {
-        // Butun qismga raqam qo'shish
-        const newString = currentString === "" ? value : currentString + value;
-        const newAmount = parseFloat(newString);
-        setPaymentAmounts((prev) => ({
-          ...prev,
-          [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
-        }));
-      }
+      // raqam qo‘shish
+      const newString = currentString + value;
+      const newAmount = parseFloat(newString.replace(",", "."));
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [activePaymentMethod]: isNaN(newAmount) ? 0 : newAmount,
+      }));
     }
   };
 
@@ -2506,12 +2482,12 @@ export default function POSPage() {
 
       {showPayment && (
         <div
-          className="fixed inset-0 bg-white z-[99] flex flex-col"
-          style={{ marginTop: "60px", overflowY: "auto" }}
+          className="fixed inset-0 bg-white z-[99] flex flex-col overflow-y-auto"
+          style={{ marginTop: "60px" }}
         >
           <div
-            className="flex flex-1 overflow-hidden"
-            style={{ height: "calc(100vh - 80px)" }}
+            className="flex flex-1 overflow-y-auto flex-col md:flex-row"
+            style={{ maxHeight: "calc(100vh - 120px)", overflowY: "auto" }}
           >
             {/* Left Panel - Calculator */}
             <div className="flex-1 bg-gray-100 p-6 flex flex-col">
@@ -2566,7 +2542,7 @@ export default function POSPage() {
               </div>
 
               {/* Numberpad - Yangilangan */}
-              <div className="grid grid-cols-3 gap-3 flex-1">
+              <div className="grid grid-cols-4 gap-3 flex-1">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0, "⌫"].map((item) => (
                   <button
                     key={item}
@@ -2687,9 +2663,27 @@ export default function POSPage() {
                         <span className="font-semibold text-blue-900">
                           {method.name}:
                         </span>
-                        <span className="font-bold text-blue-900">
-                          ${(amount || 0).toFixed(2)}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-blue-900">
+                            ${(amount || 0).toFixed(2)}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setPaymentAmounts((prev) => ({
+                                ...prev,
+                                [method.id]: 0,
+                              }));
+                              setTouchedMethods((prev) => {
+                                const updated = { ...prev };
+                                delete updated[method.id];
+                                return updated;
+                              });
+                            }}
+                            className="text-red-500 hover:text-red-700 font-bold ml-2"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -3143,7 +3137,7 @@ export default function POSPage() {
               {numberpadValue || "0"}
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-4 gap-3 mb-4">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <button
                   key={num}
