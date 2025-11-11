@@ -1440,7 +1440,7 @@ export default function POSPage() {
                           Total Sales
                         </span>
                         <span className="text-lg font-bold text-green-900">
-                          ${session.total_sales.toFixed(2)}
+                          {session.total_sales.toFixed(2)} UZS
                         </span>
                       </div>
                     </div>
@@ -1545,93 +1545,44 @@ export default function POSPage() {
           <div className="container mx-auto px-3 lg:px-4 py-3">
             {/* Mobil Header */}
             <div className="lg:hidden">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between px-3 py-2">
+                <div className="flex items-center space-x-2 flex-1">
                   <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     className="p-2 rounded-lg bg-gray-100"
                   >
                     <Menu className="h-5 w-5" />
                   </button>
-                  <h1 className="text-lg font-bold text-gray-900">
+                  <h1 className="text-lg font-bold text-gray-900 truncate">
                     POS Terminal
                   </h1>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  {/* Customer Button - Mobil */}
+                  {/* Customer Button */}
                   <button
                     onClick={() => setShowCustomerModal(true)}
-                    className="flex items-center space-x-1 px-2 py-1.5 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors text-xs"
+                    className="flex items-center space-x-1 px-2 py-1.5 bg-purple-50 text-purple-700 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors text-xs max-w-[80px]"
                   >
-                    <User className="h-3 w-3" />
-                    <span className="max-w-[60px] truncate">
-                      {selectedCustomer?.name || "No Customer"}
+                    <User className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">
+                      {selectedCustomer?.name || "Customer"}
                     </span>
                   </button>
 
-                  {/* Cart Button - Mobil */}
+                  {/* Cart Button */}
                   <button
                     onClick={() => setIsCartOpen(true)}
-                    className="flex items-center space-x-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg relative hover:bg-blue-700 transition-colors"
+                    className="flex items-center space-x-1 bg-blue-600 text-white px-2 py-1.5 rounded-lg relative hover:bg-blue-700 transition-colors text-xs"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    <span className="font-bold text-sm">{cart.length}</span>
-                    {cart.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center font-bold">
-                        {cart.length}
-                      </span>
-                    )}
+                    <span className="font-bold">{cart.length}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Mobil Session Info */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => {
-                      setShowRegisterSelection(true);
-                      setActiveSession(null);
-                      setSelectedRegister(null);
-                    }}
-                    className="flex items-center space-x-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-xs"
-                  >
-                    <Store className="h-3 w-3" />
-                    <span className="max-w-[80px] truncate">
-                      {selectedRegister?.title}
-                    </span>
-                  </button>
-
-                  {activeSession ? (
-                    <div className="flex items-center space-x-1 bg-green-50 text-green-700 px-2 py-1 rounded-lg border border-green-200 text-xs">
-                      <TrendingUp className="h-3 w-3" />
-                      <span className="font-bold">
-                        ${(activeSession.total_sales || 0).toFixed(2)}
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setShowSessionModal(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-lg font-medium transition-colors text-xs"
-                    >
-                      Open Session
-                    </button>
-                  )}
-                </div>
-
-                {activeSession && (
-                  <button
-                    onClick={closeSession}
-                    className="text-red-600 hover:text-red-800 text-xs font-medium"
-                  >
-                    Close
-                  </button>
-                )}
-              </div>
-
-              {/* Search and Categories - Mobil */}
-              <div className="space-y-2">
+              {/* Search and Categories - Mobile */}
+              <div className="px-3 pb-2 space-y-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <input
@@ -1642,7 +1593,6 @@ export default function POSPage() {
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   />
                 </div>
-
                 {/* Category Dropdown - Mobil */}
                 <div className="relative">
                   <button
@@ -1769,7 +1719,7 @@ export default function POSPage() {
                       <div className="flex items-center space-x-2">
                         <TrendingUp className="h-4 w-4" />
                         <span className="font-bold">
-                          ${(activeSession.total_sales || 0).toFixed(2)}
+                          {(activeSession.total_sales || 0).toFixed(2)} UZS
                         </span>
                       </div>
                       <button
@@ -1985,7 +1935,7 @@ export default function POSPage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
                   {filteredProducts.map((product) => {
                     const quantityInCart = getProductQuantityInCart(product.id);
                     const stockQuantity = product.stockQuantity || 0;
@@ -2000,38 +1950,38 @@ export default function POSPage() {
                         }
                         disabled={isOutOfStock || !canAddMore}
                         className={clsx(
-                          "bg-white p-3 lg:p-4 rounded-xl shadow-sm border-2 transition-all text-left relative group flex flex-col h-full",
+                          "product-card bg-white p-2 lg:p-3 rounded-lg shadow-sm border border-gray-200 transition-all text-left relative group flex flex-col h-full w-full",
                           isOutOfStock
-                            ? "border-gray-200 opacity-50 cursor-not-allowed"
+                            ? "opacity-50 cursor-not-allowed"
                             : canAddMore
-                            ? "border-gray-200 hover:border-blue-500 hover:shadow-lg hover:scale-[1.02]"
+                            ? "hover:border-blue-500 hover:shadow-md hover:scale-[1.02]"
                             : "border-orange-300 bg-orange-50"
                         )}
                       >
                         {quantityInCart > 0 && (
-                          <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg z-10">
+                          <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-lg z-10">
                             {quantityInCart}
                           </div>
                         )}
 
                         {isOutOfStock && (
-                          <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-xl flex items-center justify-center z-20">
-                            <span className="bg-red-500 text-white px-3 py-1.5 rounded text-sm font-bold shadow-lg">
+                          <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-lg flex items-center justify-center z-20">
+                            <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
                               Out of Stock
                             </span>
                           </div>
                         )}
 
                         {!isOutOfStock && !canAddMore && (
-                          <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-xl flex items-center justify-center z-20">
-                            <span className="bg-white text-orange-600 px-3 py-1.5 rounded text-sm font-bold shadow-lg">
+                          <div className="absolute inset-0 bg-orange-500 bg-opacity-90 rounded-lg flex items-center justify-center z-20">
+                            <span className="bg-white text-orange-600 px-2 py-1 rounded text-xs font-bold">
                               Max: {stockQuantity}
                             </span>
                           </div>
                         )}
 
                         {/* Product Image */}
-                        <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                        <div className="product-image bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
                           {product.image ? (
                             <img
                               src={product.image}
@@ -2039,32 +1989,32 @@ export default function POSPage() {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <Package className="h-8 w-8 text-gray-400" />
+                            <Package className="h-6 w-6 text-gray-400" />
                           )}
                         </div>
 
                         {/* Product Info */}
-                        <div className="flex-1 flex flex-col">
-                          <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2 leading-tight min-h-[2.5rem]">
+                        <div className="flex-1 flex flex-col min-h-0">
+                          <h3 className="product-title font-medium text-gray-900 mb-1">
                             {product.title}
                           </h3>
 
                           {product.sku && (
-                            <p className="text-xs text-gray-500 mb-2 font-mono truncate">
-                              SKU: {product.sku}
+                            <p className="text-[10px] text-gray-500 mb-1 font-mono truncate">
+                              {product.sku}
                             </p>
                           )}
 
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-base font-bold text-gray-900">
-                              ${product.price.toFixed(2)}
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="product-price font-bold text-gray-900">
+                              {product.price.toFixed(2)} UZS
                             </p>
 
                             <div className="flex items-center space-x-1 text-xs">
-                              <Package className="h-3.5 w-3.5 text-gray-400" />
+                              <Package className="h-3 w-3 text-gray-400" />
                               <span
                                 className={clsx(
-                                  "font-semibold",
+                                  "font-semibold text-xs",
                                   stockQuantity === 0
                                     ? "text-red-600"
                                     : stockQuantity < 10
@@ -2079,10 +2029,10 @@ export default function POSPage() {
 
                           {/* Stock Progress Bar */}
                           {!isOutOfStock && (
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                            <div className="w-full bg-gray-200 rounded-full h-1 mb-1">
                               <div
                                 className={clsx(
-                                  "h-1.5 rounded-full transition-all",
+                                  "h-1 rounded-full transition-all",
                                   stockQuantity === 0
                                     ? "bg-red-500"
                                     : stockQuantity < 10
@@ -2103,18 +2053,16 @@ export default function POSPage() {
 
                           {/* Add to Cart Button */}
                           {!isOutOfStock && canAddMore && (
-                            <div className="mt-auto pt-2">
+                            <div className="mt-auto pt-1">
                               <div
                                 className={clsx(
-                                  "w-full py-2 text-center rounded-lg font-medium text-sm transition-colors",
+                                  "w-full py-1.5 text-center rounded text-xs font-medium transition-colors",
                                   quantityInCart > 0
                                     ? "bg-blue-100 text-blue-700 border border-blue-200"
                                     : "bg-blue-600 text-white hover:bg-blue-700"
                                 )}
                               >
-                                {quantityInCart > 0
-                                  ? "Added to Cart"
-                                  : "Add to Cart"}
+                                {quantityInCart > 0 ? "Added" : "Add to Cart"}
                               </div>
                             </div>
                           )}
@@ -2129,27 +2077,27 @@ export default function POSPage() {
             {/* Cart Sidebar */}
             <div
               className={clsx(
-                // Mobil: fixed va header dan pastda, desktop: relative
                 "lg:relative bg-white shadow-2xl border-l border-gray-200 flex flex-col h-full z-50 transition-transform duration-300 lg:transition-none",
                 isCartOpen
-                  ? "fixed inset-0 top-[80px] lg:top-0 lg:translate-x-0"
-                  : "fixed inset-0 top-[0px] translate-x-full lg:relative lg:translate-x-0",
-                "lg:w-96 lg:block"
+                  ? "fixed inset-0 top-0 lg:top-0 lg:translate-x-0"
+                  : "fixed inset-0 top-0 translate-x-full lg:relative lg:translate-x-0",
+                "lg:w-96 w-full max-w-full"
               )}
             >
-              <div className="p-3 lg:p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-                <h2 className="text-lg lg:text-xl font-bold">
+              {/* Cart header */}
+              <div className="p-3 sm:p-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                <h2 className="text-lg sm:text-xl font-bold">
                   Cart ({cart.length})
                 </h2>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="lg:opacity-70 hover:opacity-100 transition-opacity"
+                  className="lg:opacity-70 hover:opacity-100 transition-opacity p-1"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-auto p-3 lg:p-4">
+              <div className="flex-1 overflow-auto p-2 sm:p-3">
                 {cart.length === 0 ? (
                   <div className="text-center py-12 lg:py-16">
                     <ShoppingCart className="h-12 w-12 lg:h-16 lg:w-16 text-gray-300 mx-auto mb-4" />
@@ -2207,7 +2155,7 @@ export default function POSPage() {
                               onClick={() => openPricePad(item.id)}
                               className="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-700"
                             >
-                              ${item.unitPrice.toFixed(2)}
+                              {item.unitPrice.toFixed(2)} UZS
                               <Calculator className="h-3 w-3 ml-1" />
                             </button>
                           </div>
@@ -2244,7 +2192,7 @@ export default function POSPage() {
                               </button>
                             </div>
                             <span className="font-bold text-base lg:text-lg text-gray-900">
-                              ${item.total.toFixed(2)}
+                              {item.total.toFixed(2)} UZS
                             </span>
                           </div>
                         </div>
@@ -2260,7 +2208,7 @@ export default function POSPage() {
                   <div className="space-y-1 lg:space-y-2 text-xs lg:text-sm mb-3 lg:mb-4">
                     <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total:</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>{total.toFixed(2)} UZS</span>
                     </div>
                   </div>
 
@@ -2492,7 +2440,7 @@ export default function POSPage() {
             {/* Left Panel - Calculator */}
             <div className="flex-1 bg-gray-100 p-6 flex flex-col">
               {/* Payment Method Selection */}
-              <div className="grid grid-cols-3 gap-2 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                 {paymentMethods.map((method) => (
                   <button
                     key={method.id}
@@ -2500,11 +2448,12 @@ export default function POSPage() {
                       setActivePaymentMethod(method.id);
                       setNumberpadFor(method.id);
                     }}
-                    className={`p-3 rounded-lg font-semibold border-2 transition-colors ${
+                    className={clsx(
+                      "p-2 sm:p-3 rounded-lg font-semibold border-2 transition-colors text-sm sm:text-base min-h-[50px] break-words",
                       activePaymentMethod === method.id
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-white text-gray-700 border-gray-300 hover:border-blue-500"
-                    }`}
+                    )}
                   >
                     {method.name}
                   </button>
@@ -2512,12 +2461,12 @@ export default function POSPage() {
               </div>
 
               {/* Quick Amount Buttons */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-3 gap-2 mb-4">
                 {[10, 20, 50].map((amount) => (
                   <button
                     key={amount}
                     onClick={() => handleQuickAmount(amount)}
-                    className="bg-blue-100 text-blue-700 rounded-lg p-4 font-bold text-lg hover:bg-blue-200 transition-colors"
+                    className="bg-blue-100 text-blue-700 rounded-lg p-2 sm:p-3 font-bold text-sm sm:text-base hover:bg-blue-200 transition-colors min-h-[50px]"
                   >
                     +{amount}
                   </button>
@@ -2530,30 +2479,31 @@ export default function POSPage() {
                   {getActivePaymentMethodName()}
                 </div>
                 <div className="text-3xl font-mono text-right text-gray-900 font-bold">
-                  $
+                  
                   {(paymentAmounts[activePaymentMethod] || 0).toLocaleString(
                     "en-US",
                     {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     }
-                  )}
+                  )} UZS
                 </div>
               </div>
 
               {/* Numberpad - Yangilangan */}
-              <div className="grid grid-cols-4 gap-3 flex-1">
+              <div className="grid grid-cols-4 gap-2 flex-1">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0, "⌫"].map((item) => (
                   <button
                     key={item}
                     onClick={() => handleNumberpadClick(item.toString())}
-                    className={`rounded-xl p-4 text-xl font-bold transition-colors ${
+                    className={clsx(
+                      "rounded-lg p-3 text-lg font-bold transition-colors min-h-[60px] flex items-center justify-center",
                       item === "⌫"
                         ? "bg-orange-500 text-white hover:bg-orange-600"
                         : item === "."
-                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300 border-2 border-gray-300"
-                        : "bg-white text-gray-900 hover:bg-gray-200 border-2 border-gray-300"
-                    }`}
+                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300 border border-gray-300"
+                        : "bg-white text-gray-900 hover:bg-gray-200 border border-gray-300"
+                    )}
                   >
                     {item}
                   </button>
@@ -2561,7 +2511,7 @@ export default function POSPage() {
                 {/* Clear Button */}
                 <button
                   onClick={() => handleNumberpadClick("C")}
-                  className="bg-red-500 text-white rounded-xl p-4 text-xl font-bold hover:bg-red-600 transition-colors"
+                  className="bg-red-500 text-white rounded-lg p-3 text-lg font-bold hover:bg-red-600 transition-colors min-h-[60px] flex items-center justify-center"
                 >
                   C
                 </button>
@@ -2576,7 +2526,7 @@ export default function POSPage() {
                     setActivePaymentMethod(paymentMethods[nextIndex].id);
                     setNumberpadFor(paymentMethods[nextIndex].id);
                   }}
-                  className="bg-green-600 text-white rounded-xl p-4 text-xl font-bold hover:bg-green-700 transition-colors"
+                  className="bg-green-600 text-white rounded-lg p-3 text-lg font-bold hover:bg-green-700 transition-colors min-h-[60px] flex items-center justify-center"
                 >
                   →
                 </button>
@@ -2640,7 +2590,7 @@ export default function POSPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Total:</span>
-                    <span>${(total || 0).toFixed(2)}</span>
+                    <span>{(total || 0).toFixed(2)} UZS</span>
                   </div>
                 </div>
               </div>
@@ -2665,7 +2615,7 @@ export default function POSPage() {
                         </span>
                         <div className="flex items-center space-x-2">
                           <span className="font-bold text-blue-900">
-                            ${(amount || 0).toFixed(2)}
+                            {(amount || 0).toFixed(2)} UZS
                           </span>
                           <button
                             onClick={() => {
@@ -2700,19 +2650,19 @@ export default function POSPage() {
                     <div className="flex justify-between text-lg font-semibold">
                       <span className="text-gray-700">Total Paid:</span>
                       <span className="text-blue-600">
-                        ${(totalPaid || 0).toFixed(2)}
+                        {(totalPaid || 0).toFixed(2)} UZS
                       </span>
                     </div>
 
                     {amountDue > 0 ? (
                       <div className="flex justify-between text-red-600 font-bold">
                         <span>Amount Due:</span>
-                        <span>${(amountDue || 0).toFixed(2)}</span>
+                        <span>{(amountDue || 0).toFixed(2)} UZS</span>
                       </div>
                     ) : (
                       <div className="flex justify-between text-green-600 font-bold">
                         <span>Change:</span>
-                        <span>${(change || 0).toFixed(2)}</span>
+                        <span>{(change || 0).toFixed(2)} UZS</span>
                       </div>
                     )}
                   </div>
@@ -2723,7 +2673,7 @@ export default function POSPage() {
                       <div className="flex items-center">
                         <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
                         <span className="text-yellow-800 font-semibold">
-                          Credit Sale: ${(amountDue || 0).toFixed(2)} will be
+                          Credit Sale: {(amountDue || 0).toFixed(2)} UZS will be
                           added to customer's account
                         </span>
                       </div>
@@ -2773,7 +2723,7 @@ export default function POSPage() {
                   <p className="text-gray-600 mb-2">
                     Customer will owe:{" "}
                     <span className="font-bold text-red-600">
-                      ${(amountDue || 0).toFixed(2)}
+                      {(amountDue || 0).toFixed(2)} UZS
                     </span>
                   </p>
                   <p className="text-sm text-gray-500">
@@ -2906,7 +2856,7 @@ export default function POSPage() {
                 </p>
                 {lastSale.isCredit && (
                   <p className="text-yellow-600 font-semibold mt-1">
-                    Amount Due: ${lastSale.amountDue.toFixed(2)}
+                    Amount Due: {(lastSale.amountDue || 0).toFixed(2)} UZS
                   </p>
                 )}
               </div>
@@ -2937,11 +2887,11 @@ export default function POSPage() {
                           {item.quantity}x {item.name}
                         </span>
                         <div className="text-xs text-gray-500">
-                          @ ${item.unitPrice.toFixed(2)}
+                          @ {(item.unitPrice || 0).toFixed(2)} UZS
                         </div>
                       </div>
                       <span className="font-bold">
-                        ${item.total.toFixed(2)}
+                        {(item.total || 0).toFixed(2)} UZS
                       </span>
                     </div>
                   ))}
@@ -2960,19 +2910,19 @@ export default function POSPage() {
                       >
                         <span>{method.name}:</span>
                         <span className="font-semibold">
-                          ${amount.toFixed(2)}
+                          {(amount || 0).toFixed(2)} UZS
                         </span>
                       </div>
                     );
                   })}
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300 text-gray-900">
                     <span>Total Paid:</span>
-                    <span>${lastSale.totalPaid.toFixed(2)}</span>
+                    <span>{(lastSale.totalPaid || 0).toFixed(2)} UZS</span>
                   </div>
                   {lastSale.change > 0 && (
                     <div className="flex justify-between text-green-600 font-bold">
                       <span>Change:</span>
-                      <span>${lastSale.change.toFixed(2)}</span>
+                      <span>{(lastSale.change || 0).toFixed(2)} UZS</span>
                     </div>
                   )}
                 </div>
@@ -3000,7 +2950,7 @@ export default function POSPage() {
                     </div>
                     <div className="text-center">
                       <p className="text-yellow-700 font-semibold">
-                        Balance Due: ${lastSale.amountDue.toFixed(2)}
+                        Balance Due: {(lastSale.amountDue || 0).toFixed(2)} UZS
                       </p>
                       <p className="text-yellow-600 text-sm mt-1">
                         Customer: {lastSale.customer?.name}
@@ -3064,10 +3014,10 @@ export default function POSPage() {
                       {item.quantity}x {item.name}
                     </span>
                     <div className="text-xs">
-                      @ ${item.unitPrice.toFixed(2)}
+                      @ {(item.unitPrice || 0).toFixed(2)} UZS
                     </div>
                   </div>
-                  <span>${item.total.toFixed(2)}</span>
+                  <span>{(item.total || 0).toFixed(2)} UZS</span>
                 </div>
               ))}
             </div>
@@ -3075,31 +3025,31 @@ export default function POSPage() {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>${lastSale.subtotal.toFixed(2)}</span>
+                <span>{(lastSale.subtotal || 0).toFixed(2)} UZS</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax (8%):</span>
-                <span>${lastSale.taxAmount.toFixed(2)}</span>
+                <span>{(lastSale.taxAmount || 0).toFixed(2)} UZS</span>
               </div>
               <div className="flex justify-between font-bold border-t border-gray-400 pt-1">
                 <span>Total:</span>
-                <span>${lastSale.total.toFixed(2)}</span>
+                <span>{(lastSale.total || 0).toFixed(2)} UZS</span>
               </div>
               <div className="flex justify-between">
                 <span>Paid:</span>
-                <span>${lastSale.amountPaid.toFixed(2)}</span>
+                <span>{(lastSale.amountPaid || 0).toFixed(2)} UZS</span>
               </div>
               {lastSale.amountDue > 0 && (
                 <div className="flex justify-between">
                   <span>Amount Due:</span>
-                  <span>${lastSale.amountDue.toFixed(2)}</span>
+                  <span>{(lastSale.amountDue || 0).toFixed(2)} UZS</span>
                 </div>
               )}
               {lastSale.amountPaid > lastSale.total && (
                 <div className="flex justify-between">
                   <span>Change:</span>
                   <span>
-                    ${(lastSale.amountPaid - lastSale.total).toFixed(2)}
+                    {(lastSale.amountPaid - lastSale.total || 0).toFixed(2)} UZS
                   </span>
                 </div>
               )}
@@ -3342,6 +3292,82 @@ export default function POSPage() {
       max-width: none;
     }
   }
+    /* Mahsulot kartalari uchun responsive design */
+.product-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-image {
+  height: 100px;
+  min-height: 100px;
+}
+
+.product-title {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  max-height: 2.4rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-price {
+  font-size: 0.875rem;
+}
+
+.product-stock {
+  font-size: 0.75rem;
+}
+  /* Responsive design uchun qo'shimcha CSS */
+@media (max-width: 640px) {
+  .product-card {
+    min-height: 160px;
+    padding: 0.5rem;
+  }
+  
+  .product-image {
+    height: 80px;
+    min-height: 80px;
+  }
+  
+  .product-title {
+    font-size: 0.7rem;
+    max-height: 2.1rem;
+  }
+  
+  .product-price {
+    font-size: 0.8rem;
+  }
+}
+
+/* Numberpad tugmalari uchun */
+.numberpad-btn {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .numberpad-btn {
+    min-height: 45px;
+    font-size: 1rem;
+  }
+}
+
+/* Cart itemlar uchun */
+.cart-item {
+  padding: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .cart-item {
+    padding: 0.375rem;
+  }
+}
       `}</style>
     </div>
   );

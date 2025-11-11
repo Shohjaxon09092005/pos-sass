@@ -18,6 +18,7 @@ import {
   Building,
 } from "lucide-react";
 import { clsx } from "clsx";
+import { useTranslation } from "react-i18next";
 
 interface ApiProduct {
   id: string;
@@ -61,6 +62,7 @@ interface DashboardData {
 }
 
 export default function ProductsPage() {
+  const { t, i18n } = useTranslation("products");
   const { user, company, selectedCompanyId, companies, updateCompany } =
     useAuth();
 
@@ -606,9 +608,7 @@ export default function ProductsPage() {
 
   // Mahsulotni o'chirish
   const handleDeleteProduct = async (productId: string) => {
-    if (!window.confirm("Haqiqatan ham ushbu mahsulotni oʻchirmoqchimisiz?"))
-      return;
-
+    if (!window.confirm(t("deleteConfirmation"))) return;
     try {
       const token = localStorage.getItem("access_token");
       const response = await fetch(`${API_URL}/api/v1/products/${productId}/`, {
@@ -674,12 +674,8 @@ export default function ProductsPage() {
     return (
       <div className="flex items-center justify-center h-64 flex-col space-y-4">
         <Building className="h-16 w-16 text-gray-400" />
-        <p className="text-gray-500 text-lg">
-          Iltimos, avval kompaniya tanlang
-        </p>
-        <p className="text-gray-400 text-sm">
-          Sidebar dagi kompaniya ro'yxatidan birini tanlang
-        </p>
+        <p className="text-gray-500 text-lg">{t("pleaseSelectCompany")}</p>
+        <p className="text-gray-400 text-sm">{t("selectCompany")}</p>
       </div>
     );
   }
@@ -689,15 +685,15 @@ export default function ProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-sm text-gray-600">Manage your product catalog</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("products")}</h1>
+          <p className="text-sm text-gray-600">{t("manageProductCatalog")}</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Plus className="h-5 w-5" />
-          <span>Add Product</span>
+          <span>{t("addProduct")}</span>
         </button>
       </div>
       {/* Stats - Dashboard */}
@@ -707,7 +703,7 @@ export default function ProductsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">
-                Total Products
+                {t("totalProducts")}
               </p>
               <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 md:mt-2">
                 {dashboardData?.total_products ?? products.length}
@@ -724,7 +720,7 @@ export default function ProductsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">
-                Active Products
+                {t("activeProducts")}
               </p>
               <p className="text-xl md:text-2xl font-bold text-green-600 mt-1 md:mt-2">
                 {dashboardData?.active_products ?? 0}
@@ -741,7 +737,7 @@ export default function ProductsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">
-                Inactive Products
+                {t("inactiveProducts")}
               </p>
               <p className="text-xl md:text-2xl font-bold text-gray-600 mt-1 md:mt-2">
                 {dashboardData?.inactive_products ?? 0}
@@ -758,10 +754,10 @@ export default function ProductsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">
-                Total Value
+                {t("totalValue")}
               </p>
               <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1 md:mt-2">
-                ${dashboardData?.total_value?.toFixed(2) ?? "0.00"}
+                {dashboardData?.total_value?.toFixed(2) ?? "0.00"} UZS
               </p>
             </div>
             <div className="bg-green-500 p-2 md:p-3 rounded-lg">
@@ -775,7 +771,7 @@ export default function ProductsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">
-                Low Stock Items
+                {t("lowStockItems")}
               </p>
               <p className="text-xl md:text-2xl font-bold text-orange-600 mt-1 md:mt-2">
                 {dashboardData?.low_stock_products ?? 0}
@@ -787,6 +783,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
+
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
@@ -794,7 +791,7 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t("searchProducts")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -807,7 +804,7 @@ export default function ProductsPage() {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t("allCategories")}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.title}
@@ -817,6 +814,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
+
       {/* Products Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
@@ -824,26 +822,25 @@ export default function ProductsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
-                </th>
-
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  {t("product")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SKU
+                  {t("category")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
+                  {t("sku")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock
+                  {t("price")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t("stock")}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t("status")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -874,7 +871,6 @@ export default function ProductsPage() {
                         </div>
                       </div>
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">
                         {getCategoryName(product.category)}
@@ -887,7 +883,7 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-semibold text-gray-900">
-                        ${product.price.toFixed(2)}
+                        {(product.price || 0).toFixed(2)} UZS
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -904,7 +900,7 @@ export default function ProductsPage() {
                             : "text-gray-800 bg-gray-100"
                         )}
                       >
-                        {product.isActive ? "Active" : "Inactive"}
+                        {product.isActive ? t("active") : t("inactive")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -939,16 +935,17 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
+
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] ">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div
             className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
             style={{ marginTop: "50px" }}
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Add New Product
+                {t("addNewProduct")}
               </h3>
               <button
                 onClick={() => {
@@ -965,7 +962,7 @@ export default function ProductsPage() {
                 <div className="flex items-center">
                   <Building className="h-5 w-5 text-yellow-600 mr-2" />
                   <span className="text-yellow-800">
-                    Iltimos, avval kompaniya tanlang!
+                    {t("pleaseSelectCompany")}
                   </span>
                 </div>
               </div>
@@ -975,7 +972,7 @@ export default function ProductsPage() {
               {/* Rasm yuklash */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Image
+                  {t("productImage")}
                 </label>
                 <div className="flex items-center space-x-4">
                   <div className="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -1002,7 +999,7 @@ export default function ProductsPage() {
                       className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                     >
                       <Upload className="h-4 w-4" />
-                      <span>Upload Image</span>
+                      <span>{t("uploadImage")}</span>
                     </label>
                   </div>
                 </div>
@@ -1011,7 +1008,7 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Input Stock (initial)
+                    {t("inputStock")} ({t("initialStock")})
                   </label>
                   <input
                     type="number"
@@ -1023,38 +1020,38 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name *
+                    {t("productName")} *
                   </label>
                   <input
                     type="text"
                     name="title"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter product name"
+                    placeholder={t("enterProductName")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SKU *
+                    {t("sku")} *
                   </label>
                   <input
                     type="text"
                     name="sku"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter SKU"
+                    placeholder={t("enterSKU")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category *
+                    {t("category")} *
                   </label>
                   <select
                     name="category"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Select Category</option>
+                    <option value="">{t("selectCategory")}</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.title}
@@ -1064,14 +1061,14 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unit *
+                    {t("unit")} *
                   </label>
                   <select
                     name="unit"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Select Unit</option>
+                    <option value="">{t("selectUnit")}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.title} ({unit.abbreviation})
@@ -1081,7 +1078,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price *
+                    {t("price")} *
                   </label>
                   <input
                     type="number"
@@ -1089,12 +1086,12 @@ export default function ProductsPage() {
                     step="0.01"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder={t("enterPrice")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cost *
+                    {t("cost")} *
                   </label>
                   <input
                     type="number"
@@ -1102,40 +1099,40 @@ export default function ProductsPage() {
                     step="0.01"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder={t("enterCost")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Barcode
+                    {t("barcode")}
                   </label>
                   <input
                     type="text"
                     name="barcode"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter barcode"
+                    placeholder={t("enterBarcode")}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Reference
+                    {t("reference")}
                   </label>
                   <input
                     type="text"
                     name="reference"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter reference"
+                    placeholder={t("enterReference")}
                   />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
+                    {t("notes")}
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter product notes"
+                    placeholder={t("enterProductNotes")}
                   />
                 </div>
               </div>
@@ -1149,7 +1146,7 @@ export default function ProductsPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
@@ -1161,7 +1158,7 @@ export default function ProductsPage() {
                       : "bg-gray-400 cursor-not-allowed"
                   )}
                 >
-                  {selectedCompanyId ? "Add Product" : "Kompaniya Tanlang"}
+                  {selectedCompanyId ? t("addProduct") : t("companyRequired")}
                 </button>
               </div>
             </form>
@@ -1176,7 +1173,7 @@ export default function ProductsPage() {
             style={{ marginTop: "50px" }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Edit Product</h3>
+              <h3 className="text-xl font-bold text-gray-900">{t("editProduct")}</h3>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -1192,9 +1189,9 @@ export default function ProductsPage() {
               {/* Rasm yuklash - faqat yangi rasm kerak bo'lganda */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mahsulot rasmi
+                  {t("productImage")}
                   <span className="text-gray-500 text-sm ml-1">
-                    (Ixtiyoriy)
+                    {t("optional")}
                   </span>
                 </label>
                 <div className="flex items-center space-x-4">
@@ -1228,11 +1225,11 @@ export default function ProductsPage() {
                       className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                     >
                       <Upload className="h-4 w-4" />
-                      <span>Rasm yangilash</span>
+                      <span>{t("uploadImage")}</span>
                     </label>
                     {imageFile && (
                       <p className="text-sm text-green-600">
-                        Yangi rasm: {imageFile.name}
+                        {t("newImage")}: {imageFile.name}
                       </p>
                     )}
                     <button
@@ -1243,19 +1240,19 @@ export default function ProductsPage() {
                       }}
                       className="text-sm text-red-600 hover:text-red-800"
                     >
-                      Rasmni olib tashlash
+                      {t("removeImage")}
                     </button>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Agar yangi rasm tanlamasangiz, mavjud rasm saqlanib qoladi
+                  {t("existingImageKept")}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name *
+                    {t("productName")} *
                   </label>
                   <input
                     type="text"
@@ -1267,7 +1264,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SKU *
+                    {t("sku")} *
                   </label>
                   <input
                     type="text"
@@ -1279,7 +1276,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category *
+                    {t("category")} *
                   </label>
                   <select
                     name="category"
@@ -1297,7 +1294,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unit *
+                    {t("unit")} *
                   </label>
                   <select
                     name="unit"
@@ -1305,7 +1302,7 @@ export default function ProductsPage() {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Select Unit</option>
+                    <option value="">{t("selectUnit")}</option>
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.title} ({unit.abbreviation})
@@ -1315,7 +1312,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price *
+                    {t("price")} *
                   </label>
                   <input
                     type="number"
@@ -1328,7 +1325,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cost *
+                    {t("cost")} *
                   </label>
                   <input
                     type="number"
@@ -1341,7 +1338,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Barcode
+                    {t("barcode")}
                   </label>
                   <input
                     type="text"
@@ -1352,7 +1349,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Reference
+                    {t("reference")}
                   </label>
                   <input
                     type="text"
@@ -1363,7 +1360,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Current Stock (read-only)
+                    {t("currentStock")} (read-only)
                   </label>
                   <input
                     type="number"
@@ -1379,7 +1376,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Input Stock (adjustment)
+                    {t("inputStock")} (adjustment)
                   </label>
                   <input
                     type="number"
@@ -1391,7 +1388,7 @@ export default function ProductsPage() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
+                    {t("notes")}
                   </label>
                   <textarea
                     name="notes"
@@ -1411,13 +1408,13 @@ export default function ProductsPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Yangilash
+                  {t("update")}
                 </button>
               </div>
             </form>
@@ -1433,7 +1430,7 @@ export default function ProductsPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Mahsulot Tafsilotlari
+                {t("productDetails")}
               </h3>
               <button
                 onClick={() => {
@@ -1455,7 +1452,7 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Mahsulot nomi
+                    {t("productName")}
                   </label>
                   <p className="text-lg font-semibold text-gray-900">
                     {selectedProduct.title}
@@ -1463,7 +1460,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    SKU
+                    {t("sku")}
                   </label>
                   <p className="text-gray-900 font-mono">
                     {selectedProduct.sku}
@@ -1471,7 +1468,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Kategoriya
+                    {t("category")}
                   </label>
                   <p className="text-gray-900">
                     {getCategoryName(selectedProduct.category)}
@@ -1479,7 +1476,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Oʻlchov birligi
+                    {t("unit")}
                   </label>
                   <p className="text-gray-900">
                     {getUnitName(selectedProduct.unit)}
@@ -1490,23 +1487,23 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Narx
+                    {t("price")}
                   </label>
                   <p className="text-lg font-semibold text-green-600">
-                    ${selectedProduct.price.toFixed(2)}
+                    {(selectedProduct.price || 0).toFixed(2)} UZS
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Xarajat
+                    {t("cost")}
                   </label>
                   <p className="text-gray-900">
-                    ${selectedProduct.cost.toFixed(2)}
+                    {(selectedProduct.cost || 0).toFixed(2)} UZS
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Shtrix kod
+                    {t("barcode")}
                   </label>
                   <p className="text-gray-900">
                     {selectedProduct.barcode || "N/A"}
@@ -1514,7 +1511,7 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Referens
+                    {t("reference")}
                   </label>
                   <p className="text-gray-900">
                     {selectedProduct.reference || "N/A"}
@@ -1526,10 +1523,10 @@ export default function ProductsPage() {
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">
-                  Izoh
+                  {t("notes")}
                 </label>
                 <p className="text-gray-900">
-                  {selectedProduct.notes || "Izoh mavjud emas"}
+                  {selectedProduct.notes || t("noNotes")}
                 </p>
               </div>
             </div>
@@ -1538,7 +1535,7 @@ export default function ProductsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Holati
+                    {t("status")}
                   </label>
                   <span
                     className={clsx(
@@ -1548,19 +1545,19 @@ export default function ProductsPage() {
                         : "text-gray-800 bg-gray-100"
                     )}
                   >
-                    {selectedProduct.isActive ? "Faol" : "Nofaol"}
+                    {selectedProduct.isActive ? t("active") : t("inactive")}
                   </span>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Umumiy qiymati
+                    {t("totalValue")}
                   </label>
                   <p className="text-lg font-semibold text-gray-900">
-                    $(
                     {(
                       (getCurrentStockValue(selectedProduct) || 0) *
                       selectedProduct.cost
-                    ).toFixed(2)}
+                    ).toFixed(2)}{" "}
+                    UZS
                   </p>
                 </div>
               </div>
@@ -1574,7 +1571,7 @@ export default function ProductsPage() {
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Yopish
+                {t("close")}
               </button>
               <button
                 onClick={() => {
@@ -1583,7 +1580,7 @@ export default function ProductsPage() {
                 }}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
               >
-                Tahrirlash
+                {t("edit")}
               </button>
             </div>
           </div>

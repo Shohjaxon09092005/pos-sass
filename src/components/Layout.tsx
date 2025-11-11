@@ -134,7 +134,7 @@ const getUserRole = (user: any) => {
 
 export default function Layout() {
   const { user, logout, company } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("home");
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarHidden, setSidebarHidden] = useState(true);
@@ -143,6 +143,12 @@ export default function Layout() {
   useEffect(() => {
     setMounted(true);
   }, []);
+  // Location o'zgarganda sidebar ni yopish
+  useEffect(() => {
+    setSidebarOpen(false);
+    // Desktop sidebar ni ham yopish (agar ochiq bo'lsa)
+    setSidebarHidden(true);
+  }, [location]); // location o'zgarganda ishlaydi
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -517,7 +523,7 @@ function SidebarContent({
       <div className="flex items-center justify-between flex-shrink-0 px-6 mb-8">
         <div className="flex items-center space-x-2">
           <div className="relative">
-            <Zap className="h-8 w-8 text-blue-600" />   
+            <Zap className="h-8 w-8 text-blue-600" />
             <div className="absolute inset-0 blur-lg bg-blue-400/30 -z-10"></div>
           </div>
           <div>

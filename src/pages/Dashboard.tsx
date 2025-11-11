@@ -1,54 +1,113 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { Calendar, Download, Filter, TrendingUp, DollarSign, ShoppingCart, Package, Users, Activity, ArrowUp, ArrowDown, RefreshCw, AlertCircle, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+} from "recharts";
+import {
+  Calendar,
+  Download,
+  Filter,
+  TrendingUp,
+  DollarSign,
+  ShoppingCart,
+  Package,
+  Users,
+  Activity,
+  ArrowUp,
+  ArrowDown,
+  RefreshCw,
+  AlertCircle,
+  ChevronRight,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // API Service
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = "http://localhost:8000/api/v1";
 const getAuthHeaders = () => ({
-  'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  "Content-Type": "application/json",
 });
 
 const dashboardAPI = {
-  getOverview: (period = 'month') =>
-    fetch(`${API_BASE}/dashboard/overview/?period=${period}`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
-  
+  getOverview: (period = "month") =>
+    fetch(`${API_BASE}/dashboard/overview/?period=${period}`, {
+      headers: getAuthHeaders(),
+    }).then((res) => res.json()),
+
   getSalesTrend: (days = 30) =>
-    fetch(`${API_BASE}/dashboard/sales/trend/?days=${days}`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
-  
+    fetch(`${API_BASE}/dashboard/sales/trend/?days=${days}`, {
+      headers: getAuthHeaders(),
+    }).then((res) => res.json()),
+
   getTopProducts: (limit = 5, days = 30) =>
-    fetch(`${API_BASE}/dashboard/sales/top-products/?limit=${limit}&days=${days}`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
-  
+    fetch(
+      `${API_BASE}/dashboard/sales/top-products/?limit=${limit}&days=${days}`,
+      { headers: getAuthHeaders() }
+    ).then((res) => res.json()),
+
   getCategoryPerformance: () =>
-    fetch(`${API_BASE}/dashboard/sales/by-category/`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
-  
+    fetch(`${API_BASE}/dashboard/sales/by-category/`, {
+      headers: getAuthHeaders(),
+    }).then((res) => res.json()),
+
   getInventoryStatus: () =>
-    fetch(`${API_BASE}/dashboard/inventory/status/`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
-  
+    fetch(`${API_BASE}/dashboard/inventory/status/`, {
+      headers: getAuthHeaders(),
+    }).then((res) => res.json()),
+
   getPaymentMethods: (days = 30) =>
-    fetch(`${API_BASE}/dashboard/financial/payment-methods/?days=${days}`, { headers: getAuthHeaders() })
-      .then(res => res.json()),
+    fetch(`${API_BASE}/dashboard/financial/payment-methods/?days=${days}`, {
+      headers: getAuthHeaders(),
+    }).then((res) => res.json()),
 };
 
 // Tremor-style Card Component
-const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>
+const Card = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}
+  >
     {children}
   </div>
 );
 
 // Tremor-style Metric Card
-const MetricCard = ({ title, value, icon: Icon, trend, trendValue, color = 'blue' }) => {
+const MetricCard = ({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendValue,
+  color = "blue",
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ComponentType<{ className?: string }>;
+  trend?: "up" | "down";
+  trendValue?: string | number;
+  color?: "blue" | "green" | "purple" | "orange";
+}) => {
   const colorClasses = {
-    blue: 'bg-blue-500',
-    green: 'bg-emerald-500',
-    purple: 'bg-violet-500',
-    orange: 'bg-amber-500',
+    blue: "bg-blue-500",
+    green: "bg-emerald-500",
+    purple: "bg-violet-500",
+    orange: "bg-amber-500",
   };
 
   return (
@@ -59,12 +118,14 @@ const MetricCard = ({ title, value, icon: Icon, trend, trendValue, color = 'blue
           <p className="mt-2 text-3xl font-semibold text-gray-900">{value}</p>
           {trend && (
             <div className="mt-2 flex items-center text-sm">
-              {trend === 'up' ? (
+              {trend === "up" ? (
                 <ArrowUp className="h-4 w-4 text-emerald-500 mr-1" />
               ) : (
                 <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
               )}
-              <span className={trend === 'up' ? 'text-emerald-600' : 'text-red-600'}>
+              <span
+                className={trend === "up" ? "text-emerald-600" : "text-red-600"}
+              >
                 {trendValue}
               </span>
               <span className="text-gray-500 ml-1">vs last period</span>
@@ -80,34 +141,50 @@ const MetricCard = ({ title, value, icon: Icon, trend, trendValue, color = 'blue
 };
 
 // Tremor-style Badge
-const Badge = ({ children, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-700',
-    green: 'bg-emerald-100 text-emerald-700',
-    yellow: 'bg-amber-100 text-amber-700',
-    red: 'bg-red-100 text-red-700',
+const Badge = ({
+  children,
+  color = "blue",
+}: {
+  children: React.ReactNode;
+  color?: "blue" | "green" | "yellow" | "red";
+}) => {
+  const colorClasses: Record<"blue" | "green" | "yellow" | "red", string> = {
+    blue: "bg-blue-100 text-blue-700",
+    green: "bg-emerald-100 text-emerald-700",
+    yellow: "bg-amber-100 text-amber-700",
+    red: "bg-red-100 text-red-700",
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${colorClasses[color]}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${colorClasses[color]}`}
+    >
       {children}
     </span>
   );
 };
 
 // Tremor-style Progress Bar
-const ProgressBar = ({ value, color = 'blue', className = '' }) => {
+const ProgressBar = ({
+  value,
+  color = "blue",
+  className = "",
+}: {
+  value: number;
+  color?: "blue" | "green" | "purple" | "orange" | "red";
+  className?: string;
+}) => {
   const colorClasses = {
-    blue: 'bg-blue-500',
-    green: 'bg-emerald-500',
-    purple: 'bg-violet-500',
-    orange: 'bg-amber-500',
-    red: 'bg-red-500',
+    blue: "bg-blue-500",
+    green: "bg-emerald-500",
+    purple: "bg-violet-500",
+    orange: "bg-amber-500",
+    red: "bg-red-500",
   };
 
   return (
     <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
-      <div 
+      <div
         className={`h-2 rounded-full transition-all duration-300 ${colorClasses[color]}`}
         style={{ width: `${Math.min(value, 100)}%` }}
       />
@@ -116,14 +193,15 @@ const ProgressBar = ({ value, color = 'blue', className = '' }) => {
 };
 
 export default function TremorDashboard() {
-  const [period, setPeriod] = useState('month');
+  const [period, setPeriod] = useState("month");
   const [loading, setLoading] = useState(true);
-  const [overview, setOverview] = useState(null);
-  const [salesTrend, setSalesTrend] = useState([]);
-  const [topProducts, setTopProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [inventory, setInventory] = useState(null);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [overview, setOverview] = useState<any | null>(null);
+  const [salesTrend, setSalesTrend] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const { t, i18n } = useTranslation("dashboard");
 
   useEffect(() => {
     loadDashboardData();
@@ -132,9 +210,23 @@ export default function TremorDashboard() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const days = period === 'today' ? 1 : period === 'week' ? 7 : period === 'year' ? 365 : 30;
-      
-      const [overviewData, trendData, productsData, categoriesData, inventoryData, paymentsData] = await Promise.all([
+      const days =
+        period === "today"
+          ? 1
+          : period === "week"
+          ? 7
+          : period === "year"
+          ? 365
+          : 30;
+
+      const [
+        overviewData,
+        trendData,
+        productsData,
+        categoriesData,
+        inventoryData,
+        paymentsData,
+      ] = await Promise.all([
         dashboardAPI.getOverview(period),
         dashboardAPI.getSalesTrend(days),
         dashboardAPI.getTopProducts(5, days),
@@ -150,20 +242,20 @@ export default function TremorDashboard() {
       setInventory(inventoryData);
       setPaymentMethods(paymentsData);
     } catch (error) {
-      console.error('Failed to load dashboard:', error);
+      console.error("Failed to load dashboard:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
+  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <RefreshCw className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+          <p className="text-gray-600 font-medium">{t("loadingDashboard")}</p>
         </div>
       </div>
     );
@@ -175,23 +267,25 @@ export default function TremorDashboard() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-600 mt-1">Monitor your business performance</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              {t("dashboard")}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">{t("monitorBusiness")}</p>
           </div>
-          
+
           <div className="flex items-center gap-2 sm:gap-3">
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               className="px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="today">Today</option>
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="year">Last Year</option>
+              <option value="today">{t("today")}</option>
+              <option value="week">{t("last7Days")}</option>
+              <option value="month">{t("last30Days")}</option>
+              <option value="year">{t("lastYear")}</option>
             </select>
-            
-            <button 
+
+            <button
               onClick={loadDashboardData}
               className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -202,69 +296,79 @@ export default function TremorDashboard() {
       </div>
 
       {/* Alerts */}
-      {inventory && (inventory.low_stock_products > 0 || overview?.pending_invoices > 0) && (
-        <div className="mb-6 space-y-3">
-          {inventory.low_stock_products > 0 && (
-            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-              <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-amber-400 mt-0.5 mr-3 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-800">Low Stock Alert</p>
-                  <p className="text-sm text-amber-700 mt-1">
-                    {inventory.low_stock_products} products need restocking
-                  </p>
+      {inventory &&
+        (inventory.low_stock_products > 0 ||
+          overview?.pending_invoices > 0) && (
+          <div className="mb-6 space-y-3">
+            {inventory.low_stock_products > 0 && (
+              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-amber-400 mt-0.5 mr-3 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-800">
+                      {t("lowStockAlert")}
+                    </p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      {inventory.low_stock_products}{" "}
+                      {t("productsNeedRestocking")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          
-          {overview?.pending_invoices > 0 && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-              <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-blue-800">Pending Invoices</p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    {overview.pending_invoices} invoices awaiting payment
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
 
+            {overview?.pending_invoices > 0 && (
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                <div className="flex items-start">
+                  <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-800">
+                      {t("pendingInvoices")}
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      {overview.pending_invoices} {t("invoicesAwaitingPayment")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         <MetricCard
-          title="Total Sales"
-          value={`$${parseFloat(overview?.total_sales || 0).toLocaleString()}`}
+          title={t("totalSales")}
+          value={`${parseFloat(
+            overview?.total_sales || 0
+          ).toLocaleString()} UZS`}
           icon={DollarSign}
           trend="up"
           trendValue={`${overview?.profit_margin || 0}%`}
           color="blue"
         />
-        
+
         <MetricCard
-          title="Total Revenue"
-          value={`$${parseFloat(overview?.total_revenue || 0).toLocaleString()}`}
+          title={t("totalRevenue")}
+          value={`${parseFloat(
+            overview?.total_revenue || 0
+          ).toLocaleString()} UZS`}
           icon={TrendingUp}
           trend="up"
           trendValue="12%"
           color="green"
         />
-        
+
         <MetricCard
-          title="Total Customers"
+          title={t("totalCustomers")}
           value={overview?.total_customers || 0}
           icon={Users}
           trend="up"
           trendValue="8%"
           color="purple"
         />
-        
+
         <MetricCard
-          title="Active Sessions"
+          title={t("activeSessions")}
           value={overview?.active_sessions || 0}
           icon={Activity}
           color="orange"
@@ -276,45 +380,61 @@ export default function TremorDashboard() {
         {/* Sales Trend */}
         <Card className="p-4">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Sales Trend</h3>
-            <p className="text-sm text-gray-500 mt-1">Daily sales performance</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t("salesTrend")}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {t("dailySalesPerformance")}
+            </p>
           </div>
+          <div></div>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={salesTrend}>
               <defs>
                 <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis 
-                dataKey="date" 
+              <XAxis
+                dataKey="date"
                 stroke="#9ca3af"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                }
               />
-              <YAxis 
+              <YAxis
                 stroke="#9ca3af"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `${value} UZS`}
               />
-              <Tooltip 
-                formatter={(value) => [`$${parseFloat(value).toFixed(2)}`, 'Sales']}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              <Tooltip
+                formatter={(value: any) => {
+                  const num =
+                    typeof value === "number"
+                      ? value
+                      : parseFloat(value || "0");
+                  return [`${num.toFixed(2)} UZS`, t('sales')];
+                }}
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="total_sales" 
-                stroke="#3b82f6" 
+              <Area
+                type="monotone"
+                dataKey="total_sales"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 fill="url(#salesGradient)"
               />
@@ -326,8 +446,12 @@ export default function TremorDashboard() {
         {/* Payment Methods */}
         <Card className="p-4">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
-            <p className="text-sm text-gray-500 mt-1">Transaction distribution</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t("paymentMethods")}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {t("transactionDistribution")}
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="w-full sm:w-1/2">
@@ -343,7 +467,10 @@ export default function TremorDashboard() {
                     dataKey="transaction_count"
                   >
                     {paymentMethods.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -354,14 +481,16 @@ export default function TremorDashboard() {
               {paymentMethods.map((method, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div 
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
-                    <span className="text-sm text-gray-700">{method.method_name}</span>
+                    <span className="text-sm text-gray-700">
+                      {method.method_name}
+                    </span>
                   </div>
                   <span className="text-sm font-semibold text-gray-900">
-                    ${parseFloat(method.total_amount).toFixed(2)}
+                    {parseFloat(method.total_amount).toFixed(2)} UZS
                   </span>
                 </div>
               ))}
@@ -376,14 +505,18 @@ export default function TremorDashboard() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
-              <p className="text-sm text-gray-500 mt-1">Best selling items</p>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t("topProducts")}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {t("bestSellingItems")}
+              </p>
             </div>
             <Package className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {topProducts.map((product, index) => (
-              <div 
+              <div
                 key={product.product_id}
                 className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
               >
@@ -402,10 +535,10 @@ export default function TremorDashboard() {
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
                   <p className="text-sm font-semibold text-gray-900">
-                    ${parseFloat(product.revenue).toFixed(2)}
+                    {parseFloat(product.revenue).toFixed(2)} UZS
                   </p>
                   <p className="text-xs text-emerald-600">
-                    +${parseFloat(product.profit).toFixed(2)}
+                    +{parseFloat(product.profit).toFixed(2)} UZS
                   </p>
                 </div>
               </div>
@@ -416,8 +549,12 @@ export default function TremorDashboard() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Category Performance</h3>
-              <p className="text-sm text-gray-500 mt-1">Sales by category</p>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t("categoryPerformance")}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {t("salesByCategory")}
+              </p>
             </div>
             <Filter className="h-5 w-5 text-gray-400" />
           </div>
@@ -429,15 +566,24 @@ export default function TremorDashboard() {
                     {category.category_name}
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    ${parseFloat(category.total_sales).toFixed(2)}
+                    {parseFloat(category.total_sales).toFixed(2)} UZS
                   </span>
                 </div>
-                <ProgressBar 
-                  value={category.percentage_of_total} 
-                  color={['blue', 'green', 'orange', 'purple', 'red'][index % 5]}
+                <ProgressBar
+                  value={category.percentage_of_total}
+                  color={
+                    ["blue", "green", "orange", "purple", "red"][index % 5] as
+                      | "blue"
+                      | "green"
+                      | "orange"
+                      | "purple"
+                      | "red"
+                  }
                 />
                 <div className="flex justify-between mt-1">
-                  <span className="text-xs text-gray-500">{category.product_count} products</span>
+                  <span className="text-xs text-gray-500">
+                    {category.product_count} products
+                  </span>
                   <span className="text-xs text-gray-500">
                     {parseFloat(category.percentage_of_total).toFixed(1)}%
                   </span>
@@ -452,25 +598,37 @@ export default function TremorDashboard() {
       {inventory && (
         <Card className="p-6">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Inventory Overview</h3>
-            <p className="text-sm text-gray-500 mt-1">Current stock status</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t("inventoryOverview")}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {t("currentStockStatus")}
+            </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="text-center p-4 rounded-lg bg-gray-50 border border-gray-200">
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900">{inventory.total_products}</p>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">Total Products</p>
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {inventory.total_products}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">{t('totalProducts')}</p>
             </div>
             <div className="text-center p-4 rounded-lg bg-emerald-50 border border-emerald-200">
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-600">{inventory.active_products}</p>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">Active</p>
+              <p className="text-2xl sm:text-3xl font-bold text-emerald-600">
+                {inventory.active_products}
+              </p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">{t('active')}</p>
             </div>
             <div className="text-center p-4 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-2xl sm:text-3xl font-bold text-amber-600">{inventory.low_stock_products}</p>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">Low Stock</p>
+              <p className="text-2xl sm:text-3xl font-bold text-amber-600">
+                {inventory.low_stock_products}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">{t('lowStock')}</p>
             </div>
             <div className="text-center p-4 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-2xl sm:text-3xl font-bold text-red-600">{inventory.out_of_stock_products}</p>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">Out of Stock</p>
+              <p className="text-2xl sm:text-3xl font-bold text-red-600">
+                {inventory.out_of_stock_products}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">{t('outOfStock')}</p>
             </div>
           </div>
         </Card>

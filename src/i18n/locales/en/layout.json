@@ -1,0 +1,19 @@
+{
+  "dashboard": "Dashboard",
+  "posTerminal": "POS Terminal",
+  "products": "Products",
+  "categories": "Categories",
+  "inventory": "Inventory",
+  "sales": "Sales",
+  "payments": "Payments",
+  "customers": "Customers",
+  "purchases": "Purchases",
+  "employees": "Employees",
+  "reports": "Reports",
+  "billing": "Billing",
+  "settings": "Settings",
+  "showSidebar": "Show sidebar",
+  "hideSidebar": "Hide sidebar",
+  "selectCompany": "Select a company",
+  "signOut": "Sign out"
+}   

@@ -1287,7 +1287,7 @@ export default function InventoryPage() {
                     Total Value
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
-                    ${totalValue.toFixed(2)}
+                    {(totalValue || 0).toFixed(2)} UZS
                   </p>
                 </div>
                 <div className="bg-green-500 p-3 rounded-lg">
@@ -1360,15 +1360,12 @@ export default function InventoryPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            ${product.cost.toFixed(2)}
+                            {(product.cost || 0).toFixed(2)} UZS
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-semibold text-gray-900">
-                            $
-                            {isNaN(productValue)
-                              ? "0.00"
-                              : productValue.toFixed(2)}
+                            {(isNaN(productValue) ? 0 : productValue).toFixed(2)} UZS
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -2151,10 +2148,10 @@ export default function InventoryPage() {
                               {move.reserved_quantity}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
-                              ${parseFloat(move.price || "0").toFixed(2)}
+                              {(parseFloat(move.price || "0") || 0).toFixed(2)} UZS
                             </td>
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                              ${total.toFixed(2)}
+                              {total.toFixed(2)} UZS
                             </td>
                           </tr>
                         );

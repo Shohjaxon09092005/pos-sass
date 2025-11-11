@@ -734,7 +734,7 @@ export default function SalesPage() {
                 Today's Revenue
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
-                ${todaysRevenue.toFixed(2)}
+                {(todaysRevenue || 0).toFixed(2)} UZS
               </p>
             </div>
             <div className="bg-green-500 p-3 rounded-lg">
@@ -766,7 +766,7 @@ export default function SalesPage() {
                 Avg Order Value
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
-                ${avgOrderValue.toFixed(2)}
+                {(avgOrderValue || 0).toFixed(2)} UZS
               </p>
             </div>
             <div className="bg-purple-500 p-3 rounded-lg">
@@ -858,7 +858,7 @@ export default function SalesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-semibold text-gray-900">
-                      ${parseFloat(sale.amount_total).toFixed(2)}
+                      {(parseFloat(sale.amount_total) || 0).toFixed(2)} UZS
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -986,7 +986,7 @@ export default function SalesPage() {
                     Total Amount
                   </label>
                   <p className="text-2xl font-bold text-green-600">
-                    ${parseFloat(selectedSale.amount_total).toFixed(2)}
+                    {(parseFloat(selectedSale.amount_total) || 0).toFixed(2)} UZS
                   </p>
                 </div>
                 <div>
@@ -994,7 +994,7 @@ export default function SalesPage() {
                     Amount Paid
                   </label>
                   <p className="text-lg text-gray-900">
-                    ${parseFloat(selectedSale.amount_paid).toFixed(2)}
+                    {(parseFloat(selectedSale.amount_paid) || 0).toFixed(2)} UZS
                   </p>
                 </div>
               </div>
@@ -1018,13 +1018,13 @@ export default function SalesPage() {
                         SKU: {getProductSKU(item.product)}
                       </p>
                       <p className="text-sm text-gray-500">
-                        ${parseFloat(item.cost_price || "0").toFixed(2)} ×{" "}
+                        {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "} UZS
                         {Math.abs(item.quantity)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        ${getItemTotal(item).toFixed(2)}
+                        {(getItemTotal(item) || 0).toFixed(2)} UZS
                       </p>
                     </div>
                   </div>
@@ -1037,25 +1037,25 @@ export default function SalesPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-900">
-                    $
+                    
                     {(
                       parseFloat(selectedSale.amount_total) -
                       parseFloat(selectedSale.amount_due || "0")
-                    ).toFixed(2)}
+                    ).toFixed(2)} UZS
                   </span>
                 </div>
                 {parseFloat(selectedSale.amount_due || "0") !== 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Due Amount</span>
                     <span className="text-red-600">
-                      ${parseFloat(selectedSale.amount_due || "0").toFixed(2)}
+                      {parseFloat(selectedSale.amount_due || "0").toFixed(2)} UZS
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
                   <span>Total</span>
                   <span>
-                    ${parseFloat(selectedSale.amount_total).toFixed(2)}
+                    {parseFloat(selectedSale.amount_total).toFixed(2)} UZS
                   </span>
                 </div>
               </div>
@@ -1121,13 +1121,13 @@ export default function SalesPage() {
                       {getProductName(item.product)}
                     </div>
                     <div className="text-xs text-gray-600">
-                      SKU: {getProductSKU(item.product)} | $
-                      {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "}
+                      SKU: {getProductSKU(item.product)} | 
+                      {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "} UZS
                       {Math.abs(item.quantity)}
                     </div>
                   </div>
                   <div className="font-semibold">
-                    ${getItemTotal(item).toFixed(2)}
+                    {(getItemTotal(item) || 0).toFixed(2)} UZS
                   </div>
                 </div>
               ))}
@@ -1137,11 +1137,11 @@ export default function SalesPage() {
               <div className="flex justify-between">
                 <span>Subtotal:</span>
                 <span>
-                  $
+                  
                   {(
                     parseFloat(selectedSale.amount_total) -
                     parseFloat(selectedSale.amount_due || "0")
-                  ).toFixed(2)}
+                  ).toFixed(2)} UZS
                 </span>
               </div>
 
@@ -1149,19 +1149,19 @@ export default function SalesPage() {
                 <div className="flex justify-between text-red-600">
                   <span>Due Amount:</span>
                   <span>
-                    ${parseFloat(selectedSale.amount_due || "0").toFixed(2)}
+                    {(parseFloat(selectedSale.amount_due || "0") || 0).toFixed(2)}
                   </span>
                 </div>
               )}
 
               <div className="flex justify-between font-bold text-lg border-t border-gray-400 pt-2">
                 <span>Total:</span>
-                <span>${parseFloat(selectedSale.amount_total).toFixed(2)}</span>
+                <span>{(parseFloat(selectedSale.amount_total) || 0).toFixed(2)} UZS</span>
               </div>
 
               <div className="flex justify-between text-green-600">
                 <span>Amount Paid:</span>
-                <span>${parseFloat(selectedSale.amount_paid).toFixed(2)}</span>
+                <span>{(parseFloat(selectedSale.amount_paid) || 0).toFixed(2)} UZS</span>
               </div>
             </div>
 

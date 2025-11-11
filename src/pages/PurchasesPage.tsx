@@ -721,7 +721,7 @@ export default function PurchasesPage() {
                         Pending Value
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${totalPending.toFixed(2)}
+                        {totalPending.toFixed(2)} UZS
                       </p>
                     </div>
                     <div className="bg-yellow-500 p-3 rounded-lg">
@@ -737,7 +737,7 @@ export default function PurchasesPage() {
                         Total Purchases
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
-                        ${totalThisMonth.toFixed(2)}
+                        {totalThisMonth.toFixed(2)} UZS
                       </p>
                     </div>
                     <div className="bg-green-500 p-3 rounded-lg">
@@ -842,12 +842,11 @@ export default function PurchasesPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-semibold text-gray-900">
-                              ${getPurchaseTotal(purchase).toFixed(2)}
+                              {getPurchaseTotal(purchase).toFixed(2)} UZS
                             </div>
                             {parseFloat(purchase.amount_paid || "0") > 0 && (
                               <div className="text-xs text-gray-500">
-                                Paid: $
-                                {parseFloat(purchase.amount_paid).toFixed(2)}
+                                Paid: {(parseFloat(purchase.amount_paid) || 0).toFixed(2)} UZS
                               </div>
                             )}
                           </td>
@@ -1141,10 +1140,10 @@ export default function PurchasesPage() {
                           Quantity
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Unit Cost ($)
+                          Unit Cost (UZS)
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Total ($)
+                          Total (UZS)
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                           Action
@@ -1170,8 +1169,8 @@ export default function PurchasesPage() {
                               <option value="">Select Product</option>
                               {products.map((product) => (
                                 <option key={product.id} value={product.id}>
-                                  {product.title} - $
-                                  {parseFloat(product.cost).toFixed(2)}
+                                  {product.title} - 
+                                  {parseFloat(product.cost).toFixed(2)} UZS
                                 </option>
                               ))}
                             </select>
@@ -1211,7 +1210,7 @@ export default function PurchasesPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className="font-semibold">
-                              ${calculateItemTotal(item)}
+                              {calculateItemTotal(item)} UZS
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -1238,7 +1237,7 @@ export default function PurchasesPage() {
                     Total Amount:
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
-                    ${calculateTotalAmount().toFixed(2)}
+                    {calculateTotalAmount().toFixed(2)} UZS
                   </span>
                 </div>
               </div>
@@ -1354,7 +1353,7 @@ export default function PurchasesPage() {
                     Total Amount
                   </label>
                   <p className="text-2xl font-bold text-green-600">
-                    ${getPurchaseTotal(selectedPurchase).toFixed(2)}
+                    {getPurchaseTotal(selectedPurchase).toFixed(2)} UZS
                   </p>
                 </div>
                 {parseFloat(selectedPurchase.amount_paid || "0") > 0 && (
@@ -1363,7 +1362,7 @@ export default function PurchasesPage() {
                       Amount Paid
                     </label>
                     <p className="text-lg text-gray-900">
-                      ${parseFloat(selectedPurchase.amount_paid).toFixed(2)}
+                      {(parseFloat(selectedPurchase.amount_paid) || 0).toFixed(2)} UZS
                     </p>
                   </div>
                 )}
@@ -1385,17 +1384,17 @@ export default function PurchasesPage() {
                         {getProductName(item.product)}
                       </h5>
                       <p className="text-sm text-gray-500">
-                        ${parseFloat(item.cost_price || "0").toFixed(2)} ×{" "}
+                        {parseFloat(item.cost_price || "0").toFixed(2)} UZS ×{" "}
                         {Math.abs(item.quantity)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        $
+                        
                         {(
                           Math.abs(item.quantity) *
                           parseFloat(item.cost_price || "0")
-                        ).toFixed(2)}
+                        ).toFixed(2)} UZS
                       </p>
                     </div>
                   </div>

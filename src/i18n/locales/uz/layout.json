@@ -1,0 +1,19 @@
+{
+  "dashboard": "Boshqaruv paneli",
+  "posTerminal": "POS Terminal",
+  "products": "Mahsulotlar",
+  "categories": "Kategoriyalar",
+  "inventory": "Inventar",
+  "sales": "Sotuvlar",
+  "payments": "To'lovlar",
+  "customers": "Mijozlar",
+  "purchases": "Xaridlar",
+  "employees": "Xodimlar",
+  "reports": "Hisobotlar",
+  "billing": "Billing",
+  "settings": "Sozlamalar",
+  "showSidebar": "Yon panelni ko'rsatish",
+  "hideSidebar": "Yon panelni yashirish",
+  "selectCompany": "Kompaniya tanlang",
+  "signOut": "Chiqish"
+}

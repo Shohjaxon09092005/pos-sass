@@ -670,7 +670,7 @@ export default function CustomersPage() {
             <div>
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
-                ${totalSpent.toFixed(2)}
+                {totalSpent.toFixed(2)} UZS
               </p>
             </div>
             <div className="bg-green-500 p-3 rounded-lg">
@@ -684,7 +684,7 @@ export default function CustomersPage() {
             <div>
               <p className="text-sm font-medium text-gray-600">Avg Spent</p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
-                ${avgSpentPerCustomer.toFixed(2)}
+                {avgSpentPerCustomer.toFixed(2)} UZS
               </p>
             </div>
             <div className="bg-purple-500 p-3 rounded-lg">
@@ -795,7 +795,7 @@ export default function CustomersPage() {
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                   <div className="text-center">
                     <p className="text-sm font-medium text-gray-900">
-                      ${customer.totalSpent.toFixed(2)}
+                      {customer.totalSpent.toFixed(2)} UZS
                     </p>
                     <p className="text-xs text-gray-500">Total Spent</p>
                   </div>
@@ -905,7 +905,7 @@ export default function CustomersPage() {
                         Total Spent
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
-                        ${customerStats.totalSpent.toFixed(2)}
+                        {customerStats.totalSpent.toFixed(2)} UZS
                       </p>
                     </div>
                   </div>
@@ -919,7 +919,7 @@ export default function CustomersPage() {
                         Current Due
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
-                        ${customerStats.totalDue.toFixed(2)}
+                        {(customerStats.totalDue || 0).toFixed(2)} UZS
                       </p>
                     </div>
                   </div>
@@ -1061,15 +1061,15 @@ export default function CustomersPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-gray-900">
-                              ${parseFloat(sale.amount_total).toFixed(2)}
+                              {(parseFloat(sale.amount_total) || 0).toFixed(2)} UZS
                             </p>
                             <div className="flex items-center space-x-2 text-sm">
                               <span className="text-green-600">
-                                Paid: ${parseFloat(sale.amount_paid).toFixed(2)}
+                                Paid: {(parseFloat(sale.amount_paid) || 0).toFixed(2)} UZS
                               </span>
                               {parseFloat(sale.amount_due) > 0 && (
                                 <span className="text-orange-600">
-                                  Due: ${parseFloat(sale.amount_due).toFixed(2)}
+                                  Due: {(parseFloat(sale.amount_due) || 0).toFixed(2)} UZS
                                 </span>
                               )}
                             </div>
@@ -1113,21 +1113,21 @@ export default function CustomersPage() {
                                 </div>
                                 <div className="text-right">
                                   <p className="text-sm font-medium text-gray-900">
-                                    {item.quantity} x $
+                                    {item.quantity} x
                                     {item.product_details
                                       ? parseFloat(
                                           item.product_details.price
                                         ).toFixed(2)
-                                      : "0.00"}
+                                      : "0.00"} UZS
                                   </p>
                                   <p className="text-sm text-gray-600">
-                                    $
+                                    
                                     {(
                                       parseFloat(item.quantity) *
                                       (item.product_details
                                         ? parseFloat(item.product_details.price)
                                         : 0)
-                                    ).toFixed(2)}
+                                    ).toFixed(2)} UZS
                                   </p>
                                 </div>
                               </div>

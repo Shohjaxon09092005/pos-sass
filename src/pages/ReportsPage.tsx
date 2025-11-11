@@ -311,7 +311,7 @@ export default function AdvancedReportsPage() {
                       <div>
                         <p className="text-sm font-medium text-gray-600">Current Period Sales</p>
                         <p className="text-2xl font-bold text-gray-900 mt-1">
-                          ${parseFloat(comparison.current_period?.total_sales || 0).toLocaleString()}
+                          {parseFloat(comparison.current_period?.total_sales || 0).toLocaleString()} UZS
                         </p>
                         <p className="text-sm text-gray-600 mt-1">
                           {comparison.current_period?.transaction_count || 0} transactions
@@ -338,7 +338,7 @@ export default function AdvancedReportsPage() {
                       <div className="p-4 bg-gray-50 rounded-xl">
                         <p className="text-xs text-gray-600 mb-1">Previous Period</p>
                         <p className="text-lg font-bold text-gray-900">
-                          ${parseFloat(comparison.previous_period?.total_sales || 0).toLocaleString()}
+                          {parseFloat(comparison.previous_period?.total_sales || 0).toLocaleString()} UZS
                         </p>
                         <p className="text-xs text-gray-600 mt-1">
                           {comparison.previous_period?.transaction_count || 0} orders
@@ -347,7 +347,7 @@ export default function AdvancedReportsPage() {
                       <div className="p-4 bg-gray-50 rounded-xl">
                         <p className="text-xs text-gray-600 mb-1">Avg Transaction</p>
                         <p className="text-lg font-bold text-gray-900">
-                          ${parseFloat(comparison.current_period?.average_transaction || 0).toFixed(2)}
+                          {parseFloat(comparison.current_period?.average_transaction || 0).toFixed(2)} UZS
                         </p>
                         <p className="text-xs text-gray-600 mt-1">per order</p>
                       </div>
@@ -368,25 +368,25 @@ export default function AdvancedReportsPage() {
                     <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                       <span className="text-sm font-medium text-gray-600">Gross Revenue</span>
                       <span className="text-lg font-bold text-gray-900">
-                        ${parseFloat(profitLoss.gross_revenue || 0).toLocaleString()}
+                        {parseFloat(profitLoss.gross_revenue || 0).toLocaleString()} UZS
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                       <span className="text-sm font-medium text-gray-600">Cost of Goods</span>
                       <span className="text-lg font-semibold text-red-600">
-                        -${parseFloat(profitLoss.cost_of_goods || 0).toLocaleString()}
+                        -{parseFloat(profitLoss.cost_of_goods || 0).toLocaleString()} UZS
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                       <span className="text-sm font-medium text-gray-600">Gross Profit</span>
                       <span className="text-lg font-bold text-green-600">
-                        ${parseFloat(profitLoss.gross_profit || 0).toLocaleString()}
+                        {parseFloat(profitLoss.gross_profit || 0).toLocaleString()} UZS
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                       <span className="text-sm font-medium text-gray-600">Operating Expenses</span>
                       <span className="text-lg font-semibold text-red-600">
-                        -${parseFloat(profitLoss.operating_expenses || 0).toLocaleString()}
+                        -{parseFloat(profitLoss.operating_expenses || 0).toLocaleString()} UZS
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-3 bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl">
@@ -397,7 +397,7 @@ export default function AdvancedReportsPage() {
                         </p>
                       </div>
                       <span className="text-2xl font-bold text-blue-600">
-                        ${parseFloat(profitLoss.net_profit || 0).toLocaleString()}
+                        {parseFloat(profitLoss.net_profit || 0).toLocaleString()} UZS
                       </span>
                     </div>
                   </div>
@@ -426,7 +426,7 @@ export default function AdvancedReportsPage() {
                         />
                         <YAxis stroke="#666" fontSize={12} />
                         <Tooltip 
-                          formatter={(value) => [`$${parseFloat(value).toFixed(2)}`, 'Sales']}
+                          formatter={(value) => [`${parseFloat(value).toFixed(2)} UZS`, 'Sales']}
                           contentStyle={{ 
                             backgroundColor: 'white', 
                             border: '1px solid #e5e7eb',
@@ -447,7 +447,7 @@ export default function AdvancedReportsPage() {
                             {peakHours.peak_hour.hour}:00
                           </p>
                           <p className="text-sm text-green-700 mt-1">
-                            ${parseFloat(peakHours.peak_hour.total_sales || 0).toFixed(2)} sales
+                            {parseFloat(peakHours.peak_hour.total_sales || 0).toFixed(2)} UZS sales
                           </p>
                         </div>
                         <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
@@ -459,7 +459,7 @@ export default function AdvancedReportsPage() {
                             {peakHours.slowest_hour?.hour || 'N/A'}:00
                           </p>
                           <p className="text-sm text-orange-700 mt-1">
-                            ${parseFloat(peakHours.slowest_hour?.total_sales || 0).toFixed(2)} sales
+                            {parseFloat(peakHours.slowest_hour?.total_sales || 0).toFixed(2)} UZS sales
                           </p>
                         </div>
                       </div>
@@ -505,13 +505,13 @@ export default function AdvancedReportsPage() {
                         <div>
                           <p className="text-sm text-gray-600">Revenue</p>
                           <p className="text-xl font-bold text-gray-900">
-                            ${parseFloat(data.revenue || 0).toLocaleString()}
+                            {parseFloat(data.revenue || 0).toLocaleString()} UZS
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Profit</p>
                           <p className="text-lg font-semibold text-green-600">
-                            ${parseFloat(data.profit || 0).toLocaleString()}
+                            {parseFloat(data.profit || 0).toLocaleString()} UZS
                           </p>
                         </div>
                       </div>
@@ -556,7 +556,7 @@ export default function AdvancedReportsPage() {
                                 </span>
                               </td>
                               <td className="py-3 text-right font-semibold text-gray-900">
-                                ${parseFloat(product.revenue || 0).toLocaleString()}
+                                  {parseFloat(product.revenue || 0).toLocaleString()} UZS
                               </td>
                               <td className="py-3 text-right text-gray-600">
                                 {parseFloat(product.quantity_sold || 0).toFixed(0)}
@@ -641,7 +641,7 @@ export default function AdvancedReportsPage() {
                                 {customer.frequency}
                               </td>
                               <td className="py-3 text-right font-semibold text-gray-900">
-                                ${parseFloat(customer.monetary || 0).toLocaleString()}
+                                {parseFloat(customer.monetary || 0).toLocaleString()} UZS
                               </td>
                               <td className="py-3 text-center">
                                 <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
@@ -675,17 +675,17 @@ export default function AdvancedReportsPage() {
                   <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
                     <DollarSign className="h-8 w-8 mb-3 opacity-80" />
                     <p className="text-sm opacity-90 mb-1">Gross Revenue</p>
-                    <p className="text-3xl font-bold">${parseFloat(profitLoss.gross_revenue || 0).toLocaleString()}</p>
+                    <p className="text-3xl font-bold">{parseFloat(profitLoss.gross_revenue || 0).toLocaleString()} UZS</p>
                   </div>
                   <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
                     <TrendingUp className="h-8 w-8 mb-3 opacity-80" />
                     <p className="text-sm opacity-90 mb-1">Gross Profit</p>
-                    <p className="text-3xl font-bold">${parseFloat(profitLoss.gross_profit || 0).toLocaleString()}</p>
+                    <p className="text-3xl font-bold">{parseFloat(profitLoss.gross_profit || 0).toLocaleString()} UZS</p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
                     <Award className="h-8 w-8 mb-3 opacity-80" />
                     <p className="text-sm opacity-90 mb-1">Net Profit</p>
-                    <p className="text-3xl font-bold">${parseFloat(profitLoss.net_profit || 0).toLocaleString()}</p>
+                    <p className="text-3xl font-bold">{parseFloat(profitLoss.net_profit || 0).toLocaleString()} UZS</p>
                   </div>
                   <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white">
                     <Target className="h-8 w-8 mb-3 opacity-80" />
@@ -702,7 +702,7 @@ export default function AdvancedReportsPage() {
                       <XAxis dataKey="name" stroke="#666" />
                       <YAxis stroke="#666" />
                       <Tooltip 
-                        formatter={(value) => [`$${parseFloat(value).toLocaleString()}`, '']}
+                        formatter={(value) => [`${parseFloat(value).toLocaleString()} UZS`, '']}
                         contentStyle={{ 
                           backgroundColor: 'white', 
                           border: '1px solid #e5e7eb',
@@ -769,7 +769,7 @@ export default function AdvancedReportsPage() {
                           />
                           <YAxis stroke="#666" fontSize={12} />
                           <Tooltip 
-                            formatter={(value) => [`$${parseFloat(value).toFixed(2)}`, 'Sales']}
+                            formatter={(value) => [`${parseFloat(value).toFixed(2)} UZS`, 'Sales']}
                             contentStyle={{ 
                               backgroundColor: 'white', 
                               border: '1px solid #e5e7eb',
@@ -803,7 +803,7 @@ export default function AdvancedReportsPage() {
                             {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                           </p>
                           <p className="text-2xl font-bold text-blue-600">
-                            ${parseFloat(day.forecasted_sales || 0).toFixed(2)}
+                            {parseFloat(day.forecasted_sales || 0).toFixed(2)} UZS
                           </p>
                           <p className="text-xs text-blue-700 mt-1">Projected Sales</p>
                         </div>
