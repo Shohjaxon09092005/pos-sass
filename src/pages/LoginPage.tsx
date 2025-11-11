@@ -54,12 +54,6 @@ export default function LoginPage() {
     }
   };
 
-  const demoAccounts = [
-    { email: "admin@demo.com", password: "password", role: "Admin" },
-    { email: "manager@demo.com", password: "password", role: "Manager" },
-    { email: "cashier@demo.com", password: "password", role: "Cashier" },
-  ];
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-md w-full space-y-8 p-8">
@@ -130,29 +124,6 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          <div className="mt-8 border-t pt-6">
-            <p className="text-sm text-gray-600 mb-4 font-medium">
-              Demo Accounts:
-            </p>
-            <div className="space-y-3">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.email}
-                  onClick={() => {
-                    setEmail(account.email);
-                    setPassword(account.password);
-                  }}
-                  className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="text-sm font-medium text-gray-900">
-                    {account.role}
-                  </div>
-                  <div className="text-xs text-gray-500">{account.email}</div>
-                </button>
-              ))}
-            </div>
-          </div>
           <div className="mt-4 text-center">
             <button onClick={() => navigate('/register')} className="text-sm text-gray-600 hover:text-blue-600">Don't have an account? Register</button>
           </div>
