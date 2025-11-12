@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 // API base URL
 const API_URL = import.meta.env.VITE_API_URL;
@@ -90,6 +91,7 @@ interface CustomerStats {
 }
 
 export default function CustomersPage() {
+  const { t } = useTranslation('customers');
   const { company } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,13 +133,13 @@ export default function CustomersPage() {
     if (file) {
       // Fayl hajmini tekshirish (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError("Rasm hajmi 5MB dan katta bo'lmasligi kerak");
+        setError(t('customers.errors.imageTooLarge'));
         return;
       }
 
       // Rasm formatini tekshirish
       if (!file.type.startsWith('image/')) {
-        setError("Faqat rasm fayllari qabul qilinadi");
+        setError(t('customers.errors.invalidImageFormat'));
         return;
       }
 
@@ -354,7 +356,7 @@ export default function CustomersPage() {
     } catch (err) {
       console.error("Error fetching customer sales:", err);
       setError(
-        `Failed to load customer sales data: ${
+        `${t('customers.errors.failedToLoadSales')}: ${
           err instanceof Error ? err.message : "Unknown error"
         }`
       );
@@ -484,7 +486,7 @@ export default function CustomersPage() {
     } catch (err) {
       console.error("Error updating customer:", err);
       setError(
-        `Failed to update customer: ${
+        `${t('customers.errors.failedToUpdate')}: ${
           err instanceof Error ? err.message : "Unknown error"
         }`
       );
@@ -493,7 +495,7 @@ export default function CustomersPage() {
 
   // Delete customer
   const deleteCustomer = async (customerId: string) => {
-    if (!window.confirm("Are you sure you want to delete this customer?")) {
+    if (!window.confirm(t('customers.errors.deleteConfirmation'))) {
       return;
     }
 
@@ -518,7 +520,7 @@ export default function CustomersPage() {
     } catch (err) {
       console.error("Error deleting customer:", err);
       setError(
-        `Failed to delete customer: ${
+        `${t('customers.errors.failedToDelete')}: ${
           err instanceof Error ? err.message : "Unknown error"
         }`
       );
@@ -618,9 +620,9 @@ export default function CustomersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('customers.title')}</h1>
           <p className="text-sm text-gray-600">
-            Manage your customer relationships
+            {t('customers.subtitle')}
           </p>
         </div>
 
@@ -632,7 +634,7 @@ export default function CustomersPage() {
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Plus className="h-5 w-5" />
-          <span>Add Customer</span>
+          <span>{t('customers.addCustomer')}</span>
         </button>
       </div>
 
@@ -653,7 +655,7 @@ export default function CustomersPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Total Customers
+                {t('customers.stats.totalCustomers')}
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {totalCustomers}
@@ -668,7 +670,7 @@ export default function CustomersPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+              <p className="text-sm font-medium text-gray-600">{t('customers.stats.totalRevenue')}</p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {totalSpent.toFixed(2)} UZS
               </p>
@@ -682,7 +684,7 @@ export default function CustomersPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Avg Spent</p>
+              <p className="text-sm font-medium text-gray-600">{t('customers.stats.avgSpent')}</p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {avgSpentPerCustomer.toFixed(2)} UZS
               </p>
@@ -697,7 +699,7 @@ export default function CustomersPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Loyalty Points
+                {t('customers.stats.loyaltyPoints')}
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {totalLoyaltyPoints}
@@ -716,7 +718,7 @@ export default function CustomersPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
           <input
             type="text"
-            placeholder="Search customers..."
+            placeholder={t('customers.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -729,12 +731,12 @@ export default function CustomersPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <User className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No customers found
+              {t('customers.noCustomers')}
           </h3>
           <p className="text-gray-500 mb-4">
             {searchTerm
-              ? "Try adjusting your search terms"
-              : "Get started by adding your first customer"}
+              ? t('customers.adjustSearch')
+              : t('customers.getStarted')}
           </p>
           <button
             onClick={() => {
@@ -743,7 +745,7 @@ export default function CustomersPage() {
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
           >
-            Add Customer
+            {t('customers.addCustomer')}
           </button>
         </div>
       ) : (
@@ -772,7 +774,7 @@ export default function CustomersPage() {
                     {customer.name}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Member since {format(customer.createdAt, "MMM yyyy")}
+                    {t('customers.customer.memberSince')} {format(customer.createdAt, "MMM yyyy")}
                   </p>
                 </div>
               </div>
@@ -797,13 +799,13 @@ export default function CustomersPage() {
                     <p className="text-sm font-medium text-gray-900">
                       {customer.totalSpent.toFixed(2)} UZS
                     </p>
-                    <p className="text-xs text-gray-500">Total Spent</p>
+                    <p className="text-xs text-gray-500">{t('customers.customer.totalSpent')}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-medium text-gray-900">
                       {customer.loyaltyPoints}
                     </p>
-                    <p className="text-xs text-gray-500">Points</p>
+                    <p className="text-xs text-gray-500">{t('customers.customer.points')}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-medium text-gray-900">
@@ -811,7 +813,7 @@ export default function CustomersPage() {
                         ? format(customer.lastVisit, "MMM dd")
                         : "Never"}
                     </p>
-                    <p className="text-xs text-gray-500">Last Visit</p>
+                    <p className="text-xs text-gray-500">{t('customers.customer.lastVisit')}</p>
                   </div>
                 </div>
 
@@ -821,21 +823,21 @@ export default function CustomersPage() {
                     className="flex-1 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    View
+                    {t('customers.customer.view')}
                   </button>
                   <button
                     onClick={() => handleEditClick(customer)}
                     className="flex-1 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                   >
                     <Edit className="h-4 w-4 mr-1" />
-                    Edit
+                    {t('customers.customer.edit')}
                   </button>
                   <button
                     onClick={() => deleteCustomer(customer.id)}
                     className="flex-1 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    {t('customers.customer.delete')}
                   </button>
                 </div>
               </div>
@@ -844,7 +846,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Customer Detail Modal */}
+       {/* Customer Detail Modal */}
       {showDetailModal && selectedCustomer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
@@ -852,7 +854,7 @@ export default function CustomersPage() {
             <div className="flex-shrink-0 p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900">
-                  Customer Details - {selectedCustomer.name}
+                  {t('customers.details.title')} - {selectedCustomer.name}
                 </h3>
                 <button
                   onClick={() => {
@@ -889,7 +891,7 @@ export default function CustomersPage() {
                     {selectedCustomer.name}
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Member since{" "}
+                    {t('customers.customer.memberSince')}{" "}
                     {format(selectedCustomer.createdAt, "MMMM yyyy")}
                   </p>
                 </div>
@@ -902,7 +904,7 @@ export default function CustomersPage() {
                     <DollarSign className="h-8 w-8 text-blue-600 mr-3" />
                     <div>
                       <p className="text-sm font-medium text-blue-600">
-                        Total Spent
+                        {t('customers.details.totalSpent')}
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
                         {customerStats.totalSpent.toFixed(2)} UZS
@@ -916,7 +918,7 @@ export default function CustomersPage() {
                     <CreditCard className="h-8 w-8 text-orange-600 mr-3" />
                     <div>
                       <p className="text-sm font-medium text-orange-600">
-                        Current Due
+                        {t('customers.details.currentDue')}
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
                         {(customerStats.totalDue || 0).toFixed(2)} UZS
@@ -930,7 +932,7 @@ export default function CustomersPage() {
                     <ShoppingBag className="h-8 w-8 text-green-600 mr-3" />
                     <div>
                       <p className="text-sm font-medium text-green-600">
-                        Transactions
+                        {t('customers.details.transactions')}
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
                         {customerStats.totalTransactions}
@@ -944,7 +946,7 @@ export default function CustomersPage() {
                     <Package className="h-8 w-8 text-purple-600 mr-3" />
                     <div>
                       <p className="text-sm font-medium text-purple-600">
-                        Products
+                        {t('customers.details.products')}
                       </p>
                       <p className="text-2xl font-bold text-gray-900">
                         {customerStats.totalProducts}
@@ -958,12 +960,12 @@ export default function CustomersPage() {
                     <Calendar className="h-8 w-8 text-indigo-600 mr-3" />
                     <div>
                       <p className="text-sm font-medium text-indigo-600">
-                        Last Purchase
+                        {t('customers.details.lastPurchase')}
                       </p>
                       <p className="text-lg font-bold text-gray-900">
                         {customerStats.lastPurchase
                           ? format(customerStats.lastPurchase, "MMM dd, yyyy")
-                          : "Never"}
+                          : t('customers.customer.never')}
                       </p>
                     </div>
                   </div>
@@ -974,44 +976,44 @@ export default function CustomersPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Email
+                      {t('customers.details.email')}
                     </label>
                     <p className="text-gray-900">
-                      {selectedCustomer.email || "Not provided"}
+                      {selectedCustomer.email || t('customers.details.notProvided')}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Phone
+                      {t('customers.details.phone')}
                     </label>
                     <p className="text-gray-900">
-                      {selectedCustomer.phone || "Not provided"}
+                      {selectedCustomer.phone || t('customers.details.notProvided')}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Address
+                      {t('customers.details.address')}
                     </label>
                     <p className="text-gray-900">
-                      {selectedCustomer.address || "Not provided"}
+                      {selectedCustomer.address || t('customers.details.notProvided')}
                     </p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Loyalty Points
+                      {t('customers.details.loyaltyPoints')}
                     </label>
                     <p className="text-xl font-semibold text-blue-600">
                       {selectedCustomer.loyaltyPoints}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Earned from purchases
+                      {t('customers.details.earnedFromPurchases')}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Customer Since
+                      {t('customers.details.customerSince')}
                     </label>
                     <p className="text-gray-900">
                       {format(selectedCustomer.createdAt, "MMMM dd, yyyy")}
@@ -1024,10 +1026,10 @@ export default function CustomersPage() {
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold text-gray-900">
-                    Purchase History
+                    {t('customers.details.purchaseHistory')}
                   </h4>
                   <span className="text-sm text-gray-500">
-                    {customerSales.length} transactions
+                    {customerSales.length} {t('customers.details.transactionsCount')}
                   </span>
                 </div>
 
@@ -1038,7 +1040,7 @@ export default function CustomersPage() {
                 ) : customerSales.length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No purchase history found</p>
+                    <p className="text-gray-500">{t('customers.details.noPurchaseHistory')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -1050,7 +1052,7 @@ export default function CustomersPage() {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="font-medium text-gray-900">
-                              Sale #{sale.id.slice(0, 8)}
+                              {t('customers.details.sale')} #{sale.id.slice(0, 8)}
                             </p>
                             <p className="text-sm text-gray-500">
                               {format(
@@ -1065,11 +1067,11 @@ export default function CustomersPage() {
                             </p>
                             <div className="flex items-center space-x-2 text-sm">
                               <span className="text-green-600">
-                                Paid: {(parseFloat(sale.amount_paid) || 0).toFixed(2)} UZS
+                                {t('customers.details.paid')}: {(parseFloat(sale.amount_paid) || 0).toFixed(2)} UZS
                               </span>
                               {parseFloat(sale.amount_due) > 0 && (
                                 <span className="text-orange-600">
-                                  Due: {(parseFloat(sale.amount_due) || 0).toFixed(2)} UZS
+                                  {t('customers.details.due')}: {(parseFloat(sale.amount_due) || 0).toFixed(2)} UZS
                                 </span>
                               )}
                             </div>
@@ -1079,7 +1081,7 @@ export default function CustomersPage() {
                         {/* Products in this sale */}
                         <div className="border-t border-gray-200 pt-3">
                           <p className="text-sm font-medium text-gray-700 mb-2">
-                            Products purchased:
+                            {t('customers.details.productsPurchased')}:
                           </p>
                           <div className="space-y-2">
                             {sale.items.map((item, index) => (
@@ -1102,7 +1104,7 @@ export default function CustomersPage() {
                                   <div>
                                     <p className="text-sm font-medium text-gray-900">
                                       {item.product_details?.title ||
-                                        "Unknown Product"}
+                                        t('customers.details.unknownProduct')}
                                     </p>
                                     {item.product_details?.sku && (
                                       <p className="text-xs text-gray-500">
@@ -1152,13 +1154,13 @@ export default function CustomersPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Close
+                  {t('customers.details.close')}
                 </button>
                 <button
                   onClick={() => handleEditClick(selectedCustomer)}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Edit Customer
+                  {t('customers.details.editCustomer')}
                 </button>
               </div>
             </div>
@@ -1173,7 +1175,7 @@ export default function CustomersPage() {
             <div className="flex-shrink-0 p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900">
-                  {showEditModal ? "Edit Customer" : "Add New Customer"}
+                  {showEditModal ? t('customers.form.editTitle') : t('customers.form.addTitle')}
                 </h3>
                 <button
                   onClick={() => {
@@ -1194,7 +1196,7 @@ export default function CustomersPage() {
                 {/* Image Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Profile Image
+                    {t('customers.form.profileImage')}
                   </label>
                   <div className="flex items-center space-x-4">
                     <div className="relative h-16 w-16 rounded-full overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
@@ -1226,7 +1228,7 @@ export default function CustomersPage() {
                         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        PNG, JPG, JPEG up to 5MB
+                        {t('customers.form.uploadHint')}
                       </p>
                     </div>
                   </div>
@@ -1234,7 +1236,7 @@ export default function CustomersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name *
+                    {t('customers.form.fullName')}
                   </label>
                   <input
                     type="text"
@@ -1244,13 +1246,13 @@ export default function CustomersPage() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter customer name"
+                    placeholder={t('customers.form.fullNamePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
+                    {t('customers.form.email')}
                   </label>
                   <input
                     type="email"
@@ -1259,12 +1261,12 @@ export default function CustomersPage() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="customer@email.com"
+                    placeholder={t('customers.form.emailPlaceholder')}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
+                    {t('customers.form.phone')}
                   </label>
                   <input
                     type="tel"
@@ -1273,13 +1275,13 @@ export default function CustomersPage() {
                       setFormData({ ...formData, phone: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="+1-555-0123"
+                    placeholder={t('customers.form.phonePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address 1
+                    {t('customers.form.address1')}
                   </label>
                   <input
                     type="text"
@@ -1288,13 +1290,13 @@ export default function CustomersPage() {
                       setFormData({ ...formData, address_1: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Street address"
+                    placeholder={t('customers.form.address1Placeholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address 2
+                    {t('customers.form.address2')}
                   </label>
                   <input
                     type="text"
@@ -1303,13 +1305,13 @@ export default function CustomersPage() {
                       setFormData({ ...formData, address_2: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Apartment, suite, etc."
+                    placeholder={t('customers.form.address2Placeholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
+                    {t('customers.form.notes')}
                   </label>
                   <textarea
                     rows={3}
@@ -1318,7 +1320,7 @@ export default function CustomersPage() {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Additional notes..."
+                    placeholder={t('customers.form.notesPlaceholder')}
                   />
                 </div>
               </form>
@@ -1336,14 +1338,14 @@ export default function CustomersPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t('customers.form.cancel')}
                 </button>
                 <button
                   type="submit"
                   onClick={handleSubmit}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  {showEditModal ? "Update Customer" : "Add Customer"}
+                  {showEditModal ? t('customers.form.update') : t('customers.form.add')}
                 </button>
               </div>
             </div>

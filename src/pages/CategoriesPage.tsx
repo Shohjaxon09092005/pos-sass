@@ -17,8 +17,10 @@ import {
   Ruler,
 } from "lucide-react";
 import { clsx } from "clsx";
+import { useTranslation } from "react-i18next";
 const API_URL = import.meta.env.VITE_API_URL;
 export default function CategoriesPage() {
+  const { t, i18n } = useTranslation("categories");
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -42,14 +44,11 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${API_URL}/api/v1/products/categories/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/v1/products/categories/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -74,14 +73,11 @@ export default function CategoriesPage() {
   const fetchUnits = async () => {
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${API_URL}/api/v1/products/units/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/v1/products/units/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -157,17 +153,14 @@ export default function CategoriesPage() {
         parent: (formData.get("parent") as string) || null,
       };
 
-      const response = await fetch(
-      `${API_URL}/api/v1/products/categories/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(categoryData),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/v1/products/categories/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(categoryData),
+      });
 
       if (response.ok) {
         await fetchCategories();
@@ -224,10 +217,7 @@ export default function CategoriesPage() {
   // Kategoriyani o'chirish
   const handleDeleteCategory = async (categoryId: string) => {
     if (
-      !window.confirm(
-        "Haqiqatan ham ushbu kategoriyani oʻchirmoqchimisiz? Bu amalni bekor qilib boʻlmaydi."
-      )
-    )
+      !window.confirm(t('deleteCategoryConfirmation')))
       return;
 
     try {
@@ -252,7 +242,7 @@ export default function CategoriesPage() {
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      alert("Xatolik yuz berdi");
+      alert(t('deleteCategoryError'));
     }
   };
 
@@ -268,17 +258,14 @@ export default function CategoriesPage() {
         abbreviation: formData.get("abbreviation") as string,
       };
 
-      const response = await fetch(
-        `${API_URL}/api/v1/products/units/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(unitData),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/v1/products/units/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(unitData),
+      });
 
       if (response.ok) {
         await fetchUnits();
@@ -334,12 +321,8 @@ export default function CategoriesPage() {
 
   // Birlikni o'chirish
   const handleDeleteUnit = async (unitId: string) => {
-    if (
-      !window.confirm(
-        "Haqiqatan ham ushbu birlikni oʻchirmoqchimisiz? Bu amalni bekor qilib boʻlmaydi."
-      )
-    )
-      return;
+    if (!window.confirm(t('deleteUnitConfirmation'))) return;
+      
 
     try {
       const token = localStorage.getItem("access_token");
@@ -357,21 +340,19 @@ export default function CategoriesPage() {
         await fetchUnits();
       } else {
         console.error("Failed to delete unit");
-        alert(
-          "Birlikni oʻchirish muvaffaqiyatsiz tugadi. U bilan bogʻliq mahsulotlar mavjud boʻlishi mumkin."
-        );
+        alert(t('deleteUnitError'));
       }
     } catch (error) {
       console.error("Error deleting unit:", error);
-      alert("Xatolik yuz berdi");
+      alert(t('unknown'));
     }
   };
 
   // Kategoriya nomini olish
   const getCategoryName = (categoryId: string | null) => {
-    if (!categoryId || !Array.isArray(categories)) return "Asosiy kategoriya";
+    if (!categoryId || !Array.isArray(categories)) return t('mainCategory');
     const category = categories.find((cat) => cat.id === categoryId);
-    return category ? category.title : "Noma'lum";
+    return category ? category.title : t('unknown');
   };
 
   // Pastki kategoriyalarni olish
@@ -498,10 +479,10 @@ export default function CategoriesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Kategoriyalar va Birliklar
+            {t('categoriesAndUnits')}
           </h1>
           <p className="text-sm text-gray-600">
-            Mahsulot kategoriyalari va o'lchov birliklarini boshqaring
+            {t('manageProductCategories')}
           </p>
         </div>
         <button
@@ -515,8 +496,8 @@ export default function CategoriesPage() {
           <Plus className="h-5 w-5" />
           <span>
             {activeTab === "categories"
-              ? "Kategoriya qo'shish"
-              : "Birlik qo'shish"}
+              ? t('addCategory')
+              : t('addUnit')}
           </span>
         </button>
       </div>
@@ -533,7 +514,7 @@ export default function CategoriesPage() {
                 : "text-gray-600 hover:text-gray-900"
             )}
           >
-            Kategoriyalar
+            {t('categories')}
           </button>
           <button
             onClick={() => setActiveTab("units")}
@@ -544,7 +525,7 @@ export default function CategoriesPage() {
                 : "text-gray-600 hover:text-gray-900"
             )}
           >
-            O'lchov Birliklari
+            {t('units')}
           </button>
         </div>
       </div>
@@ -557,7 +538,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Jami kategoriyalar
+                    {t('totalCategories')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalCategories}
@@ -573,7 +554,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Asosiy kategoriyalar
+                      {t('mainCategories')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {mainCategories}
@@ -589,7 +570,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Pastki kategoriyalar
+                    {t('subcategories')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {subcategories}
@@ -608,7 +589,7 @@ export default function CategoriesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Kategoriyalarni qidirish..."
+                placeholder={t('searchCategories')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -620,7 +601,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">
-                Kategoriya tuzilishi
+                {t('categoryStructure')}
               </h3>
             </div>
 
@@ -642,7 +623,7 @@ export default function CategoriesPage() {
                           </span>
                           {category.parent && (
                             <div className="text-sm text-gray-500">
-                              Ota-kategoriya: {getCategoryName(category.parent)}
+                            {t('parentCategoryLabel')} {getCategoryName(category.parent)}
                             </div>
                           )}
                         </div>
@@ -651,12 +632,14 @@ export default function CategoriesPage() {
                         <button
                           onClick={() => setEditingCategory(category)}
                           className="text-blue-600 hover:text-blue-900 transition-colors p-1"
+                          title={t('edit')}
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(category.id)}
                           className="text-red-600 hover:text-red-900 transition-colors p-1"
+                          title={t('delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -665,7 +648,7 @@ export default function CategoriesPage() {
                   ))
                 ) : (
                   <div className="p-8 text-center text-gray-500">
-                    Sizning qidiruvingizga mos kategoriyalar topilmadi.
+                    {t('noSearchResultsCategories')}
                   </div>
                 )}
               </div>
@@ -677,8 +660,7 @@ export default function CategoriesPage() {
                   renderCategoryTree()
                 ) : (
                   <div className="p-8 text-center text-gray-500">
-                    Kategoriyalar topilmadi. Birinchi kategoriyani yaratishni
-                    boshlang.
+                    {t('noCategoriesFound')}
                   </div>
                 )}
               </div>
@@ -693,7 +675,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Jami birliklar
+                    {t('totalUnits')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalUnits}
@@ -709,7 +691,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    O'lchov birliklari
+                    {t('measurementUnits')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalUnits}
@@ -725,7 +707,7 @@ export default function CategoriesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Faol birliklar
+                    {t('activeUnits')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalUnits}
@@ -744,7 +726,7 @@ export default function CategoriesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Birliklarni qidirish..."
+                placeholder={t('searchUnits')}
                 value={unitSearchTerm}
                 onChange={(e) => setUnitSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -756,7 +738,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">
-                O'lchov Birliklari
+                {t('units')}
               </h3>
             </div>
 
@@ -784,12 +766,14 @@ export default function CategoriesPage() {
                       <button
                         onClick={() => setEditingUnit(unit)}
                         className="text-blue-600 hover:text-blue-900 transition-colors p-1"
+                        title={t('edit')}
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteUnit(unit.id)}
                         className="text-red-600 hover:text-red-900 transition-colors p-1"
+                        title={t('delete')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -799,8 +783,8 @@ export default function CategoriesPage() {
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   {unitSearchTerm
-                    ? "Sizning qidiruvingizga mos birliklar topilmadi."
-                    : "Birliklar topilmadi. Birinchi birlikni yaratishni boshlang."}
+                    ? t('noSearchResultsUnits')
+                    : t('noUnitsFound')}
                 </div>
               )}
             </div>
@@ -814,7 +798,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Yangi kategoriya qo'shish
+                {t('addNewCategory')}
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -827,27 +811,27 @@ export default function CategoriesPage() {
             <form onSubmit={handleAddCategory} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kategoriya nomi *
+                  {t('categoryName')} *
                 </label>
                 <input
                   type="text"
                   name="title"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Kategoriya nomini kiriting"
+                  placeholder={t('enterCategoryName')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ota-kategoriya
+                  {t('parentCategory')}
                 </label>
                 <select
                   name="parent"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">
-                    Asosiy kategoriya (ota-kategoriyasiz)
+                    {t('mainCategory')}
                   </option>
                   {Array.isArray(categories) &&
                     categories.map((category) => (
@@ -864,13 +848,13 @@ export default function CategoriesPage() {
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Kategoriya qo'shish
+                  {t('addCategory')}
                 </button>
               </div>
             </form>
@@ -884,7 +868,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Kategoriyani tahrirlash
+                {t('editCategory')}
               </h3>
               <button
                 onClick={() => setEditingCategory(null)}
@@ -897,7 +881,7 @@ export default function CategoriesPage() {
             <form onSubmit={handleUpdateCategory} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kategoriya nomi *
+                  {t('categoryName')} *
                 </label>
                 <input
                   type="text"
@@ -910,7 +894,7 @@ export default function CategoriesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ota-kategoriya
+                  {t('parentCategory')}
                 </label>
                 <select
                   name="parent"
@@ -918,7 +902,7 @@ export default function CategoriesPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">
-                    Asosiy kategoriya (ota-kategoriyasiz)
+                    {t('mainCategory')}
                   </option>
                   {Array.isArray(categories) &&
                     categories
@@ -937,14 +921,14 @@ export default function CategoriesPage() {
                   onClick={() => setEditingCategory(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4 inline mr-2" />
-                  Yangilash
+                  {t('update')}
                 </button>
               </div>
             </form>
@@ -958,7 +942,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Yangi birlik qo'shish
+                {t('addNewUnit')}
               </h3>
               <button
                 onClick={() => setShowAddUnitModal(false)}
@@ -971,27 +955,27 @@ export default function CategoriesPage() {
             <form onSubmit={handleAddUnit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Birlik nomi *
+                  {t('unitName')} *
                 </label>
                 <input
                   type="text"
                   name="title"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: Kilogramm"
+                  placeholder={t('unitNamePlaceholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Qisqartma *
+                  {t('abbreviation')} *
                 </label>
                 <input
                   type="text"
                   name="abbreviation"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: kg"
+                  placeholder={t('abbreviationPlaceholder')}
                 />
               </div>
 
@@ -1001,13 +985,13 @@ export default function CategoriesPage() {
                   onClick={() => setShowAddUnitModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Birlik qo'shish
+                  {t('addUnit')}
                 </button>
               </div>
             </form>
@@ -1021,7 +1005,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Birlikni tahrirlash
+                {t('editUnit')}
               </h3>
               <button
                 onClick={() => setEditingUnit(null)}
@@ -1034,7 +1018,7 @@ export default function CategoriesPage() {
             <form onSubmit={handleUpdateUnit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Birlik nomi *
+                  {t('unitName')} *
                 </label>
                 <input
                   type="text"
@@ -1047,7 +1031,7 @@ export default function CategoriesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Qisqartma *
+                  {t('abbreviation')} *
                 </label>
                 <input
                   type="text"
@@ -1064,14 +1048,14 @@ export default function CategoriesPage() {
                   onClick={() => setEditingUnit(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4 inline mr-2" />
-                  Yangilash
+                  {t('update')}
                 </button>
               </div>
             </form>

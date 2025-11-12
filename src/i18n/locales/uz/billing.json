@@ -1,0 +1,129 @@
+{
+  "billing": {
+    "title": "Hisob-kitob va To'lovlar",
+    "subtitle": "Hisob-fakturalar va to'lovlarni boshqaring",
+    "tabs": {
+      "overview": "Umumiy ko'rinish",
+      "plans": "Tariflar",
+      "invoices": "Hisob-fakturalar",
+      "payments": "To'lovlar"
+    },
+    "overview": {
+      "currentPlan": "Joriy Tarif",
+      "noActiveSubscription": "Faol obuna yo'q",
+      "currentlyOnPlan": "Siz hozirda {{plan}} tarifidasiz",
+      "perMonth": "oyiga",
+      "perYear": "yiliga",
+      "usage": {
+        "seats": "O'rinlar",
+        "companies": "Kompaniyalar",
+        "orders": "Buyurtmalar",
+        "registers": "Kassalar",
+        "remaining": "qoldi"
+      },
+      "recentActivity": {
+        "recentInvoices": "So'nggi Hisob-fakturalar",
+        "recentPayments": "So'nggi To'lovlar",
+        "viewAll": "Hammasini ko'rish",
+        "noInvoices": "Hisob-faktura topilmadi",
+        "noPayments": "To'lov topilmadi"
+      }
+    },
+    "invoices": {
+      "searchPlaceholder": "Hisob-fakturalarni qidirish...",
+      "filters": {
+        "allStatus": "Barcha Holatlar",
+        "paid": "To'langan",
+        "pending": "Kutilmoqda",
+        "overdue": "Muddati o'tgan"
+      },
+      "table": {
+        "invoice": "Hisob-faktura",
+        "customer": "Mijoz",
+        "totalAmount": "Jami Summa",
+        "paidAmount": "To'langan Summa",
+        "status": "Holat",
+        "created": "Yaratilgan",
+        "actions": "Amallar",
+        "showing": "{{count}} ta hisob-faktura {{total}} tadan ko'rsatilmoqda"
+      },
+      "noInvoices": "Hisob-faktura topilmadi"
+    },
+    "payments": {
+      "searchPlaceholder": "To'lovlarni qidirish...",
+      "filters": {
+        "allMethods": "Barcha Usullar",
+        "paymentMethod": "To'lov Usuli"
+      },
+      "table": {
+        "paymentId": "To'lov ID",
+        "invoice": "Hisob-faktura",
+        "amount": "Summa",
+        "method": "Usul",
+        "created": "Yaratilgan",
+        "showing": "{{count}} ta to'lov {{total}} tadan ko'rsatilmoqda"
+      },
+      "noPayments": "To'lov topilmadi"
+    },
+    "plans": {
+      "billingPeriod": {
+        "monthly": "Oylik",
+        "yearly": "Yillik",
+        "save": "20% tejang"
+      },
+      "features": {
+        "seatsIncluded": "Kiritilgan O'rinlar",
+        "companies": "Kompaniyalar",
+        "registers": "Kassalar",
+        "orders": "Buyurtmalar"
+      },
+      "plan": {
+        "currentPlan": "Joriy Tarif",
+        "selectPlan": "Tarifni Tanlash",
+        "perfectForGrowing": "O'sib borayotgan bizneslar uchun mukammal",
+        "noPlans": "Tarif rejalari mavjud emas",
+        "contactSupport": "Qo'shimcha ma'lumot uchun qo'llab-quvvatlash xizmatiga murojaat qiling"
+      },
+      "subscription": {
+        "currentSubscription": "Joriy Obuna Tafsilotlari",
+        "plan": "Tarif",
+        "status": "Holat",
+        "startDate": "Boshlanish Sanasi",
+        "endDate": "Tugash Sanasi",
+        "seatsUsed": "Ishlatilgan O'rinlar",
+        "autoRenew": "Avtomatik Yangilash",
+        "monthlyPrice": "Oylik Narx",
+        "yearlyPrice": "Yillik Narx",
+        "yes": "Ha",
+        "no": "Yo'q"
+      }
+    },
+    "actions": {
+      "viewPlans": "Tariflarni Ko'rish",
+      "download": "Yuklab olish",
+      "subscribe": "Tarifga Obuna Bo'lish",
+      "changePlan": "Tarifni O'zgartirish",
+      "confirmChange": "Sizda faol obuna mavjud. \"{{plan}}\" tarifiga o'zgartirishni istaysizmi? Bu joriy tarifingizni almashtiradi.",
+      "confirmSubscribe": "\"{{plan}}\" tarifiga obuna bo'lishni istaysizmi?",
+      "alreadySubscribed": "Siz allaqachon ushbu tarifga obunasiz.",
+      "successSubscribe": "Tarifga muvaffaqiyatli obuna bo'ldingiz!"
+    },
+    "status": {
+      "active": "Faol",
+      "expired": "Muddati o'tgan",
+      "cancelled": "Bekor qilingan",
+      "trial": "Sinov",
+      "paid": "To'langan",
+      "completed": "Yakunlangan",
+      "pending": "Kutilmoqda",
+      "overdue": "Muddati o'tgan",
+      "failed": "Muvaffaqiyatsiz",
+      "inactive": "Faol emas"
+    },
+    "errors": {
+      "failedToLoad": "Ma'lumotlarni yuklab bo'lmadi",
+      "failedToSubscribe": "Tarifga obuna bo'lish muvaffaqiyatsiz",
+      "failedToFetch": "{{resource}} ni yuklab bo'lmadi"
+    }
+  }
+}

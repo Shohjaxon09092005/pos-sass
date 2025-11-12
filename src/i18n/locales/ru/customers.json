@@ -1,0 +1,88 @@
+{
+  "customers": {
+    "title": "Клиенты",
+    "subtitle": "Управляйте взаимоотношениями с клиентами",
+    "addCustomer": "Добавить клиента",
+    "searchPlaceholder": "Поиск клиентов...",
+    "noCustomers": "Клиенты не найдены",
+    "adjustSearch": "Попробуйте изменить условия поиска",
+    "getStarted": "Начните с добавления первого клиента",
+    
+    "stats": {
+      "totalCustomers": "Всего клиентов",
+      "totalRevenue": "Общий доход",
+      "avgSpent": "Средние расходы",
+      "loyaltyPoints": "Бонусные баллы"
+    },
+    
+    "customer": {
+      "memberSince": "Клиент с",
+      "totalSpent": "Всего потрачено",
+      "points": "Баллы",
+      "lastVisit": "Последний визит",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "never": "Никогда"
+    },
+    
+    "details": {
+      "title": "Детали клиента",
+      "memberSince": "Клиент с",
+      "totalSpent": "Всего потрачено",
+      "currentDue": "Текущая задолженность",
+      "transactions": "Транзакции",
+      "products": "Товары",
+      "lastPurchase": "Последняя покупка",
+      "email": "Электронная почта",
+      "phone": "Телефон",
+      "address": "Адрес",
+      "loyaltyPoints": "Бонусные баллы",
+      "earnedFromPurchases": "Заработано с покупок",
+      "customerSince": "Клиент с",
+      "purchaseHistory": "История покупок",
+      "transactionsCount": "транзакций",
+      "noPurchaseHistory": "История покупок не найдена",
+      "sale": "Продажа",
+      "paid": "Оплачено",
+      "due": "Долг",
+      "productsPurchased": "Купленные товары",
+      "unknownProduct": "Неизвестный товар",
+      "close": "Закрыть",
+      "editCustomer": "Редактировать клиента"
+    },
+    
+    "form": {
+      "addTitle": "Добавить нового клиента",
+      "editTitle": "Редактировать клиента",
+      "profileImage": "Фото профиля",
+      "uploadHint": "PNG, JPG, JPEG до 5 МБ",
+      "fullName": "Полное имя *",
+      "fullNamePlaceholder": "Введите имя клиента",
+      "email": "Электронная почта",
+      "emailPlaceholder": "client@email.com",
+      "phone": "Телефон",
+      "phonePlaceholder": "+7-999-123-45-67",
+      "address1": "Адрес 1",
+      "address1Placeholder": "Улица, дом",
+      "address2": "Адрес 2",
+      "address2Placeholder": "Квартира, офис и т.д.",
+      "notes": "Заметки",
+      "notesPlaceholder": "Дополнительная информация...",
+      "cancel": "Отмена",
+      "update": "Обновить клиента",
+      "add": "Добавить клиента"
+    },
+    
+    "errors": {
+      "imageTooLarge": "Размер изображения должен быть меньше 5 МБ",
+      "invalidImageFormat": "Разрешены только файлы изображений",
+      "deleteConfirmation": "Вы уверены, что хотите удалить этого клиента?",
+      "failedToLoad": "Не удалось загрузить клиентов",
+      "failedToLoadSales": "Не удалось загрузить данные о продажах клиента",
+      "failedToCreate": "Ошибка при создании клиента",
+      "failedToUpdate": "Ошибка при обновлении клиента",
+      "failedToDelete": "Ошибка при удалении клиента"
+    }
+  }
+}

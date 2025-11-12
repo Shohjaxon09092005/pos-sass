@@ -1,0 +1,81 @@
+{
+  "employees": {
+    "title": "Сотрудники",
+    "subtitle": "Управление членами команды и ролями",
+    "inviteEmployee": "Пригласить сотрудника",
+    "loading": "Загрузка сотрудников...",
+    
+    "stats": {
+      "totalEmployees": "Всего сотрудников",
+      "viewers": "Просмотрщики",
+      "owners": "Владельцы",
+      "billingAdmins": "Биллинг Админы"
+    },
+    
+    "table": {
+      "teamMembers": "Члены команды",
+      "employee": "Сотрудник",
+      "role": "Роль",
+      "companies": "Компании",
+      "contact": "Контакт",
+      "actions": "Действия",
+      "you": "(Вы)",
+      "noCompanies": "Нет компаний"
+    },
+    
+    "roles": {
+      "viewer": "Просмотрщик",
+      "owner": "Владелец",
+      "billing_admin": "Биллинг Админ"
+    },
+    
+    "modals": {
+      "invite": {
+        "title": "Пригласить сотрудника",
+        "firstName": "Имя",
+        "firstNamePlaceholder": "Введите имя",
+        "lastName": "Фамилия",
+        "lastNamePlaceholder": "Введите фамилию",
+        "email": "Электронная почта *",
+        "emailPlaceholder": "сотрудник@компания.com",
+        "username": "Имя пользователя",
+        "usernamePlaceholder": "Оставьте пустым для использования имени из email",
+        "password": "Пароль",
+        "passwordPlaceholder": "Оставьте пустым для пароля по умолчанию",
+        "password2": "Подтвердите пароль",
+        "password2Placeholder": "Подтвердите ваш пароль",
+        "role": "Роль *",
+        "invitationNote": "Пригласительное письмо с инструкциями по настройке аккаунта будет отправлено сотруднику.",
+        "cancel": "Отмена",
+        "sendInvitation": "Отправить приглашение",
+        "passwordMismatch": "Пароли не совпадают",
+        "passwordWeak": "Пароль должен содержать не менее 8 символов",
+        "passwordRequired": "Пароль обязателен",
+        "sending": "Отправка...",
+        "passwordsMatch": "Пароли совпадают"
+      },
+      "edit": {
+        "title": "Редактировать сотрудника",
+        "newPassword": "Новый пароль",
+        "newPasswordPlaceholder": "Оставьте пустым, чтобы сохранить текущий пароль",
+        "update": "Обновить сотрудника",
+        "updating": "Обновление...",
+        "passwordMismatch": "Пароли не совпадают",
+        "passwordWeak": "Пароль должен содержать не менее 8 символов"
+      }
+    },
+    
+    "actions": {
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "deleteConfirmation": "Вы уверены, что хотите удалить этого сотрудника?"
+    },
+    
+    "errors": {
+      "createFailed": "Не удалось создать сотрудника",
+      "updateFailed": "Не удалось обновить сотрудника",
+      "deleteFailed": "Не удалось удалить сотрудника",
+      "fetchFailed": "Не удалось загрузить сотрудников"
+    }
+  }
+}

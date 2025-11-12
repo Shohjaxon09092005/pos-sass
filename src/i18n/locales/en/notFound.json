@@ -1,0 +1,8 @@
+{
+  "notFound": {
+    "title": "404 — Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "goToDashboard": "Go to Dashboard",
+    "signIn": "Sign in"
+  }
+}

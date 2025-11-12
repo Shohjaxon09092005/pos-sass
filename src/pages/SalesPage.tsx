@@ -12,7 +12,7 @@ import {
   Search,
   Calendar,
 } from "lucide-react";
-import { Printer } from 'lucide-react'; // or your icon library
+import { Printer } from "lucide-react"; // or your icon library
 // Types based on API response
 interface SaleItem {
   id: string;
@@ -176,7 +176,9 @@ interface Filters {
 }
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 export default function SalesPage() {
+  const { t, i18n } = useTranslation("sales");
   const { user, company } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -356,11 +358,11 @@ export default function SalesPage() {
     const amountTotal = parseFloat(sale.amount_total);
 
     if (amountPaid >= amountTotal) {
-      return "card";
+      return t("card");
     } else if (amountPaid > 0 && amountPaid < amountTotal) {
-      return "mixed";
+      return t("mixed");
     } else {
-      return "cash";
+      return t("cash");
     }
   };
 
@@ -488,20 +490,15 @@ export default function SalesPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
         <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Hech qanday sotuv topilmadi
+          {t("noSalesFound")}
         </h3>
-        <p className="text-gray-500 mb-6">
-          Sotuvlar ro'yxati bo'sh. Birinchi sotuvni yaratish uchun POS
-          terminaliga o'ting.
-        </p>
+        <p className="text-gray-500 mb-6">{t("noSalesDescription")}</p>
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Sotuvlarni ko'rish uchun quyidagilarni tekshiring:
-          </p>
+          <p className="text-sm text-gray-600">{t("checkFollowing")}</p>
           <ul className="text-sm text-gray-500 space-y-2">
-            <li>• Kassalar (Registers) mavjudligi</li>
-            <li>• Faol sessiyalar mavjudligi</li>
-            <li>• Mahsulotlar ro'yxati</li>
+            <li>• {t("registersAvailability")}</li>
+            <li>• {t("activeSessions")}</li>
+            <li>• {t("productsList")}</li>
           </ul>
         </div>
         <div className="mt-8 space-x-4">
@@ -509,13 +506,13 @@ export default function SalesPage() {
             onClick={() => (window.location.href = "/pos")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            POS Terminaliga o'tish
+            {t("goToPos")}
           </button>
           <button
             onClick={() => fetchData()}
             className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Yangilash
+            {t("reload")}
           </button>
         </div>
       </div>
@@ -527,10 +524,8 @@ export default function SalesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Sales</h1>
-          <p className="text-sm text-gray-600">
-            Track and analyze your sales performance
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("sales")}</h1>
+          <p className="text-sm text-gray-600">{t("trackAnalyzeSales")}</p>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -538,14 +533,14 @@ export default function SalesPage() {
             className="flex items-center space-x-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <Filter className="h-5 w-5" />
-            <span>Filters</span>
+            <span>{t("filters")}</span>
           </button>
           <button
             onClick={() => fetchData()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
           >
             <RefreshCw className="h-5 w-5" />
-            <span>Refresh</span>
+            <span>{t("refresh")}</span>
           </button>
         </div>
       </div>
@@ -557,13 +552,13 @@ export default function SalesPage() {
             {/* Customer Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Customer
+                {t("customer")}
               </label>
               <input
                 type="text"
                 value={filters.customer}
                 onChange={(e) => handleFilterChange("customer", e.target.value)}
-                placeholder="Customer ID"
+                placeholder={t("customerId")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -571,14 +566,14 @@ export default function SalesPage() {
             {/* Register Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Register
+                {t("register")}
               </label>
               <select
                 value={filters.register}
                 onChange={(e) => handleFilterChange("register", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Registers</option>
+                <option value="">{t("allRegisters")}</option>
                 {registers.map((register) => (
                   <option key={register.id} value={register.id}>
                     {register.title}
@@ -590,14 +585,14 @@ export default function SalesPage() {
             {/* Session Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Session
+                {t("session")}
               </label>
               <select
                 value={filters.session}
                 onChange={(e) => handleFilterChange("session", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Sessions</option>
+                <option value="">{t("allSessions")}</option>
                 {sessions.map((session) => (
                   <option key={session.id} value={session.id}>
                     {session.title} ({session.status})
@@ -609,7 +604,7 @@ export default function SalesPage() {
             {/* Payment Method Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Method
+                {t("paymentMethod")}
               </label>
               <select
                 value={filters.payment_method}
@@ -618,10 +613,11 @@ export default function SalesPage() {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All Methods</option>
+                <option value="">{t("allMethods")}</option>
                 {paymentMethods.map((method) => (
                   <option key={method.id} value={method.id}>
-                    {method.name} {method.is_online ? "(Online)" : "(Offline)"}
+                    {method.name}{" "}
+                    {method.is_online ? t("online") : t("offline")}
                   </option>
                 ))}
               </select>
@@ -630,7 +626,7 @@ export default function SalesPage() {
             {/* Amount Total Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Amount Range
+                {t("totalAmountRange")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -639,7 +635,7 @@ export default function SalesPage() {
                   onChange={(e) =>
                     handleFilterChange("min_amount_total", e.target.value)
                   }
-                  placeholder="Min"
+                  placeholder={t("min")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <input
@@ -648,7 +644,7 @@ export default function SalesPage() {
                   onChange={(e) =>
                     handleFilterChange("max_amount_total", e.target.value)
                   }
-                  placeholder="Max"
+                  placeholder={t("max")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -657,7 +653,7 @@ export default function SalesPage() {
             {/* Amount Paid Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amount Paid Range
+                {t("amountPaidRange")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -666,7 +662,7 @@ export default function SalesPage() {
                   onChange={(e) =>
                     handleFilterChange("min_amount_paid", e.target.value)
                   }
-                  placeholder="Min"
+                  placeholder={t("min")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <input
@@ -675,7 +671,7 @@ export default function SalesPage() {
                   onChange={(e) =>
                     handleFilterChange("max_amount_paid", e.target.value)
                   }
-                  placeholder="Max"
+                  placeholder={t("max")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -684,7 +680,7 @@ export default function SalesPage() {
             {/* Date Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date Range
+                {t("dateRange")}
               </label>
               <div className="flex space-x-2">
                 <input
@@ -713,13 +709,13 @@ export default function SalesPage() {
               onClick={clearFilters}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Clear All
+              {t("clearAll")}
             </button>
             <button
               onClick={applyFilters}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
-              Apply Filters
+              {t("applyFilters")}
             </button>
           </div>
         </div>
@@ -731,7 +727,7 @@ export default function SalesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Today's Revenue
+                {t("todaysRevenue")}
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {(todaysRevenue || 0).toFixed(2)} UZS
@@ -747,7 +743,7 @@ export default function SalesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Today's Orders
+                {t("todaysOrders")}
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {todaysSales.length}
@@ -763,7 +759,7 @@ export default function SalesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
-                Avg Order Value
+                {t("avgOrderValue")}
               </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {(avgOrderValue || 0).toFixed(2)} UZS
@@ -778,7 +774,9 @@ export default function SalesPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Orders</p>
+              <p className="text-sm font-medium text-gray-600">
+                {t("totalOrders")}
+              </p>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {totalOrders}
               </p>
@@ -793,9 +791,11 @@ export default function SalesPage() {
       {/* Sales Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Sales</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {t("recentSales")}
+          </h3>
           <div className="text-sm text-gray-500">
-            Page {currentPage} of {totalPages}
+            {t("page")} {currentPage} {t("of")} {totalPages}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -803,22 +803,22 @@ export default function SalesPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Receipt #
+                  {t("receipt")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date & Time
+                  {t("dateTime")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Items
+                  {t("items")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment
+                  {t("payment")}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
+                  {t("total")}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -840,10 +840,10 @@ export default function SalesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {sale.items.length} items
+                      {sale.items.length} {t("items")}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {getTotalQuantity(sale)} qty
+                      {getTotalQuantity(sale)} {t("quantity")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -887,7 +887,7 @@ export default function SalesPage() {
                 disabled={currentPage === 1}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+                {t("previous")}
               </button>
               <div className="flex items-center space-x-2">
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -920,7 +920,7 @@ export default function SalesPage() {
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                {t("next")}
               </button>
             </div>
           </div>
@@ -935,7 +935,9 @@ export default function SalesPage() {
             style={{ marginTop: "50px" }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Sale Details</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                {t("saleDetails")}
+              </h3>
               <button
                 onClick={() => {
                   setShowSaleDetail(false);
@@ -951,7 +953,7 @@ export default function SalesPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Receipt Number
+                    {t("receiptNumber")}
                   </label>
                   <p className="text-lg font-mono text-gray-900">
                     {selectedSale.id}
@@ -959,7 +961,7 @@ export default function SalesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Date & Time
+                    {t("dateTime")}
                   </label>
                   <p className="text-gray-900">
                     {format(
@@ -970,7 +972,7 @@ export default function SalesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Payment Method
+                    {t("paymentMethod")}
                   </label>
                   <p className="text-gray-900 capitalize flex items-center">
                     <span className="mr-2">
@@ -983,15 +985,16 @@ export default function SalesPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Total Amount
+                    {t("total")}
                   </label>
                   <p className="text-2xl font-bold text-green-600">
-                    {(parseFloat(selectedSale.amount_total) || 0).toFixed(2)} UZS
+                    {(parseFloat(selectedSale.amount_total) || 0).toFixed(2)}{" "}
+                    UZS
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Amount Paid
+                    {t("amountPaid")}
                   </label>
                   <p className="text-lg text-gray-900">
                     {(parseFloat(selectedSale.amount_paid) || 0).toFixed(2)} UZS
@@ -1002,7 +1005,7 @@ export default function SalesPage() {
 
             <div className="border-t border-gray-200 pt-6">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Items
+                {t("items")}
               </h4>
               <div className="space-y-3">
                 {selectedSale.items.map((item, index) => (
@@ -1015,10 +1018,10 @@ export default function SalesPage() {
                         {getProductName(item.product)}
                       </h5>
                       <p className="text-sm text-gray-500">
-                        SKU: {getProductSKU(item.product)}
+                        {t("sku")}: {getProductSKU(item.product)}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "} UZS
+                        {parseFloat(item.cost_price || "0").toFixed(2)} × UZS
                         {Math.abs(item.quantity)}
                       </p>
                     </div>
@@ -1035,25 +1038,26 @@ export default function SalesPage() {
             <div className="border-t border-gray-200 pt-6 mt-6">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-600">{t("subtotal")}</span>
                   <span className="text-gray-900">
-                    
                     {(
                       parseFloat(selectedSale.amount_total) -
                       parseFloat(selectedSale.amount_due || "0")
-                    ).toFixed(2)} UZS
+                    ).toFixed(2)}{" "}
+                    UZS
                   </span>
                 </div>
                 {parseFloat(selectedSale.amount_due || "0") !== 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Due Amount</span>
+                    <span className="text-gray-600">{t("dueAmount")}</span>
                     <span className="text-red-600">
-                      {parseFloat(selectedSale.amount_due || "0").toFixed(2)} UZS
+                      {parseFloat(selectedSale.amount_due || "0").toFixed(2)}{" "}
+                      UZS
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>Total</span>
+                  <span>{t("total")}</span>
                   <span>
                     {parseFloat(selectedSale.amount_total).toFixed(2)} UZS
                   </span>
@@ -1069,14 +1073,14 @@ export default function SalesPage() {
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Close
+                {t("close")}
               </button>
               <button
                 onClick={handlePrintSaleDetail}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center"
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Print Receipt
+                {t("printReceipt")}
               </button>
             </div>
           </div>
@@ -1091,7 +1095,10 @@ export default function SalesPage() {
               <h2 className="text-xl font-bold">
                 {company?.title || "Store Name"}
               </h2>
-              <p className="text-sm">Receipt #{selectedSale.id}</p>
+              <p className="text-sm">
+                {t("receipt")}
+                {selectedSale.id}
+              </p>
               <p className="text-xs">
                 {format(
                   parseISO(selectedSale.created_at),
@@ -1102,7 +1109,7 @@ export default function SalesPage() {
 
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium">Payment Method:</span>
+                <span className="font-medium">{t("paymentMethod")}:</span>
                 <span className="capitalize">
                   {getPaymentMethod(selectedSale)}
                 </span>
@@ -1110,7 +1117,7 @@ export default function SalesPage() {
             </div>
 
             <div className="border-t border-b border-gray-400 py-3 my-3">
-              <h3 className="font-bold text-sm mb-2">ITEMS:</h3>
+              <h3 className="font-bold text-sm mb-2">{t("items")}:</h3>
               {selectedSale.items.map((item, index) => (
                 <div
                   key={item.id}
@@ -1121,8 +1128,8 @@ export default function SalesPage() {
                       {getProductName(item.product)}
                     </div>
                     <div className="text-xs text-gray-600">
-                      SKU: {getProductSKU(item.product)} | 
-                      {parseFloat(item.cost_price || "0").toFixed(2)} ×{" "} UZS
+                      {t("sku")}: {getProductSKU(item.product)} |
+                      {parseFloat(item.cost_price || "0").toFixed(2)} × UZS
                       {Math.abs(item.quantity)}
                     </div>
                   </div>
@@ -1135,38 +1142,45 @@ export default function SalesPage() {
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>{t("subtotal")}:</span>
                 <span>
-                  
                   {(
                     parseFloat(selectedSale.amount_total) -
                     parseFloat(selectedSale.amount_due || "0")
-                  ).toFixed(2)} UZS
+                  ).toFixed(2)}{" "}
+                  UZS
                 </span>
               </div>
 
               {parseFloat(selectedSale.amount_due || "0") !== 0 && (
                 <div className="flex justify-between text-red-600">
-                  <span>Due Amount:</span>
+                  <span>{t("dueAmount")}:</span>
                   <span>
-                    {(parseFloat(selectedSale.amount_due || "0") || 0).toFixed(2)}
+                    {(parseFloat(selectedSale.amount_due || "0") || 0).toFixed(
+                      2
+                    )}{" "}
+                    UZS
                   </span>
                 </div>
               )}
 
               <div className="flex justify-between font-bold text-lg border-t border-gray-400 pt-2">
-                <span>Total:</span>
-                <span>{(parseFloat(selectedSale.amount_total) || 0).toFixed(2)} UZS</span>
+                <span>{t("total")}:</span>
+                <span>
+                  {(parseFloat(selectedSale.amount_total) || 0).toFixed(2)} UZS
+                </span>
               </div>
 
               <div className="flex justify-between text-green-600">
-                <span>Amount Paid:</span>
-                <span>{(parseFloat(selectedSale.amount_paid) || 0).toFixed(2)} UZS</span>
+                <span>{t("amountPaid")}:</span>
+                <span>
+                  {(parseFloat(selectedSale.amount_paid) || 0).toFixed(2)} UZS
+                </span>
               </div>
             </div>
 
             <div className="text-center mt-6 text-xs border-t border-gray-400 pt-4">
-              <p>Thank you for your business!</p>
+              <p>{t("thankYou")}</p>
               <p className="mt-1">
                 {format(
                   parseISO(selectedSale.created_at),

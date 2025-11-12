@@ -1,0 +1,81 @@
+{
+  "employees": {
+    "title": "Employees",
+    "subtitle": "Manage your team members and roles",
+    "inviteEmployee": "Invite Employee",
+    "loading": "Loading employees...",
+    
+    "stats": {
+      "totalEmployees": "Total Employees",
+      "viewers": "Viewers",
+      "owners": "Owners",
+      "billingAdmins": "Billing Admins"
+    },
+    
+    "table": {
+      "teamMembers": "Team Members",
+      "employee": "Employee",
+      "role": "Role",
+      "companies": "Companies",
+      "contact": "Contact",
+      "actions": "Actions",
+      "you": "(You)",
+      "noCompanies": "No companies"
+    },
+    
+    "roles": {
+      "viewer": "Viewer",
+      "owner": "Owner",
+      "billing_admin": "Billing Admin"
+    },
+    
+    "modals": {
+      "invite": {
+        "title": "Invite Employee",
+        "firstName": "First Name",
+        "firstNamePlaceholder": "Enter first name",
+        "lastName": "Last Name",
+        "lastNamePlaceholder": "Enter last name",
+        "email": "Email Address *",
+        "emailPlaceholder": "employee@company.com",
+        "username": "Username",
+        "usernamePlaceholder": "Leave empty to use email username",
+        "password": "Password",
+        "passwordPlaceholder": "Leave empty for default password",
+        "password2": "Confirm Password",
+        "password2Placeholder": "Confirm your password",
+        "role": "Role *",
+        "invitationNote": "An invitation email will be sent to the employee with instructions to set up their account.",
+        "cancel": "Cancel",
+        "sendInvitation": "Send Invitation",
+        "passwordMismatch": "Passwords do not match",
+        "passwordWeak": "Password must be at least 8 characters long",
+        "passwordRequired": "Password is required",
+        "sending": "Sending...",
+        "passwordsMatch": "Passwords match"
+      },
+      "edit": {
+        "title": "Edit Employee",
+        "newPassword": "New Password",
+        "newPasswordPlaceholder": "Leave empty to keep current password",
+        "update": "Update Employee",
+        "updating": "Updating...",
+        "passwordMismatch": "Passwords do not match",
+        "passwordWeak": "Password must be at least 8 characters long"
+      }
+    },
+    
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirmation": "Are you sure you want to delete this employee?"
+    },
+    
+    "errors": {
+      "createFailed": "Failed to create employee",
+      "updateFailed": "Failed to update employee",
+      "deleteFailed": "Failed to delete employee",
+      "fetchFailed": "Failed to fetch employees"
+    }
+  }
+}

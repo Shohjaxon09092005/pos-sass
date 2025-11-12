@@ -1,0 +1,81 @@
+{
+  "employees": {
+    "title": "Xodimlar",
+    "subtitle": "Jamoa a'zolari va rollarni boshqaring",
+    "inviteEmployee": "Xodim taklif qilish",
+    "loading": "Xodimlar yuklanmoqda...",
+    
+    "stats": {
+      "totalEmployees": "Jami Xodimlar",
+      "viewers": "Ko'ruvchilar",
+      "owners": "Egalar",
+      "billingAdmins": "Hisob-kitob Adminlari"
+    },
+    
+    "table": {
+      "teamMembers": "Jamoa a'zolari",
+      "employee": "Xodim",
+      "role": "Rol",
+      "companies": "Kompaniyalar",
+      "contact": "Aloqa",
+      "actions": "Amallar",
+      "you": "(Siz)",
+      "noCompanies": "Kompaniyalar yo'q"
+    },
+    
+    "roles": {
+      "viewer": "Ko'ruvchi",
+      "owner": "Egasi",
+      "billing_admin": "Hisob-kitob Admini"
+    },
+    
+    "modals": {
+      "invite": {
+        "title": "Xodim taklif qilish",
+        "firstName": "Ism",
+        "firstNamePlaceholder": "Ismni kiriting",
+        "lastName": "Familiya",
+        "lastNamePlaceholder": "Familiyani kiriting",
+        "email": "Elektron pochta *",
+        "emailPlaceholder": "xodim@kompaniya.com",
+        "username": "Foydalanuvchi nomi",
+        "usernamePlaceholder": "Elektron pochta nomidan foydalanish uchun bo'sh qoldiring",
+        "password": "Parol",
+        "passwordPlaceholder": "Standart parol uchun bo'sh qoldiring",
+        "password2": "Parolni tasdiqlash",
+        "password2Placeholder": "Parolingizni tasdiqlang",
+        "role": "Rol *",
+        "invitationNote": "Xodimga hisob sozlamalari bo'yicha ko'rsatmalar bilan taklif elektron maktubi yuboriladi.",
+        "cancel": "Bekor qilish",
+        "sendInvitation": "Taklifni yuborish",
+        "passwordMismatch": "Parollar mos kelmadi",
+        "passwordWeak": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+        "passwordRequired": "Parol kiritilishi shart",
+        "sending": "Yuborilmoqda...",
+        "passwordsMatch": "Parollar mos keldi"
+      },
+      "edit": {
+        "title": "Xodimni tahrirlash",
+        "newPassword": "Yangi parol",
+        "newPasswordPlaceholder": "Joriy parolni saqlash uchun bo'sh qoldiring",
+        "update": "Xodimni yangilash",
+        "updating": "Yangilanmoqda...",
+        "passwordMismatch": "Parollar mos kelmadi",
+        "passwordWeak": "Parol kamida 8 ta belgidan iborat bo'lishi kerak"
+      }
+    },
+    
+    "actions": {
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "deleteConfirmation": "Bu xodimni o'chirishni istaysizmi?"
+    },
+    
+    "errors": {
+      "createFailed": "Xodim yaratish muvaffaqiyatsiz",
+      "updateFailed": "Xodimni yangilash muvaffaqiyatsiz",
+      "deleteFailed": "Xodimni o'chirish muvaffaqiyatsiz",
+      "fetchFailed": "Xodimlarni yuklab bo'lmadi"
+    }
+  }
+}

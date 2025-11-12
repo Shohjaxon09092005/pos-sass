@@ -1,0 +1,8 @@
+{
+  "notFound": {
+    "title": "404 - Sahifa topilmadi",
+    "description": "Siz qidirgan sahifa mavjud emas yoki boshqa joyga ko'chirilgan.",
+    "goToDashboard": "Boshqaruv paneliga o'tish",
+    "signIn": "Kirish"
+  }
+}

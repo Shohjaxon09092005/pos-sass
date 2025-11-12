@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "title": "Sozlamalar",
+    "subtitle": "Hisobingiz va tizim sozlamalarini boshqaring",
+    "tabs": {
+      "profile": "Profil",
+      "company": "Kompaniya",
+      "notifications": "Bildirishnomalar",
+      "security": "Xavfsizlik"
+    },
+    "profile": {
+      "title": "Shaxsiy Ma'lumotlar",
+      "firstName": "Ism",
+      "firstNamePlaceholder": "Ismingizni kiriting",
+      "lastName": "Familiya",
+      "lastNamePlaceholder": "Familiyangizni kiriting",
+      "email": "Elektron Pochta",
+      "emailPlaceholder": "Elektron pochtangizni kiriting",
+      "role": "Rol",
+      "username": "Foydalanuvchi nomi"
+    },
+    "company": {
+      "title": "Kompaniya Ma'lumotlari",
+      "addCompany": "Kompaniya Qo'shish",
+      "yourCompanies": "Sizning Kompaniyalaringiz",
+      "editCompany": "Kompaniyani Tahrirlash",
+      "companyName": "Kompaniya Nomi *",
+      "companyNamePlaceholder": "Kompaniya nomini kiriting",
+      "email": "Elektron Pochta",
+      "emailPlaceholder": "kompaniya@misol.com",
+      "phone": "Telefon Raqami",
+      "phonePlaceholder": "+998 (90) 123-45-67",
+      "website": "Veb-sayt",
+      "websitePlaceholder": "https://misol.com",
+      "address": "Manzil *",
+      "addressPlaceholder": "Kompaniya manzilini kiriting"
+    },
+    "security": {
+      "title": "Parol va Xavfsizlik",
+      "currentPassword": "Joriy Parol *",
+      "currentPasswordPlaceholder": "Joriy parolni kiriting",
+      "newPassword": "Yangi Parol *",
+      "newPasswordPlaceholder": "Yangi parolni kiriting",
+      "confirmPassword": "Yangi Parolni Tasdiqlash *",
+      "confirmPasswordPlaceholder": "Yangi parolni tasdiqlang",
+      "updatePassword": "Parolni Yangilash"
+    },
+    "notifications": {
+      "title": "Elektron Pochta Bildirishnomalari",
+      "dailySales": "Kunlik Sotuv Hisoboti",
+      "dailySalesDesc": "Sotuv ko'rsatkichlari haqida kunlik hisobotlar oling",
+      "lowStock": "Zaxira Qolmagan Mahsulotlar",
+      "lowStockDesc": "Mahsulotlar tugab qolganda xabardor bo'ling",
+      "newOrders": "Yangi Buyurtmalar",
+      "newOrdersDesc": "Har bir yangi buyurtma uchun bildirishnoma",
+      "payments": "To'lov Bildirishnomalari",
+      "paymentsDesc": "To'lov qayta ishlash va xatolari haqida yangilanishlar",
+      "systemUpdates": "Tizim Yangilanishlari",
+      "systemUpdatesDesc": "Muhim tizim yangilanishlari va texnik xizmat ko'rsatish bildirishnomalari",
+      "savePreferences": "Sozlamalarni Saqlash"
+    },
+    "actions": {
+      "saveChanges": "O'zgarishlarni Saqlash",
+      "saving": "Saqlanmoqda...",
+      "updating": "Yangilanmoqda...",
+      "creating": "Yaratilmoqda...",
+      "createCompany": "Kompaniya Yaratish",
+      "cancel": "Bekor Qilish",
+      "delete": "O'chirish",
+      "edit": "Tahrirlash"
+    },
+    "modals": {
+      "addCompany": {
+        "title": "Yangi Kompaniya Qo'shish",
+        "create": "Kompaniya Yaratish"
+      },
+      "deleteConfirm": "Bu kompaniyani o'chirishni istaysizmi? Bu harakatni bekor qilib bo'lmaydi."
+    },
+    "messages": {
+      "profileUpdated": "Profil muvaffaqiyatli yangilandi",
+      "companyUpdated": "Kompaniya muvaffaqiyatli yangilandi",
+      "companyCreated": "Kompaniya muvaffaqiyatli yaratildi",
+      "companyDeleted": "Kompaniya muvaffaqiyatli o'chirildi",
+      "passwordUpdated": "Parol muvaffaqiyatli yangilandi",
+      "preferencesSaved": "Bildirishnoma sozlamalari saqlandi",
+      "noCompany": "Kompaniya topilmadi",
+      "passwordsMismatch": "Yangi parollar mos kelmadi",
+      "passwordTooShort": "Yangi parol kamida 8 ta belgidan iborat bo'lishi kerak",
+      "errorUpdating": "{{resource}} ni yangilashda xato",
+      "errorCreating": "{{resource}} ni yaratishda xato",
+      "errorDeleting": "{{resource}} ni o'chirishda xato",
+      "failedToUpdate": "{{resource}} ni yangilash muvaffaqiyatsiz",
+      "failedToCreate": "{{resource}} ni yaratish muvaffaqiyatsiz",
+      "failedToDelete": "{{resource}} ni o'chirish muvaffaqiyatsiz"
+    },
+    "loading": "Foydalanuvchi ma'lumotlari yuklanmoqda..."
+  }
+}

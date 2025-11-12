@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Управление вашей учетной записью и системными настройками",
+    "tabs": {
+      "profile": "Профиль",
+      "company": "Компания",
+      "notifications": "Уведомления",
+      "security": "Безопасность"
+    },
+    "profile": {
+      "title": "Личная Информация",
+      "firstName": "Имя",
+      "firstNamePlaceholder": "Введите ваше имя",
+      "lastName": "Фамилия",
+      "lastNamePlaceholder": "Введите вашу фамилию",
+      "email": "Электронная Почта",
+      "emailPlaceholder": "Введите ваш email адрес",
+      "role": "Роль",
+      "username": "Имя пользователя"
+    },
+    "company": {
+      "title": "Информация о Компании",
+      "addCompany": "Добавить Компанию",
+      "yourCompanies": "Ваши Компании",
+      "editCompany": "Редактировать Компанию",
+      "companyName": "Название Компании *",
+      "companyNamePlaceholder": "Введите название компании",
+      "email": "Электронная Почта",
+      "emailPlaceholder": "компания@пример.com",
+      "phone": "Номер Телефона",
+      "phonePlaceholder": "+7 (999) 123-45-67",
+      "website": "Веб-сайт",
+      "websitePlaceholder": "https://пример.com",
+      "address": "Адрес *",
+      "addressPlaceholder": "Введите адрес компании"
+    },
+    "security": {
+      "title": "Пароль и Безопасность",
+      "currentPassword": "Текущий Пароль *",
+      "currentPasswordPlaceholder": "Введите текущий пароль",
+      "newPassword": "Новый Пароль *",
+      "newPasswordPlaceholder": "Введите новый пароль",
+      "confirmPassword": "Подтвердите Новый Пароль *",
+      "confirmPasswordPlaceholder": "Подтвердите новый пароль",
+      "updatePassword": "Обновить Пароль"
+    },
+    "notifications": {
+      "title": "Email Уведомления",
+      "dailySales": "Ежедневный Отчет о Продажах",
+      "dailySalesDesc": "Получайте ежедневные отчеты о ваших продажах",
+      "lowStock": "Оповещения о Низком Запасе",
+      "lowStockDesc": "Получайте уведомления, когда товары заканчиваются",
+      "newOrders": "Новые Заказы",
+      "newOrdersDesc": "Уведомление для каждого нового заказа",
+      "payments": "Оповещения о Платежах",
+      "paymentsDesc": "Обновления о обработке платежей и ошибках",
+      "systemUpdates": "Системные Обновления",
+      "systemUpdatesDesc": "Важные системные обновления и уведомления о техническом обслуживании",
+      "savePreferences": "Сохранить Настройки"
+    },
+    "actions": {
+      "saveChanges": "Сохранить Изменения",
+      "saving": "Сохранение...",
+      "updating": "Обновление...",
+      "creating": "Создание...",
+      "createCompany": "Создать Компанию",
+      "cancel": "Отмена",
+      "delete": "Удалить",
+      "edit": "Редактировать"
+    },
+    "modals": {
+      "addCompany": {
+        "title": "Добавить Новую Компанию",
+        "create": "Создать Компанию"
+      },
+      "deleteConfirm": "Вы уверены, что хотите удалить эту компанию? Это действие нельзя отменить."
+    },
+    "messages": {
+      "profileUpdated": "Профиль успешно обновлен",
+      "companyUpdated": "Компания успешно обновлена",
+      "companyCreated": "Компания успешно создана",
+      "companyDeleted": "Компания успешно удалена",
+      "passwordUpdated": "Пароль успешно обновлен",
+      "preferencesSaved": "Настройки уведомлений сохранены",
+      "noCompany": "Компания не найдена",
+      "passwordsMismatch": "Новые пароли не совпадают",
+      "passwordTooShort": "Новый пароль должен содержать не менее 8 символов",
+      "errorUpdating": "Ошибка при обновлении {{resource}}",
+      "errorCreating": "Ошибка при создании {{resource}}",
+      "errorDeleting": "Ошибка при удалении {{resource}}",
+      "failedToUpdate": "Не удалось обновить {{resource}}",
+      "failedToCreate": "Не удалось создать {{resource}}",
+      "failedToDelete": "Не удалось удалить {{resource}}"
+    },
+    "loading": "Загрузка данных пользователя..."
+  }
+}

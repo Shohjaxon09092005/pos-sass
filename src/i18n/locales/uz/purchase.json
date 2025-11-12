@@ -1,0 +1,89 @@
+{
+    "purchases": "Xaridlar",
+    "manage_suppliers_purchases": "Yetkazib beruvchilar va xarid buyurtmalarini boshqaring",
+    "new_purchase_order": "Yangi xarid buyurtmasi",
+    "add_supplier": "Yetkazib beruvchi qo'shish",
+    "purchase_orders": "Xarid buyurtmalari",
+    "manage_suppliers": "Yetkazib beruvchilarni boshqarish",
+    "stats": {
+        "total_suppliers": "Jami yetkazib beruvchilar",
+        "pending_payments": "To'lanmagan to'lovlar",
+        "pending_value": "To'lanmagan summa",
+        "total_purchases": "Jami xaridlar",
+        "active_suppliers": "Faol yetkazib beruvchilar",
+        "blacklisted": "Qora ro'yxatdagilar"
+    },
+    "search": {
+        "placeholder": "Yetkazib beruvchi yoki xarid ID bo'yicha qidirish...",
+        "all_status": "Barcha holatlar",
+        "active": "Faol",
+        "inactive": "Nofaol"
+    },
+    "table": {
+        "purchase_id": "Xarid ID",
+        "supplier": "Yetkazib beruvchi",
+        "items": "Tovarlar",
+        "total": "Jami summa",
+        "status": "Holati",
+        "actions": "Amallar",
+        "contact": "Aloqa",
+        "address": "Manzil",
+        "all_suppliers": "Barcha yetkazib beruvchilar"
+    },
+    "modals": {
+        "create_purchase_order": "Xarid buyurtmasi yaratish",
+        "purchase_details": "Xarid tafsilotlari",
+        "manage_suppliers": "Yetkazib beruvchilarni boshqarish",
+        "add_supplier": "Yangi yetkazib beruvchi qo'shish",
+        "edit_supplier": "Yetkazib beruvchini tahrirlash"
+    },
+    "forms": {
+        "supplier": "Yetkazib beruvchi",
+        "select_supplier": "Yetkazib beruvchini tanlang",
+        "expected_delivery_date": "Kutilayotgan yetkazib berish sanasi",
+        "order_items": "Buyurtmadagi tovarlar",
+        "add_item": "Tovar qo'shish",
+        "product": "Mahsulot",
+        "select_product": "Mahsulotni tanlang",
+        "quantity": "Miqdor",
+        "unit_cost": "Bir dona narxi",
+        "total": "Jami",
+        "action": "Amal",
+        "total_amount": "Umumiy summa",
+        "notes": "Izohlar",
+        "additional_notes": "Ushbu xarid buyurtmasi uchun qo'shimcha izohlar...",
+        "cancel": "Bekor qilish",
+        "create": "Xarid buyurtmasi yaratish",
+        "close": "Yopish",
+        "update_supplier": "Yetkazib beruvchini yangilash",
+        "create_supplier": "Yetkazib beruvchi yaratish",
+        "name": "Ism",
+        "email": "Elektron pochta",
+        "phone": "Telefon",
+        "address_line_1": "Manzil 1",
+        "address_line_2": "Manzil 2",
+        "address_line_1_placeholder": "Ko'cha manzili, P.O. qutisi, kompaniya nomi, c/o",
+        "address_line_2_placeholder": "Kvartira, ofis, blok, bino, qavat va hokazo.",
+        "supplier_notes": "Yetkazib beruvchi haqida qo'shimcha izohlar...",
+        "supplier_name": "Yetkazib beruvchi ismi"
+    },
+    "details": {
+        "created_date": "Yaratilgan sana",
+        "amount_paid": "To'langan summa"
+    },
+    "status": {
+        "active": "Faol",
+        "inactive": "Nofaol"
+    },
+    "currency": "so'm",
+    "paid": "To'langan",
+    "no_phone": "Telefon raqami yo'q",
+    "no_address": "Manzil kiritilmagan",
+    "items_count": "ta tovar",
+    "qty": "miqdor",
+    "view_details": "Tafsilotlarni ko'rish",
+    "actions": {
+        "edit": "Tahrirlash",
+        "delete": "O'chirish"
+    }
+}

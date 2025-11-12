@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { CreditCard, Check, Star, ArrowRight, Download, Plus, Search, Filter, Trash2, Edit, FileText, DollarSign, Users, BarChart3, Building, Monitor, User } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Types
+// Types (o'zgarmagan)
 interface Invoice {
   id: string;
   title: string;
@@ -119,6 +120,7 @@ type ActiveTab = 'overview' | 'plans' | 'invoices' | 'payments';
 
 export default function BillingPage() {
   const { company: authCompany } = useAuth();
+  const { t } = useTranslation('billing');
   // Company ni yangi tipga o'tkazamiz
   const company = authCompany as CompanyWithCounts | null;
   
@@ -291,15 +293,15 @@ export default function BillingPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to subscribe to plan');
+        throw new Error(errorData.detail || t('billing.errors.failedToSubscribe'));
       }
 
       await fetchCurrentSubscription();
       setError(null);
-      alert('Successfully subscribed to the plan!');
+      alert(t('billing.actions.successSubscribe'));
     } catch (err) {
       console.error('Error subscribing to plan:', err);
-      setError(err instanceof Error ? err.message : 'Failed to subscribe to plan');
+      setError(err instanceof Error ? err.message : t('billing.errors.failedToSubscribe'));
     }
   };
 
@@ -317,7 +319,7 @@ export default function BillingPage() {
           fetchCompanyStats()
         ]);
       } catch (err) {
-        setError('Failed to load data');
+        setError(t('billing.errors.failedToLoad'));
       } finally {
         setLoading(false);
       }
@@ -398,14 +400,14 @@ export default function BillingPage() {
 
   const handlePlanSelection = (plan: BillingPlan) => {
     if (currentSubscription && currentSubscription.plan === plan.id) {
-      alert('You are already subscribed to this plan.');
+      alert(t('billing.actions.alreadySubscribed'));
       return;
     }
 
     const isChangingPlan = currentSubscription && currentSubscription.plan !== plan.id;
     const message = isChangingPlan
-      ? `You currently have an active subscription. Are you sure you want to change to the "${plan.title}" plan? This will replace your current plan.`
-      : `Are you sure you want to subscribe to the "${plan.title}" plan?`;
+      ? t('billing.actions.confirmChange', { plan: plan.title })
+      : t('billing.actions.confirmSubscribe', { plan: plan.title });
 
     if (window.confirm(message)) {
       subscribeToPlan(plan.id);
@@ -523,8 +525,8 @@ export default function BillingPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing & Payments</h1>
-          <p className="text-sm text-gray-600">Manage invoices and payments</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('billing.title')}</h1>
+          <p className="text-sm text-gray-600">{t('billing.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-3">
           {activeTab === 'invoices'}
@@ -549,10 +551,10 @@ export default function BillingPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6 overflow-x-auto">
             {[
-              { id: 'overview', name: 'Overview', icon: BarChart3 },
-              { id: 'plans', name: 'Plans', icon: Star },
-              { id: 'invoices', name: 'Invoices', icon: FileText },
-              { id: 'payments', name: 'Payments', icon: CreditCard },
+              { id: 'overview', name: t('billing.tabs.overview'), icon: BarChart3 },
+              { id: 'plans', name: t('billing.tabs.plans'), icon: Star },
+              { id: 'invoices', name: t('billing.tabs.invoices'), icon: FileText },
+              { id: 'payments', name: t('billing.tabs.payments'), icon: CreditCard },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -582,11 +584,13 @@ export default function BillingPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Current Plan</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">{t('billing.overview.currentPlan')}</h2>
                     {currentPlan ? (
-                      <p className="text-sm text-gray-600">You are currently on the {currentPlan.title} plan</p>
+                      <p className="text-sm text-gray-600">
+                        {t('billing.overview.currentlyOnPlan', { plan: currentPlan.title })}
+                      </p>
                     ) : (
-                      <p className="text-sm text-gray-600">No active subscription</p>
+                      <p className="text-sm text-gray-600">{t('billing.overview.noActiveSubscription')}</p>
                     )}
                   </div>
                   {currentPlan && (
@@ -594,10 +598,12 @@ export default function BillingPage() {
                       <div className="text-2xl font-bold text-gray-900">
                         {currentPlan.currency.symbol}{parseFloat(billingPeriod === 'monthly' ? currentPlan.price_monthly : currentPlan.price_yearly).toFixed(2)}
                       </div>
-                      <div className="text-sm text-gray-600">per {billingPeriod === 'monthly' ? 'month' : 'year'}</div>
+                      <div className="text-sm text-gray-600">
+                        {billingPeriod === 'monthly' ? t('billing.overview.perMonth') : t('billing.overview.perYear')}
+                      </div>
                       {currentSubscription && (
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full mt-2 ${getSubscriptionStatusColor(currentSubscription.status)}`}>
-                          {currentSubscription.status}
+                          {t(`billing.status.${currentSubscription.status.toLowerCase()}`) || currentSubscription.status}
                         </span>
                       )}
                     </div>
@@ -610,7 +616,7 @@ export default function BillingPage() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          Seats
+                          {t('billing.overview.usage.seats')}
                         </span>
                         <span className="text-xs text-gray-500">
                           {usage.seats.used} / {usage.seats.total}
@@ -625,7 +631,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {usage.seats.remaining} remaining
+                        {usage.seats.remaining} {t('billing.overview.usage.remaining')}
                       </div>
                     </div>
 
@@ -633,7 +639,7 @@ export default function BillingPage() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
                           <Building className="h-4 w-4" />
-                          Companies
+                          {t('billing.overview.usage.companies')}
                         </span>
                         <span className="text-xs text-gray-500">
                           {usage.companies.used} / {usage.companies.total}
@@ -648,7 +654,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {usage.companies.remaining} remaining
+                        {usage.companies.remaining} {t('billing.overview.usage.remaining')}
                       </div>
                     </div>
 
@@ -656,7 +662,7 @@ export default function BillingPage() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
                           <FileText className="h-4 w-4" />
-                          Orders
+                          {t('billing.overview.usage.orders')}
                         </span>
                         <span className="text-xs text-gray-500">
                           {usage.orders.used} / {usage.orders.total}
@@ -671,7 +677,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {usage.orders.remaining} remaining
+                        {usage.orders.remaining} {t('billing.overview.usage.remaining')}
                       </div>
                     </div>
 
@@ -679,7 +685,7 @@ export default function BillingPage() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
                           <Monitor className="h-4 w-4" />
-                          Registers
+                          {t('billing.overview.usage.registers')}
                         </span>
                         <span className="text-xs text-gray-500">
                           {usage.registers.used} / {usage.registers.total}
@@ -694,7 +700,7 @@ export default function BillingPage() {
                         />
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {usage.registers.remaining} remaining
+                        {usage.registers.remaining} {t('billing.overview.usage.remaining')}
                       </div>
                     </div>
                   </div>
@@ -703,12 +709,12 @@ export default function BillingPage() {
                 {!currentPlan && (
                   <div className="text-center py-8">
                     <Star className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500 mb-4">You don't have an active subscription</p>
+                    <p className="text-gray-500 mb-4">{t('billing.overview.noActiveSubscription')}</p>
                     <button
                       onClick={() => setActiveTab('plans')}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                     >
-                      View Plans
+                      {t('billing.actions.viewPlans')}
                     </button>
                   </div>
                 )}
@@ -719,12 +725,12 @@ export default function BillingPage() {
                 {/* Recent Invoices */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('billing.overview.recentActivity.recentInvoices')}</h3>
                     <button 
                       onClick={() => setActiveTab('invoices')}
                       className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
-                      View all
+                      {t('billing.overview.recentActivity.viewAll')}
                     </button>
                   </div>
                   <div className="space-y-3">
@@ -737,13 +743,13 @@ export default function BillingPage() {
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">${parseFloat(invoice.amount_total).toFixed(2)}</p>
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
-                            {invoice.status}
+                            {t(`billing.status.${invoice.status.toLowerCase()}`) || invoice.status}
                           </span>
                         </div>
                       </div>
                     ))}
                     {invoices.length === 0 && (
-                      <p className="text-gray-500 text-center py-4">No invoices found</p>
+                      <p className="text-gray-500 text-center py-4">{t('billing.overview.recentActivity.noInvoices')}</p>
                     )}
                   </div>
                 </div>
@@ -751,12 +757,12 @@ export default function BillingPage() {
                 {/* Recent Payments */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Recent Payments</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{t('billing.overview.recentActivity.recentPayments')}</h3>
                     <button 
                       onClick={() => setActiveTab('payments')}
                       className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
-                      View all
+                      {t('billing.overview.recentActivity.viewAll')}
                     </button>
                   </div>
                   <div className="space-y-3">
@@ -777,7 +783,7 @@ export default function BillingPage() {
                       </div>
                     ))}
                     {payments.length === 0 && (
-                      <p className="text-gray-500 text-center py-4">No payments found</p>
+                      <p className="text-gray-500 text-center py-4">{t('billing.overview.recentActivity.noPayments')}</p>
                     )}
                   </div>
                 </div>
@@ -796,7 +802,7 @@ export default function BillingPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <input
                         type="text"
-                        placeholder="Search invoices..."
+                        placeholder={t('billing.invoices.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
@@ -807,14 +813,14 @@ export default function BillingPage() {
                       onChange={(e) => setStatusFilter(e.target.value)}
                       className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="all">All Status</option>
-                      <option value="paid">Paid</option>
-                      <option value="pending">Pending</option>
-                      <option value="overdue">Overdue</option>
+                      <option value="all">{t('billing.invoices.filters.allStatus')}</option>
+                      <option value="paid">{t('billing.invoices.filters.paid')}</option>
+                      <option value="pending">{t('billing.invoices.filters.pending')}</option>
+                      <option value="overdue">{t('billing.invoices.filters.overdue')}</option>
                     </select>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Showing {filteredInvoices.length} of {invoices.length} invoices
+                    {t('billing.invoices.table.showing', { count: filteredInvoices.length, total: invoices.length })}
                   </div>
                 </div>
               </div>
@@ -825,13 +831,27 @@ export default function BillingPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.invoice')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.customer')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.totalAmount')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.paidAmount')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.status')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.created')}
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.invoices.table.actions')}
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -854,7 +874,7 @@ export default function BillingPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
-                              {invoice.status}
+                              {t(`billing.status.${invoice.status.toLowerCase()}`) || invoice.status}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -874,7 +894,7 @@ export default function BillingPage() {
                   {filteredInvoices.length === 0 && (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No invoices found</p>
+                      <p className="text-gray-500">{t('billing.invoices.noInvoices')}</p>
                     </div>
                   )}
                 </div>
@@ -892,7 +912,7 @@ export default function BillingPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <input
                         type="text"
-                        placeholder="Search payments..."
+                        placeholder={t('billing.payments.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
@@ -903,14 +923,14 @@ export default function BillingPage() {
                       onChange={(e) => setMethodFilter(e.target.value)}
                       className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="all">All Methods</option>
+                      <option value="all">{t('billing.payments.filters.allMethods')}</option>
                       {Array.from(new Set(payments.map(p => p.method))).map(method => (
                         <option key={method} value={method}>{method}</option>
                       ))}
                     </select>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Showing {filteredPayments.length} of {payments.length} payments
+                    {t('billing.payments.table.showing', { count: filteredPayments.length, total: payments.length })}
                   </div>
                 </div>
               </div>
@@ -920,11 +940,21 @@ export default function BillingPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.payments.table.paymentId')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.payments.table.invoice')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.payments.table.amount')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.payments.table.method')}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {t('billing.payments.table.created')}
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -956,7 +986,7 @@ export default function BillingPage() {
                   {filteredPayments.length === 0 && (
                     <div className="text-center py-8">
                       <CreditCard className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No payments found</p>
+                      <p className="text-gray-500">{t('billing.payments.noPayments')}</p>
                     </div>
                   )}
                 </div>
@@ -979,7 +1009,7 @@ export default function BillingPage() {
                         : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
-                    Monthly
+                    {t('billing.plans.billingPeriod.monthly')}
                   </button>
                   <button
                     onClick={() => setBillingPeriod('yearly')}
@@ -990,8 +1020,10 @@ export default function BillingPage() {
                         : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
-                    Yearly
-                    <span className="ml-2 text-xs text-green-600 font-semibold">Save 20%</span>
+                    {t('billing.plans.billingPeriod.yearly')}
+                    <span className="ml-2 text-xs text-green-600 font-semibold">
+                      {t('billing.plans.billingPeriod.save')}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -1015,7 +1047,7 @@ export default function BillingPage() {
                       {isCurrentPlan && (
                         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                           <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                            Current Plan
+                            {t('billing.plans.plan.currentPlan')}
                           </span>
                         </div>
                       )}
@@ -1029,11 +1061,11 @@ export default function BillingPage() {
                             {plan.currency.symbol}{parseFloat(price).toFixed(2)}
                           </span>
                           <span className="text-gray-600 ml-2">
-                            / {billingPeriod === 'monthly' ? 'month' : 'year'}
+                            / {billingPeriod === 'monthly' ? t('billing.overview.perMonth') : t('billing.overview.perYear')}
                           </span>
                         </div>
                         <p className="text-gray-600 text-sm">
-                          {plan.description || 'Perfect for growing businesses'}
+                          {plan.description || t('billing.plans.plan.perfectForGrowing')}
                         </p>
                       </div>
 
@@ -1041,28 +1073,28 @@ export default function BillingPage() {
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                             <User className="h-4 w-4" />
-                            Seats Included
+                            {t('billing.plans.features.seatsIncluded')}
                           </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                             <Building className="h-4 w-4" />
-                            Companies
+                            {t('billing.plans.features.companies')}
                           </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                             <Monitor className="h-4 w-4" />
-                            Registers
+                            {t('billing.plans.features.registers')}
                           </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included * 2}</span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                             <FileText className="h-4 w-4" />
-                            Orders
+                            {t('billing.plans.features.orders')}
                           </span>
                           <span className="text-lg font-bold text-gray-900">{plan.seats_included * 100}</span>
                         </div>
@@ -1078,7 +1110,7 @@ export default function BillingPage() {
                             : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md'
                         )}
                       >
-                        {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
+                        {isCurrentPlan ? t('billing.plans.plan.currentPlan') : t('billing.plans.plan.selectPlan')}
                       </button>
                     </div>
                   );
@@ -1088,8 +1120,8 @@ export default function BillingPage() {
               {billingPlans.length === 0 && (
                 <div className="text-center py-12">
                   <Star className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No billing plans available</p>
-                  <p className="text-gray-400 text-sm mt-2">Please contact support for more information</p>
+                  <p className="text-gray-500 text-lg">{t('billing.plans.plan.noPlans')}</p>
+                  <p className="text-gray-400 text-sm mt-2">{t('billing.plans.plan.contactSupport')}</p>
                 </div>
               )}
 
@@ -1097,51 +1129,51 @@ export default function BillingPage() {
               {currentSubscription && currentPlan && (
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Current Subscription Details
+                    {t('billing.plans.subscription.currentSubscription')}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Plan</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.plan')}</p>
                       <p className="text-lg font-semibold text-gray-900">{currentPlan.title}</p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Status</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.status')}</p>
                       <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${getSubscriptionStatusColor(currentSubscription.status)}`}>
-                        {currentSubscription.status}
+                        {t(`billing.status.${currentSubscription.status.toLowerCase()}`) || currentSubscription.status}
                       </span>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Start Date</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.startDate')}</p>
                       <p className="text-lg font-semibold text-gray-900">
                         {format(new Date(currentSubscription.start_date), 'MMM dd, yyyy')}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">End Date</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.endDate')}</p>
                       <p className="text-lg font-semibold text-gray-900">
                         {format(new Date(currentSubscription.end_date), 'MMM dd, yyyy')}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Seats Used</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.seatsUsed')}</p>
                       <p className="text-lg font-semibold text-gray-900">
                         {currentSubscription.seats} / {currentPlan.seats_included}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Auto Renew</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.autoRenew')}</p>
                       <p className="text-lg font-semibold text-gray-900">
-                        {currentSubscription.auto_renew ? 'Yes' : 'No'}
+                        {currentSubscription.auto_renew ? t('billing.plans.subscription.yes') : t('billing.plans.subscription.no')}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Monthly Price</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.monthlyPrice')}</p>
                       <p className="text-lg font-semibold text-gray-900">
                         {currentPlan.currency.symbol}{parseFloat(currentPlan.price_monthly).toFixed(2)}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Yearly Price</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('billing.plans.subscription.yearlyPrice')}</p>
                       <p className="text-lg font-semibold text-gray-900">
                         {currentPlan.currency.symbol}{parseFloat(currentPlan.price_yearly).toFixed(2)}
                       </p>

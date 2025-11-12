@@ -1,0 +1,129 @@
+{
+  "billing": {
+    "title": "Биллинг и Платежи",
+    "subtitle": "Управление счетами и платежами",
+    "tabs": {
+      "overview": "Обзор",
+      "plans": "Тарифы",
+      "invoices": "Счета",
+      "payments": "Платежи"
+    },
+    "overview": {
+      "currentPlan": "Текущий Тариф",
+      "noActiveSubscription": "Нет активной подписки",
+      "currentlyOnPlan": "Вы сейчас на тарифе {{plan}}",
+      "perMonth": "в месяц",
+      "perYear": "в год",
+      "usage": {
+        "seats": "Места",
+        "companies": "Компании",
+        "orders": "Заказы",
+        "registers": "Кассы",
+        "remaining": "осталось"
+      },
+      "recentActivity": {
+        "recentInvoices": "Последние Счета",
+        "recentPayments": "Последние Платежи",
+        "viewAll": "Посмотреть все",
+        "noInvoices": "Счета не найдены",
+        "noPayments": "Платежи не найдены"
+      }
+    },
+    "invoices": {
+      "searchPlaceholder": "Поиск счетов...",
+      "filters": {
+        "allStatus": "Все Статусы",
+        "paid": "Оплачено",
+        "pending": "В ожидании",
+        "overdue": "Просрочено"
+      },
+      "table": {
+        "invoice": "Счет",
+        "customer": "Клиент",
+        "totalAmount": "Общая Сумма",
+        "paidAmount": "Оплаченная Сумма",
+        "status": "Статус",
+        "created": "Создан",
+        "actions": "Действия",
+        "showing": "Показано {{count}} из {{total}} счетов"
+      },
+      "noInvoices": "Счета не найдены"
+    },
+    "payments": {
+      "searchPlaceholder": "Поиск платежей...",
+      "filters": {
+        "allMethods": "Все Методы",
+        "paymentMethod": "Метод Оплаты"
+      },
+      "table": {
+        "paymentId": "ID Платежа",
+        "invoice": "Счет",
+        "amount": "Сумма",
+        "method": "Метод",
+        "created": "Создан",
+        "showing": "Показано {{count}} из {{total}} платежей"
+      },
+      "noPayments": "Платежи не найдены"
+    },
+    "plans": {
+      "billingPeriod": {
+        "monthly": "Ежемесячно",
+        "yearly": "Ежегодно",
+        "save": "Скидка 20%"
+      },
+      "features": {
+        "seatsIncluded": "Включенные Места",
+        "companies": "Компании",
+        "registers": "Кассы",
+        "orders": "Заказы"
+      },
+      "plan": {
+        "currentPlan": "Текущий Тариф",
+        "selectPlan": "Выбрать Тариф",
+        "perfectForGrowing": "Идеально для растущего бизнеса",
+        "noPlans": "Тарифные планы недоступны",
+        "contactSupport": "Пожалуйста, обратитесь в службу поддержки для получения дополнительной информации"
+      },
+      "subscription": {
+        "currentSubscription": "Детали Текущей Подписки",
+        "plan": "Тариф",
+        "status": "Статус",
+        "startDate": "Дата Начала",
+        "endDate": "Дата Окончания",
+        "seatsUsed": "Использовано Мест",
+        "autoRenew": "Автообновление",
+        "monthlyPrice": "Месячная Цена",
+        "yearlyPrice": "Годовая Цена",
+        "yes": "Да",
+        "no": "Нет"
+      }
+    },
+    "actions": {
+      "viewPlans": "Посмотреть Тарифы",
+      "download": "Скачать",
+      "subscribe": "Подписаться на Тариф",
+      "changePlan": "Изменить Тариф",
+      "confirmChange": "У вас есть активная подписка. Вы уверены, что хотите изменить на тариф \"{{plan}}\"? Это заменит ваш текущий тариф.",
+      "confirmSubscribe": "Вы уверены, что хотите подписаться на тариф \"{{plan}}\"?",
+      "alreadySubscribed": "Вы уже подписаны на этот тариф.",
+      "successSubscribe": "Успешно подписались на тариф!"
+    },
+    "status": {
+      "active": "Активный",
+      "expired": "Истекший",
+      "cancelled": "Отмененный",
+      "trial": "Пробный",
+      "paid": "Оплачено",
+      "completed": "Завершено",
+      "pending": "В ожидании",
+      "overdue": "Просрочено",
+      "failed": "Неудачный",
+      "inactive": "Неактивный"
+    },
+    "errors": {
+      "failedToLoad": "Не удалось загрузить данные",
+      "failedToSubscribe": "Не удалось подписаться на тариф",
+      "failedToFetch": "Не удалось загрузить {{resource}}"
+    }
+  }
+}

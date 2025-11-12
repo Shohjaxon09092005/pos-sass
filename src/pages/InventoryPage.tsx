@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Package, TrendingUp, Plus, X, Building } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "../context/AuthContext";
-
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 // Interfaces
 interface StockQuant {
   id: number;
@@ -493,34 +494,31 @@ const inventoryAPI = {
   },
 };
 
-const INVENTORY_TABS = [
-  { key: "stock", label: "Stock" },
-  { key: "transfers", label: "Transfers" },
-  { key: "locations", label: "Locations" },
-];
-
+// LocationsList komponentini yangilash
 function LocationsList({ locations, onEdit, onDelete }: LocationsListProps) {
+  const { t } = useTranslation("inventory");
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h3 className="text-lg font-semibold mb-4">Storage Locations</h3>
+      <h3 className="text-lg font-semibold mb-4">{t("storageLocations")}</h3>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Name
+                {t("name")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Code
+                {t("code")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Notes
+                {t("notes")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+                {t("status")}
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Actions
+                {t("actions")}
               </th>
             </tr>
           </thead>
@@ -549,7 +547,7 @@ function LocationsList({ locations, onEdit, onDelete }: LocationsListProps) {
                         : "bg-gray-100 text-gray-600"
                     )}
                   >
-                    {loc.is_active || loc.active ? "Active" : "Inactive"}
+                    {loc.is_active || loc.active ? t("active") : t("inactive")}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right space-x-2">
@@ -557,13 +555,13 @@ function LocationsList({ locations, onEdit, onDelete }: LocationsListProps) {
                     onClick={() => onEdit(loc)}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    Edit
+                    {t("edit")}
                   </button>
                   <button
                     onClick={() => onDelete(loc.id)}
                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                   >
-                    Delete
+                    {t("delete")}
                   </button>
                 </td>
               </tr>
@@ -575,6 +573,7 @@ function LocationsList({ locations, onEdit, onDelete }: LocationsListProps) {
   );
 }
 
+// TransfersList komponentini yangilash
 function TransfersList({
   pickings,
   products,
@@ -585,6 +584,8 @@ function TransfersList({
   onComplete,
   onCancel,
 }: TransfersListProps) {
+  const { t } = useTranslation("inventory");
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "new":
@@ -615,31 +616,31 @@ function TransfersList({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h3 className="text-lg font-semibold mb-4">Stock Transfers</h3>
+      <h3 className="text-lg font-semibold mb-4">{t("stockTransfers")}</h3>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Reference
+                {t("reference")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Type
+                {t("type")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+                {t("status")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Date
+                {t("scheduledDate")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Route
+                {t("route")}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Products
+                {t("products")}
               </th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Actions
+                {t("actions")}
               </th>
             </tr>
           </thead>
@@ -661,7 +662,7 @@ function TransfersList({
                       getTypeColor(picking.picking_type)
                     )}
                   >
-                    {picking.picking_type}
+                    {t(picking.picking_type)}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -671,7 +672,7 @@ function TransfersList({
                       getStatusColor(picking.status)
                     )}
                   >
-                    {picking.status}
+                    {t(picking.status)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
@@ -702,7 +703,7 @@ function TransfersList({
                 </td>
                 <td className="px-4 py-3">
                   <div className="text-sm text-gray-600">
-                    {picking.moves.length} items
+                    {picking.moves.length} {t("items")}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -711,7 +712,7 @@ function TransfersList({
                       onClick={() => onViewDetail(picking)}
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
-                      View
+                      {t("view")}
                     </button>
                     {picking.status === "new" && (
                       <>
@@ -719,13 +720,13 @@ function TransfersList({
                           onClick={() => onEdit(picking)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium"
                         >
-                          Edit
+                          {t("edit")}
                         </button>
                         <button
                           onClick={() => onConfirm(picking.id)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium"
                         >
-                          Confirm
+                          {t("confirm")}
                         </button>
                       </>
                     )}
@@ -734,7 +735,7 @@ function TransfersList({
                         onClick={() => onComplete(picking.id)}
                         className="text-green-600 hover:text-green-800 text-sm font-medium"
                       >
-                        Complete
+                        {t("complete")}
                       </button>
                     )}
                     {(picking.status === "new" ||
@@ -743,7 +744,7 @@ function TransfersList({
                         onClick={() => onCancel(picking.id)}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"
                       >
-                        Cancel
+                        {t("cancelTransfer")}
                       </button>
                     )}
                   </div>
@@ -758,6 +759,7 @@ function TransfersList({
 }
 
 export default function InventoryPage() {
+  const { t, i18n } = useTranslation("inventory");
   const { user, selectedCompanyId } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -781,6 +783,12 @@ export default function InventoryPage() {
     reason: "",
     notes: "",
   });
+
+  const INVENTORY_TABS = [
+    { key: "stock", label: t("inventory") },
+    { key: "transfers", label: t("transfers") },
+    { key: "locations", label: t("locations") },
+  ];
   // Selection states
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
@@ -935,7 +943,7 @@ export default function InventoryPage() {
   };
 
   const handleDeleteLocation = async (locationId: string) => {
-    if (!confirm("Are you sure you want to delete this location?")) return;
+    if (!confirm(t("deleteLocationConfirmation"))) return;
 
     try {
       const token = localStorage.getItem("access_token");
@@ -981,7 +989,7 @@ export default function InventoryPage() {
       }
 
       loadData();
-      alert("Transfer confirmed successfully!");
+      alert(t("transferConfirmed"));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Confirm failed";
@@ -1000,7 +1008,7 @@ export default function InventoryPage() {
       }
 
       loadData();
-      alert("Transfer completed successfully!");
+      alert(t("transferCompleted"));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Complete failed";
@@ -1010,7 +1018,7 @@ export default function InventoryPage() {
   };
 
   const handleCancelTransfer = async (pickingId: string) => {
-    if (!confirm("Are you sure you want to cancel this transfer?")) return;
+    if (!confirm(t("cancelTransferConfirmation"))) return;
 
     try {
       await inventoryAPI.cancelTransfer(pickingId);
@@ -1021,7 +1029,7 @@ export default function InventoryPage() {
       }
 
       loadData();
-      alert("Transfer cancelled successfully!");
+      alert(t("transferCancelled"));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Cancel failed";
       setError(errorMessage);
@@ -1159,17 +1167,17 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       if (!adjustmentForm.location) {
-        alert("Iltimos, lokatsiyani tanlang!");
+        alert(t("pleaseSelectLocation"));
         return;
       }
 
       if (!adjustmentForm.quantity) {
-        alert("Iltimos, yangi miqdorni kiriting!");
+        alert(t("pleaseEnterQuantity"));
         return;
       }
 
       if (!adjustmentForm.reason) {
-        alert("Iltimos, sababni kiriting!");
+        alert(t("pleaseEnterReason"));
         return;
       }
 
@@ -1192,7 +1200,7 @@ export default function InventoryPage() {
       setSelectedProduct(null);
 
       loadData();
-      alert("Stock muvaffaqiyatli yangilandi!");
+      alert(t("adjustStockSuccess"));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Stock adjustment failed";
@@ -1210,7 +1218,7 @@ export default function InventoryPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">{t("loading")}</div>
       </div>
     );
   }
@@ -1255,10 +1263,10 @@ export default function InventoryPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Inventory</h1>
-              <p className="text-sm text-gray-600">
-                Track and manage your stock levels
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("inventory")}
+              </h1>
+              <p className="text-sm text-gray-600">{t("trackManageStock")}</p>
             </div>
           </div>
 
@@ -1268,7 +1276,7 @@ export default function InventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Total Items
+                    {t("totalItems")}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {products.reduce((sum, p) => sum + p.stockQuantity, 0)}
@@ -1284,7 +1292,7 @@ export default function InventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Total Value
+                    {t("totalValue")}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {(totalValue || 0).toFixed(2)} UZS
@@ -1299,7 +1307,9 @@ export default function InventoryPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Locations</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {t("locations")}
+                  </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {locations.length}
                   </p>
@@ -1315,7 +1325,7 @@ export default function InventoryPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                Stock Levels
+                {t("stockLevels")}
               </h3>
             </div>
             <div className="overflow-x-auto">
@@ -1323,19 +1333,19 @@ export default function InventoryPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Product
+                      {t("product")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Current Stock
+                      {t("currentStock")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Unit Cost
+                      {t("unitCost")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Total Value
+                      {t("totalValue")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
+                      {t("actions")}
                     </th>
                   </tr>
                 </thead>
@@ -1365,7 +1375,10 @@ export default function InventoryPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-semibold text-gray-900">
-                            {(isNaN(productValue) ? 0 : productValue).toFixed(2)} UZS
+                            {(isNaN(productValue) ? 0 : productValue).toFixed(
+                              2
+                            )}{" "}
+                            UZS
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -1384,7 +1397,7 @@ export default function InventoryPage() {
                             }}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           >
-                            Adjust Stock
+                            {t("adjustStock")}
                           </button>
                         </td>
                       </tr>
@@ -1404,7 +1417,7 @@ export default function InventoryPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>New Transfer</span>
+              <span>{t("newTransfer")}</span>
             </button>
           </div>
           <TransfersList
@@ -1436,7 +1449,7 @@ export default function InventoryPage() {
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Location</span>
+              <span>{t("addLocation")}</span>
             </button>
           </div>
           <LocationsList
@@ -1450,10 +1463,13 @@ export default function InventoryPage() {
       {/* Add Location Modal */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                {selectedLocation ? "Edit Location" : "Add New Location"}
+                {selectedLocation ? t("editLocation") : t("addNewLocation")}
               </h3>
               <button
                 onClick={() => {
@@ -1469,7 +1485,7 @@ export default function InventoryPage() {
             <form onSubmit={handleCreateLocation} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location Code *
+                  {t("locationCode")} *
                 </label>
                 <input
                   type="text"
@@ -1482,13 +1498,13 @@ export default function InventoryPage() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter location code (e.g., WH-001)"
+                  placeholder={t("enterLocationCode")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location Title *
+                  {t("locationTitle")} *
                 </label>
                 <input
                   type="text"
@@ -1501,13 +1517,13 @@ export default function InventoryPage() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter location title"
+                  placeholder={t("enterLocationTitle")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                  {t("notes")}
                 </label>
                 <textarea
                   rows={3}
@@ -1519,7 +1535,7 @@ export default function InventoryPage() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Additional notes..."
+                  placeholder={t("additionalNotes")}
                 />
               </div>
 
@@ -1536,7 +1552,7 @@ export default function InventoryPage() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-900">
-                  Active
+                  {t("active")}
                 </label>
               </div>
 
@@ -1549,13 +1565,13 @@ export default function InventoryPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  {selectedLocation ? "Update Location" : "Create Location"}
+                  {selectedLocation ? t("updateLocation") : t("createLocation")}
                 </button>
               </div>
             </form>
@@ -1566,10 +1582,13 @@ export default function InventoryPage() {
       {/* Stock Transfer Modal */}
       {showTransferModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Create Stock Transfer
+                {t("createStockTransfer")}
               </h3>
               <button
                 onClick={() => setShowTransferModal(false)}
@@ -1581,7 +1600,7 @@ export default function InventoryPage() {
             <form onSubmit={handleCreateStockPicking} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reference
+                  {t("reference")} *
                 </label>
                 <input
                   type="text"
@@ -1598,7 +1617,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type
+                  {t("type")}
                 </label>
                 <select
                   required
@@ -1611,15 +1630,15 @@ export default function InventoryPage() {
                   }
                   className="w-full border rounded-lg px-3 py-2"
                 >
-                  <option value="incoming">Incoming</option>
-                  <option value="outgoing">Outgoing</option>
-                  <option value="internal">Internal</option>
+                  <option value="incoming">{t("incoming")}</option>
+                  <option value="outgoing">{t("outgoing")}</option>
+                  <option value="internal">{t("internal")}</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Source Location
+                    {t("sourceLocation")}
                   </label>
                   <select
                     required
@@ -1632,7 +1651,7 @@ export default function InventoryPage() {
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   >
-                    <option value="">Select</option>
+                    <option value="">{t("select")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.name || loc.title}
@@ -1642,7 +1661,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Destination Location
+                    {t("destinationLocation")}
                   </label>
                   <select
                     required
@@ -1655,7 +1674,7 @@ export default function InventoryPage() {
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   >
-                    <option value="">Select</option>
+                    <option value="">{t("select")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.name || loc.title}
@@ -1666,7 +1685,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Scheduled Date
+                  {t("scheduledDate")}
                 </label>
                 <input
                   type="date"
@@ -1682,7 +1701,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Products
+                  {t("products")}
                 </label>
                 {stockPickingForm.moves.map((move, idx) => (
                   <div key={idx} className="flex space-x-2 mb-2">
@@ -1714,7 +1733,7 @@ export default function InventoryPage() {
                         moves[idx].reserved_quantity = e.target.value;
                         setStockPickingForm((f) => ({ ...f, moves }));
                       }}
-                      placeholder="Qty"
+                      placeholder={"Quantity"}
                       className="w-24 border rounded-lg px-2 py-1"
                     />
                     <input
@@ -1760,7 +1779,7 @@ export default function InventoryPage() {
                   }
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
                 >
-                  + Add Product
+                  + {t("addAnotherProduct")}
                 </button>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
@@ -1769,13 +1788,13 @@ export default function InventoryPage() {
                   onClick={() => setShowTransferModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Create Transfer
+                  {t("createTransfer")}
                 </button>
               </div>
             </form>
@@ -1786,10 +1805,13 @@ export default function InventoryPage() {
       {/* Edit Transfer Modal */}
       {showTransferEditModal && editingTransfer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Edit Stock Transfer
+                {t("editStockTransfer")}
               </h3>
               <button
                 onClick={() => setShowTransferEditModal(false)}
@@ -1801,7 +1823,7 @@ export default function InventoryPage() {
             <form onSubmit={handleUpdateStockPicking} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reference
+                  {t("reference")}
                 </label>
                 <input
                   type="text"
@@ -1818,7 +1840,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type
+                  {t("type")}
                 </label>
                 <select
                   required
@@ -1831,15 +1853,15 @@ export default function InventoryPage() {
                   }
                   className="w-full border rounded-lg px-3 py-2"
                 >
-                  <option value="incoming">Incoming</option>
-                  <option value="outgoing">Outgoing</option>
-                  <option value="internal">Internal</option>
+                  <option value="incoming">{t("incoming")}</option>
+                  <option value="outgoing">{t("outgoing")}</option>
+                  <option value="internal">{t("internal")}</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Source Location
+                    {t("sourceLocation")}
                   </label>
                   <select
                     required
@@ -1852,7 +1874,7 @@ export default function InventoryPage() {
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   >
-                    <option value="">Select</option>
+                    <option value="">{t("select")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.name || loc.title}
@@ -1862,7 +1884,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Destination Location
+                    {t("destinationLocation")}
                   </label>
                   <select
                     required
@@ -1875,7 +1897,7 @@ export default function InventoryPage() {
                     }
                     className="w-full border rounded-lg px-3 py-2"
                   >
-                    <option value="">Select</option>
+                    <option value="">{t("select")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.name || loc.title}
@@ -1886,7 +1908,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Scheduled Date
+                  {t("scheduledDate")}
                 </label>
                 <input
                   type="date"
@@ -1902,7 +1924,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Products
+                  {t("products")}
                 </label>
                 {stockPickingForm.moves.map((move, idx) => (
                   <div key={idx} className="flex space-x-2 mb-2">
@@ -1934,7 +1956,7 @@ export default function InventoryPage() {
                         moves[idx].reserved_quantity = e.target.value;
                         setStockPickingForm((f) => ({ ...f, moves }));
                       }}
-                      placeholder="Qty"
+                      placeholder={t("quantity")}
                       className="w-24 border rounded-lg px-2 py-1"
                     />
                     <input
@@ -1948,7 +1970,7 @@ export default function InventoryPage() {
                         moves[idx].price = e.target.value;
                         setStockPickingForm((f) => ({ ...f, moves }));
                       }}
-                      placeholder="Price"
+                      placeholder={t("price")}
                       className="w-24 border rounded-lg px-2 py-1"
                     />
                     {stockPickingForm.moves.length > 1 && (
@@ -1980,7 +2002,7 @@ export default function InventoryPage() {
                   }
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
                 >
-                  + Add Product
+                  + {t("addProduct")}
                 </button>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
@@ -1989,13 +2011,13 @@ export default function InventoryPage() {
                   onClick={() => setShowTransferEditModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Update Transfer
+                  {t("updateTransfer")}
                 </button>
               </div>
             </form>
@@ -2031,7 +2053,7 @@ export default function InventoryPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Type
+                    {t("type")}
                   </label>
                   <p className="mt-1 text-sm text-gray-900 capitalize">
                     {selectedTransfer.picking_type}
@@ -2039,7 +2061,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Status
+                    {t("status")}
                   </label>
                   <p className="mt-1">
                     <span
@@ -2060,7 +2082,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Source Location
+                    {t("sourceLocation")}
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {locations.find(
@@ -2074,7 +2096,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Destination Location
+                    {t("destinationLocation")}
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {locations.find(
@@ -2088,7 +2110,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Scheduled Date
+                    {t("scheduledDate")}
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {selectedTransfer.scheduled_date
@@ -2100,7 +2122,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Created
+                    {t("created")}
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {new Date(selectedTransfer.created_at).toLocaleString()}
@@ -2111,23 +2133,23 @@ export default function InventoryPage() {
               {/* Products Table */}
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-3">
-                  Products
+                  {t("products")}
                 </h4>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Product
+                          {t("product")}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Quantity
+                          {t("quantity")}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Price
+                          {t("price")}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Total
+                          {t("total")}
                         </th>
                       </tr>
                     </thead>
@@ -2148,7 +2170,8 @@ export default function InventoryPage() {
                               {move.reserved_quantity}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
-                              {(parseFloat(move.price || "0") || 0).toFixed(2)} UZS
+                              {(parseFloat(move.price || "0") || 0).toFixed(2)}{" "}
+                              UZS
                             </td>
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">
                               {total.toFixed(2)} UZS
@@ -2169,13 +2192,13 @@ export default function InventoryPage() {
                       onClick={() => handleEditTransfer(selectedTransfer)}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     >
-                      Edit Transfer
+                      {t("editTransfer")}
                     </button>
                     <button
                       onClick={() => handleConfirmTransfer(selectedTransfer.id)}
                       className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                     >
-                      Confirm Transfer
+                      {t("confirmTransfer")}
                     </button>
                   </>
                 )}
@@ -2184,7 +2207,7 @@ export default function InventoryPage() {
                     onClick={() => handleCompleteTransfer(selectedTransfer.id)}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    Complete Transfer
+                    {t("completeTransfer")}
                   </button>
                 )}
                 {(selectedTransfer.status === "new" ||
@@ -2193,7 +2216,7 @@ export default function InventoryPage() {
                     onClick={() => handleCancelTransfer(selectedTransfer.id)}
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    Cancel Transfer
+                    {t("cancelTransfer")}
                   </button>
                 )}
                 {selectedTransfer.status === "done" && (
@@ -2212,7 +2235,7 @@ export default function InventoryPage() {
                       />
                     </svg>
                     <span className="text-sm font-medium">
-                      Transfer Completed
+                      {t("transferCompleted")}
                     </span>
                   </div>
                 )}
@@ -2232,7 +2255,7 @@ export default function InventoryPage() {
                       />
                     </svg>
                     <span className="text-sm font-medium">
-                      Transfer Cancelled
+                      {t("transferCancelled")}
                     </span>
                   </div>
                 )}
@@ -2240,7 +2263,7 @@ export default function InventoryPage() {
                   onClick={() => setShowTransferDetailModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Close
+                  {t("close")}
                 </button>
               </div>
             </div>
@@ -2250,10 +2273,13 @@ export default function InventoryPage() {
       {/* Stock Adjustment Modal */}
       {showAdjustmentModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Adjust Stock - {selectedProduct.name}
+                {t("adjustStock")} - {selectedProduct.name}
               </h3>
               <button
                 onClick={() => {
@@ -2269,7 +2295,7 @@ export default function InventoryPage() {
             <form onSubmit={handleAdjustStock} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product
+                  {t("product")}
                 </label>
                 <input
                   type="text"
@@ -2281,7 +2307,7 @@ export default function InventoryPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Stock
+                  {t("currentStock")}
                 </label>
                 <input
                   type="text"
@@ -2293,7 +2319,7 @@ export default function InventoryPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location *
+                  {t("locations")} *
                 </label>
                 <select
                   required
@@ -2306,7 +2332,7 @@ export default function InventoryPage() {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Select Location</option>
+                  <option value="">{t("selectLocation")}</option>
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id}>
                       {loc.name || loc.title}
@@ -2317,7 +2343,7 @@ export default function InventoryPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Quantity *
+                  {t("newQuantity")} *
                 </label>
                 <input
                   type="number"
@@ -2338,7 +2364,7 @@ export default function InventoryPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reason for Adjustment *
+                  {t("reasonAdjustment")} *
                 </label>
                 <input
                   type="text"
@@ -2358,7 +2384,7 @@ export default function InventoryPage() {
               {/* Notes ni olib tashlash yoki optional qilish */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (Optional)
+                  {t("notes")} (Optional)
                 </label>
                 <textarea
                   rows={2}
@@ -2370,7 +2396,7 @@ export default function InventoryPage() {
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Additional notes..."
+                  placeholder={t("additionalNotes")}
                 />
               </div>
 
@@ -2383,13 +2409,13 @@ export default function InventoryPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Adjust Stock
+                  {t("adjustStock")}
                 </button>
               </div>
             </form>

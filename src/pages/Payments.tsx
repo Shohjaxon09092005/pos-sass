@@ -14,10 +14,12 @@ import {
   DollarSign,
 } from "lucide-react";
 import { clsx } from "clsx";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function PaymentsPage() {
+  const {t}=useTranslation('payment');
   const [activeTab, setActiveTab] = useState<"payments" | "methods" | "currency">("payments");
   
   // Payments state
@@ -529,10 +531,10 @@ export default function PaymentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            To'lov Tizimi
+            {t('payment_system')}
           </h1>
           <p className="text-sm text-gray-600">
-            To'lovlar, to'lov usullari va valyutalarni boshqaring
+            {t('manage_payments')}
           </p>
         </div>
         <button
@@ -545,9 +547,9 @@ export default function PaymentsPage() {
         >
           <Plus className="h-5 w-5" />
           <span>
-            {activeTab === "payments" && "To'lov qo'shish"}
-            {activeTab === "methods" && "To'lov usuli qo'shish"}
-            {activeTab === "currency" && "Valyuta qo'shish"}
+            {activeTab === "payments" && t('payments_add')}
+            {activeTab === "methods" && t('methods_add')}
+            {activeTab === "currency" && t('currencies_add')}
           </span>
         </button>
       </div>
@@ -565,7 +567,7 @@ export default function PaymentsPage() {
             )}
           >
             <CreditCard className="h-4 w-4" />
-            <span>To'lovlar</span>
+            <span>{t('tabs_payments')}</span>
           </button>
           <button
             onClick={() => setActiveTab("methods")}
@@ -577,7 +579,7 @@ export default function PaymentsPage() {
             )}
           >
             <Wallet className="h-4 w-4" />
-            <span>To'lov Usullari</span>
+            <span>{t('tabs_payment_methods')}</span>
           </button>
           <button
             onClick={() => setActiveTab("currency")}
@@ -589,12 +591,12 @@ export default function PaymentsPage() {
             )}
           >
             <Coins className="h-4 w-4" />
-            <span>Valyuta</span>
+            <span>{t('tabs_currencies')}</span>
           </button>
         </div>
       </div>
 
-      {/* Content based on active tab */}
+      {/* Payments Tab */}
       {activeTab === "payments" && (
         <>
           {/* Payments Stats */}
@@ -603,7 +605,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Jami to'lovlar
+                    {t('payments_total')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalPayments}
@@ -619,7 +621,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Faol to'lovlar
+                    {t('payments_active')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {activePayments}
@@ -635,7 +637,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Nofaol to'lovlar
+                    {t('payments_inactive')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalPayments - activePayments}
@@ -654,7 +656,7 @@ export default function PaymentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="To'lovlarni qidirish..."
+                placeholder={t('payments_search')}
                 value={paymentSearchTerm}
                 onChange={(e) => setPaymentSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -666,7 +668,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">
-                To'lovlar Ro'yxati
+                {t('payments_list')}
               </h3>
             </div>
 
@@ -703,7 +705,7 @@ export default function PaymentsPage() {
                           ? "bg-green-100 text-green-800" 
                           : "bg-gray-100 text-gray-800"
                       )}>
-                        {payment.is_active ? "Faol" : "Nofaol"}
+                        {payment.is_active ? t('active') : t('inactive')}
                       </span>
                       <button
                         onClick={() => setEditingPayment(payment)}
@@ -723,8 +725,8 @@ export default function PaymentsPage() {
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   {paymentSearchTerm
-                    ? "Sizning qidiruvingizga mos to'lovlar topilmadi."
-                    : "To'lovlar topilmadi. Birinchi to'lovni yaratishni boshlang."}
+                    ? t('payments_no_results')
+                    : t('payments_not_found')}
                 </div>
               )}
             </div>
@@ -732,6 +734,7 @@ export default function PaymentsPage() {
         </>
       )}
 
+      {/* Payment Methods Tab */}
       {activeTab === "methods" && (
         <>
           {/* Methods Stats */}
@@ -740,7 +743,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Jami to'lov usullari
+                    {t('methods_total')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalMethods}
@@ -756,7 +759,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Faol to'lov usullari
+                    {t('methods_active')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {activeMethods}
@@ -772,7 +775,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Nofaol to'lov usullari
+                    {t('methods_inactive')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalMethods - activeMethods}
@@ -791,7 +794,7 @@ export default function PaymentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="To'lov usullarini qidirish..."
+                placeholder={t('methods_search')}
                 value={methodSearchTerm}
                 onChange={(e) => setMethodSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -803,7 +806,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">
-                To'lov Usullari
+                {t('methods_list')}
               </h3>
             </div>
 
@@ -829,7 +832,7 @@ export default function PaymentsPage() {
                           {method.name}
                         </span>
                         <div className="text-sm text-gray-500 space-y-1">
-                          <div>Turi: {method.type}</div>
+                          <div>{t('type')}: {method.type}</div>
                           {method.description && (
                             <div>{method.description}</div>
                           )}
@@ -843,7 +846,7 @@ export default function PaymentsPage() {
                           ? "bg-green-100 text-green-800" 
                           : "bg-gray-100 text-gray-800"
                       )}>
-                        {method.is_active ? "Faol" : "Nofaol"}
+                        {method.is_active ? t('active') : t('inactive')}
                       </span>
                       <button
                         onClick={() => setEditingMethod(method)}
@@ -863,8 +866,8 @@ export default function PaymentsPage() {
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   {methodSearchTerm
-                    ? "Sizning qidiruvingizga mos to'lov usullari topilmadi."
-                    : "To'lov usullari topilmadi. Birinchi to'lov usulini yaratishni boshlang."}
+                    ? t('methods_no_results')
+                    : t('methods_not_found')}
                 </div>
               )}
             </div>
@@ -872,6 +875,8 @@ export default function PaymentsPage() {
         </>
       )}
 
+
+      {/* Currency Tab */}
       {activeTab === "currency" && (
         <>
           {/* Currency Stats */}
@@ -880,7 +885,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Jami valyutalar
+                    {t('currencies_total')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalCurrencies}
@@ -896,7 +901,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Faol valyutalar
+                    {t('currencies_active')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {activeCurrencies}
@@ -912,7 +917,7 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Nofaol valyutalar
+                    {t('currencies_inactive')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {totalCurrencies - activeCurrencies}
@@ -931,7 +936,7 @@ export default function PaymentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Valyutalarni qidirish..."
+                placeholder={t('currencies_search')}
                 value={currencySearchTerm}
                 onChange={(e) => setCurrencySearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -943,7 +948,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">
-                Valyuta Ro'yxati
+                {t('currencies_list')}
               </h3>
             </div>
 
@@ -969,8 +974,8 @@ export default function PaymentsPage() {
                           {currency.name} ({currency.code})
                         </span>
                         <div className="text-sm text-gray-500 space-y-1">
-                          <div>Belgi: {currency.symbol}</div>
-                          <div>Kurs: {currency.exchange_rate}</div>
+                          <div>{t('symbol')}: {currency.symbol}</div>
+                          <div>{t('exchange_rate')}: {currency.exchange_rate}</div>
                         </div>
                       </div>
                     </div>
@@ -981,7 +986,7 @@ export default function PaymentsPage() {
                           ? "bg-green-100 text-green-800" 
                           : "bg-gray-100 text-gray-800"
                       )}>
-                        {currency.is_active ? "Faol" : "Nofaol"}
+                        {currency.is_active ? t('active') : t('inactive')}
                       </span>
                       <button
                         onClick={() => setEditingCurrency(currency)}
@@ -1001,8 +1006,8 @@ export default function PaymentsPage() {
               ) : (
                 <div className="p-8 text-center text-gray-500">
                   {currencySearchTerm
-                    ? "Sizning qidiruvingizga mos valyutalar topilmadi."
-                    : "Valyutalar topilmadi. Birinchi valyutani yaratishni boshlang."}
+                    ? t('currencies_no_results')
+                    : t('currencies_not_found')}
                 </div>
               )}
             </div>
@@ -1010,13 +1015,13 @@ export default function PaymentsPage() {
         </>
       )}
 
-      {/* Add/Edit Payment Modal */}
+      {/* Modallar uchun misol */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Yangi to'lov qo'shish
+                {t('payments_add')}
               </h3>
               <button
                 onClick={() => setShowPaymentModal(false)}
@@ -1029,26 +1034,26 @@ export default function PaymentsPage() {
             <form onSubmit={handleAddPayment} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov nomi *
+                  {t('payments_name')} *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="To'lov nomini kiriting"
+                  placeholder={t('payments_name')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tavsif
+                  {t('description')}
                 </label>
                 <textarea
                   name="description"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="To'lov haqida qisqacha tavsif"
+                  placeholder={t('payments_description')}
                 />
               </div>
 
@@ -1058,13 +1063,13 @@ export default function PaymentsPage() {
                   onClick={() => setShowPaymentModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  To'lov qo'shish
+                  {t('payments_add')}
                 </button>
               </div>
             </form>
@@ -1077,7 +1082,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                To'lovni tahrirlash
+                {t('payments_edit')}
               </h3>
               <button
                 onClick={() => setEditingPayment(null)}
@@ -1090,7 +1095,7 @@ export default function PaymentsPage() {
             <form onSubmit={handleUpdatePayment} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov nomi *
+                  {t('payments_name')} *
                 </label>
                 <input
                   type="text"
@@ -1103,7 +1108,7 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tavsif
+                  {t('description')}
                 </label>
                 <textarea
                   name="description"
@@ -1115,15 +1120,15 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Holati
+                  {t('status')}
                 </label>
                 <select
                   name="is_active"
                   defaultValue={editingPayment.is_active ? "true" : "false"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="true">Faol</option>
-                  <option value="false">Nofaol</option>
+                  <option value="true">{t('active')}</option>
+                  <option value="false">{t('inactive')}</option>
                 </select>
               </div>
 
@@ -1133,14 +1138,14 @@ export default function PaymentsPage() {
                   onClick={() => setEditingPayment(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4 inline mr-2" />
-                  Yangilash
+                  {t('payments_update')}
                 </button>
               </div>
             </form>
@@ -1154,7 +1159,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Yangi to'lov usuli qo'shish
+                {t('methods_add')}
               </h3>
               <button
                 onClick={() => setShowMethodModal(false)}
@@ -1167,44 +1172,44 @@ export default function PaymentsPage() {
             <form onSubmit={handleAddMethod} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov usuli nomi *
+                  {t('methods_name')} *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="To'lov usuli nomini kiriting"
+                  placeholder={t('methods_name')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov turi *
+                  {t('methods_type')} *
                 </label>
                 <select
                   name="type"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Turi tanlang</option>
-                  <option value="cash">Naqd</option>
-                  <option value="card">Karta</option>
-                  <option value="transfer">O'tkazma</option>
-                  <option value="digital">Raqamli</option>
-                  <option value="other">Boshqa</option>
+                  <option value="">{t('methods_select_type') as string}</option>
+                  <option value="cash">{t('methods_type_cash') as string}</option>
+                  <option value="card">{t('methods_type_card') as string}</option>
+                  <option value="transfer">{t('methods_type_transfer') as string}</option>
+                  <option value="digital">{t('methods_type_digital') as string}</option>
+                  <option value="other">{t('methods_type_other') as string}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tavsif
+                  {t('description')}
                 </label>
                 <textarea
                   name="description"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="To'lov usuli haqida qisqacha tavsif"
+                  placeholder={t('methods_description')}
                 />
               </div>
 
@@ -1214,13 +1219,13 @@ export default function PaymentsPage() {
                   onClick={() => setShowMethodModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  To'lov usuli qo'shish
+                  {t('methods_add')}
                 </button>
               </div>
             </form>
@@ -1233,7 +1238,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                To'lov usulini tahrirlash
+                {t('methods_edit')}
               </h3>
               <button
                 onClick={() => setEditingMethod(null)}
@@ -1246,7 +1251,7 @@ export default function PaymentsPage() {
             <form onSubmit={handleUpdateMethod} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov usuli nomi *
+                  {t('methods_name')} *
                 </label>
                 <input
                   type="text"
@@ -1259,7 +1264,7 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To'lov turi *
+                  {t('methods_type')} *
                 </label>
                 <select
                   name="type"
@@ -1267,17 +1272,17 @@ export default function PaymentsPage() {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="cash">Naqd</option>
-                  <option value="card">Karta</option>
-                  <option value="transfer">O'tkazma</option>
-                  <option value="digital">Raqamli</option>
-                  <option value="other">Boshqa</option>
+                  <option value="cash">{t('methods_type_cash')}</option>
+                  <option value="card">{t('methods_type_card')}</option>
+                  <option value="transfer">{t('methods_type_transfer')}</option>
+                  <option value="digital">{t('methods_type_digital')}</option>
+                  <option value="other">{t('methods_type_other')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tavsif
+                  {t('description')}
                 </label>
                 <textarea
                   name="description"
@@ -1289,15 +1294,15 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Holati
+                  {t('status')}
                 </label>
                 <select
                   name="is_active"
                   defaultValue={editingMethod.is_active ? "true" : "false"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="true">Faol</option>
-                  <option value="false">Nofaol</option>
+                  <option value="true">{t('active')}</option>
+                  <option value="false">{t('inactive')}</option>
                 </select>
               </div>
 
@@ -1307,14 +1312,14 @@ export default function PaymentsPage() {
                   onClick={() => setEditingMethod(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4 inline mr-2" />
-                  Yangilash
+                  {t('payments_update')}
                 </button>
               </div>
             </form>
@@ -1328,7 +1333,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Yangi valyuta qo'shish
+                {t('currencies_add')}
               </h3>
               <button
                 onClick={() => setShowCurrencyModal(false)}
@@ -1341,47 +1346,47 @@ export default function PaymentsPage() {
             <form onSubmit={handleAddCurrency} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta kodi *
+                  {t('currencies_code')} *
                 </label>
                 <input
                   type="text"
                   name="code"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: USD"
+                  placeholder={t('currencies_example_code')}
                   maxLength={3}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta nomi *
+                  {t('currencies_name')} *
                 </label>
                 <input
                   type="text"
                   name="name"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: AQSH dollari"
+                  placeholder={t('currencies_example_name')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta belgisi *
+                  {t('currencies_symbol')} *
                 </label>
                 <input
                   type="text"
                   name="symbol"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: $"
+                  placeholder={t('currencies_example_symbol')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ayirboshlash kursi *
+                  {t('currencies_exchange_rate')} *
                 </label>
                 <input
                   type="number"
@@ -1390,7 +1395,7 @@ export default function PaymentsPage() {
                   step="0.0001"
                   min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Masalan: 1.0"
+                  placeholder={t('currencies_example_rate')}
                 />
               </div>
 
@@ -1400,13 +1405,13 @@ export default function PaymentsPage() {
                   onClick={() => setShowCurrencyModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Valyuta qo'shish
+                  {t('currencies_add')}
                 </button>
               </div>
             </form>
@@ -1419,7 +1424,7 @@ export default function PaymentsPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-xl mx-4 max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Valyutani tahrirlash
+                {t('currencies_edit')}
               </h3>
               <button
                 onClick={() => setEditingCurrency(null)}
@@ -1432,7 +1437,7 @@ export default function PaymentsPage() {
             <form onSubmit={handleUpdateCurrency} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta kodi *
+                  {t('currencies_code')} *
                 </label>
                 <input
                   type="text"
@@ -1446,7 +1451,7 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta nomi *
+                  {t('currencies_name')} *
                 </label>
                 <input
                   type="text"
@@ -1459,7 +1464,7 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Valyuta belgisi *
+                  {t('currencies_symbol')} *
                 </label>
                 <input
                   type="text"
@@ -1472,7 +1477,7 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ayirboshlash kursi *
+                  {t('currencies_exchange_rate')} *
                 </label>
                 <input
                   type="number"
@@ -1487,15 +1492,15 @@ export default function PaymentsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Holati
+                  {t('status')}
                 </label>
                 <select
                   name="is_active"
                   defaultValue={editingCurrency.is_active ? "true" : "false"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="true">Faol</option>
-                  <option value="false">Nofaol</option>
+                  <option value="true">{t('active')}</option>
+                  <option value="false">{t('inactive')}</option>
                 </select>
               </div>
 
@@ -1505,14 +1510,14 @@ export default function PaymentsPage() {
                   onClick={() => setEditingCurrency(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Bekor qilish
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4 inline mr-2" />
-                  Yangilash
+                  {t('payments_update')}
                 </button>
               </div>
             </form>

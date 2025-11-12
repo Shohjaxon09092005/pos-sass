@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and system preferences",
+    "tabs": {
+      "profile": "Profile",
+      "company": "Company",
+      "notifications": "Notifications",
+      "security": "Security"
+    },
+    "profile": {
+      "title": "Personal Information",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter your last name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "role": "Role",
+      "username": "Username"
+    },
+    "company": {
+      "title": "Company Information",
+      "addCompany": "Add Company",
+      "yourCompanies": "Your Companies",
+      "editCompany": "Edit Company",
+      "companyName": "Company Name *",
+      "companyNamePlaceholder": "Enter company name",
+      "email": "Email Address",
+      "emailPlaceholder": "company@example.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "website": "Website",
+      "websitePlaceholder": "https://example.com",
+      "address": "Address *",
+      "addressPlaceholder": "Enter company address"
+    },
+    "security": {
+      "title": "Password & Security",
+      "currentPassword": "Current Password *",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New Password *",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm New Password *",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "updatePassword": "Update Password"
+    },
+    "notifications": {
+      "title": "Email Notifications",
+      "dailySales": "Daily Sales Summary",
+      "dailySalesDesc": "Receive daily reports about your sales performance",
+      "lowStock": "Low Stock Alerts",
+      "lowStockDesc": "Get notified when products are running low",
+      "newOrders": "New Orders",
+      "newOrdersDesc": "Notification for every new order placed",
+      "payments": "Payment Alerts",
+      "paymentsDesc": "Updates about payment processing and failures",
+      "systemUpdates": "System Updates",
+      "systemUpdatesDesc": "Important system updates and maintenance notifications",
+      "savePreferences": "Save Preferences"
+    },
+    "actions": {
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "updating": "Updating...",
+      "creating": "Creating...",
+      "createCompany": "Create Company",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "modals": {
+      "addCompany": {
+        "title": "Add New Company",
+        "create": "Create Company"
+      },
+      "deleteConfirm": "Are you sure you want to delete this company? This action cannot be undone."
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully",
+      "companyUpdated": "Company updated successfully",
+      "companyCreated": "Company created successfully",
+      "companyDeleted": "Company deleted successfully",
+      "passwordUpdated": "Password updated successfully",
+      "preferencesSaved": "Notification preferences saved",
+      "noCompany": "No company found",
+      "passwordsMismatch": "New passwords do not match",
+      "passwordTooShort": "New password must be at least 8 characters long",
+      "errorUpdating": "Error updating {{resource}}",
+      "errorCreating": "Error creating {{resource}}",
+      "errorDeleting": "Error deleting {{resource}}",
+      "failedToUpdate": "Failed to update {{resource}}",
+      "failedToCreate": "Failed to create {{resource}}",
+      "failedToDelete": "Failed to delete {{resource}}"
+    },
+    "loading": "Loading user data..."
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "purchases": "Purchases",
+  "manage_suppliers_purchases": "Manage suppliers and purchase orders",
+  "new_purchase_order": "New Purchase Order",
+  "add_supplier": "Add Supplier",
+  "purchase_orders": "Purchase Orders",
+  "manage_suppliers": "Manage Suppliers",
+  
+  "stats": {
+    "total_suppliers": "Total Suppliers",
+    "pending_payments": "Pending Payments",
+    "pending_value": "Pending Value",
+    "total_purchases": "Total Purchases",
+    "active_suppliers": "Active Suppliers",
+    "blacklisted": "Blacklisted"
+  },
+  
+  "search": {
+    "placeholder": "Search by supplier or purchase ID...",
+    "all_status": "All Status",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  
+  "table": {
+    "purchase_id": "Purchase ID",
+    "supplier": "Supplier",
+    "items": "Items",
+    "total": "Total",
+    "status": "Status",
+    "actions": "Actions",
+    "contact": "Contact",
+    "address": "Address",
+    "all_suppliers": "All Suppliers"
+  },
+  
+  "modals": {
+    "create_purchase_order": "Create Purchase Order",
+    "purchase_details": "Purchase Details",
+    "manage_suppliers": "Manage Suppliers",
+    "add_supplier": "Add New Supplier",
+    "edit_supplier": "Edit Supplier"
+  },
+  
+  "forms": {
+    "supplier": "Supplier",
+    "select_supplier": "Select Supplier",
+    "expected_delivery_date": "Expected Delivery Date",
+    "order_items": "Order Items",
+    "add_item": "Add Item",
+    "product": "Product",
+    "select_product": "Select Product",
+    "quantity": "Quantity",
+    "unit_cost": "Unit Cost",
+    "total": "Total",
+    "action": "Action",
+    "total_amount": "Total Amount",
+    "notes": "Notes",
+    "additional_notes": "Additional notes for this purchase order...",
+    "cancel": "Cancel",
+    "create": "Create Purchase Order",
+    "close": "Close",
+    "update_supplier": "Update Supplier",
+    "create_supplier": "Create Supplier",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address_line_1": "Address Line 1",
+    "address_line_2": "Address Line 2",
+    "address_line_1_placeholder": "Street address, P.O. box, company name, c/o",
+    "address_line_2_placeholder": "Apartment, suite, unit, building, floor, etc.",
+    "supplier_notes": "Additional notes about this supplier...",
+    "supplier_name": "Supplier name"
+  },
+  
+  "details": {
+    "created_date": "Created Date",
+    "amount_paid": "Amount Paid"
+  },
+  
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  
+  "currency": "UZS",
+  "paid": "Paid",
+  "no_phone": "No phone",
+  "no_address": "No address",
+  "items_count": "items",
+  "qty": "qty",
+  "view_details":"View Details",
+  "actions":{
+    "edit":"Edit",
+    "delete":"Delete"
+  }
+}

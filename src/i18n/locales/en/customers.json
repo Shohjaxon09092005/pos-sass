@@ -1,0 +1,88 @@
+{
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Manage your customer relationships",
+    "addCustomer": "Add Customer",
+    "searchPlaceholder": "Search customers...",
+    "noCustomers": "No customers found",
+    "adjustSearch": "Try adjusting your search terms",
+    "getStarted": "Get started by adding your first customer",
+    
+    "stats": {
+      "totalCustomers": "Total Customers",
+      "totalRevenue": "Total Revenue",
+      "avgSpent": "Avg Spent",
+      "loyaltyPoints": "Loyalty Points"
+    },
+    
+    "customer": {
+      "memberSince": "Member since",
+      "totalSpent": "Total Spent",
+      "points": "Points",
+      "lastVisit": "Last Visit",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "never": "Never"
+    },
+    
+    "details": {
+      "title": "Customer Details",
+      "memberSince": "Member since",
+      "totalSpent": "Total Spent",
+      "currentDue": "Current Due",
+      "transactions": "Transactions",
+      "products": "Products",
+      "lastPurchase": "Last Purchase",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "loyaltyPoints": "Loyalty Points",
+      "earnedFromPurchases": "Earned from purchases",
+      "customerSince": "Customer Since",
+      "purchaseHistory": "Purchase History",
+      "transactionsCount": "transactions",
+      "noPurchaseHistory": "No purchase history found",
+      "sale": "Sale",
+      "paid": "Paid",
+      "due": "Due",
+      "productsPurchased": "Products purchased",
+      "unknownProduct": "Unknown Product",
+      "close": "Close",
+      "editCustomer": "Edit Customer"
+    },
+    
+    "form": {
+      "addTitle": "Add New Customer",
+      "editTitle": "Edit Customer",
+      "profileImage": "Profile Image",
+      "uploadHint": "PNG, JPG, JPEG up to 5MB",
+      "fullName": "Full Name *",
+      "fullNamePlaceholder": "Enter customer name",
+      "email": "Email",
+      "emailPlaceholder": "customer@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1-555-0123",
+      "address1": "Address 1",
+      "address1Placeholder": "Street address",
+      "address2": "Address 2",
+      "address2Placeholder": "Apartment, suite, etc.",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "cancel": "Cancel",
+      "update": "Update Customer",
+      "add": "Add Customer"
+    },
+    
+    "errors": {
+      "imageTooLarge": "Image size must be less than 5MB",
+      "invalidImageFormat": "Only image files are allowed",
+      "deleteConfirmation": "Are you sure you want to delete this customer?",
+      "failedToLoad": "Failed to load customers",
+      "failedToLoadSales": "Failed to load customer sales data",
+      "failedToCreate": "Failed to create customer",
+      "failedToUpdate": "Failed to update customer",
+      "failedToDelete": "Failed to delete customer"
+    }
+  }
+}

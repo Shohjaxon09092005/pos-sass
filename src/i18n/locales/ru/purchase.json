@@ -1,0 +1,89 @@
+{
+    "purchases": "Закупки",
+    "manage_suppliers_purchases": "Управляйте поставщиками и заказами на закупку",
+    "new_purchase_order": "Новый заказ на закупку",
+    "add_supplier": "Добавить поставщика",
+    "purchase_orders": "Заказы на закупку",
+    "manage_suppliers": "Управление поставщиками",
+    "stats": {
+        "total_suppliers": "Всего поставщиков",
+        "pending_payments": "Ожидающие платежи",
+        "pending_value": "Сумма к оплате",
+        "total_purchases": "Всего закупок",
+        "active_suppliers": "Активные поставщики",
+        "blacklisted": "В черном списке"
+    },
+    "search": {
+        "placeholder": "Поиск по поставщику или ID закупки...",
+        "all_status": "Все статусы",
+        "active": "Активный",
+        "inactive": "Неактивный"
+    },
+    "table": {
+        "purchase_id": "ID закупки",
+        "supplier": "Поставщик",
+        "items": "Товары",
+        "total": "Итого",
+        "status": "Статус",
+        "actions": "Действия",
+        "contact": "Контакт",
+        "address": "Адрес",
+        "all_suppliers": "Все поставщики"
+    },
+    "modals": {
+        "create_purchase_order": "Создать заказ на закупку",
+        "purchase_details": "Детали закупки",
+        "manage_suppliers": "Управление поставщиками",
+        "add_supplier": "Добавить нового поставщика",
+        "edit_supplier": "Редактировать поставщика"
+    },
+    "forms": {
+        "supplier": "Поставщик",
+        "select_supplier": "Выберите поставщика",
+        "expected_delivery_date": "Ожидаемая дата доставки",
+        "order_items": "Товары в заказе",
+        "add_item": "Добавить товар",
+        "product": "Продукт",
+        "select_product": "Выберите продукт",
+        "quantity": "Количество",
+        "unit_cost": "Цена за единицу",
+        "total": "Итого",
+        "action": "Действие",
+        "total_amount": "Общая сумма",
+        "notes": "Примечания",
+        "additional_notes": "Дополнительные примечания к заказу...",
+        "cancel": "Отмена",
+        "create": "Создать заказ на закупку",
+        "close": "Закрыть",
+        "update_supplier": "Обновить поставщика",
+        "create_supplier": "Создать поставщика",
+        "address_line_1_placeholder": "Улица, абонентский ящик, название компании, и т.д.",
+        "address_line_2_placeholder": "Квартира, офис, блок, здание, этаж и т.д.",
+        "name": "Имя",
+        "email": "Электронная почта",
+        "phone": "Телефон",
+        "address_line_1": "Адрес 1",
+        "address_line_2": "Адрес 2",
+        "supplier_notes": "Дополнительные примечания о поставщике...",
+        "supplier_name": "Имя поставщика"
+    },
+    "details": {
+        "created_date": "Дата создания",
+        "amount_paid": "Оплаченная сумма"
+    },
+    "status": {
+        "active": "Активный",
+        "inactive": "Неактивный"
+    },
+    "currency": "UZS",
+    "paid": "Оплачено",
+    "no_phone": "Нет телефона",
+    "no_address": "Нет адреса",
+    "items_count": "товаров",
+    "qty": "кол-во",
+    "view_details": "Просмотреть детали",
+    "actions": {
+        "edit": "Редактировать",
+        "delete": "Удалить"
+    }
+}

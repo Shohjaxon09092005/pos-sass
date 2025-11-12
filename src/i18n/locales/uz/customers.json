@@ -1,0 +1,88 @@
+{
+  "customers": {
+    "title": "Mijozlar",
+    "subtitle": "Mijozlar bilan aloqalarni boshqaring",
+    "addCustomer": "Mijoz qo'shish",
+    "searchPlaceholder": "Mijozlarni qidirish...",
+    "noCustomers": "Mijozlar topilmadi",
+    "adjustSearch": "Qidiruv so'zlarini o'zgartirib ko'ring",
+    "getStarted": "Birinchi mijozingizni qo'shing",
+    
+    "stats": {
+      "totalCustomers": "Jami mijozlar",
+      "totalRevenue": "Jami daromad",
+      "avgSpent": "O'rtacha sarf",
+      "loyaltyPoints": "Loyal ballar"
+    },
+    
+    "customer": {
+      "memberSince": "A'zo bo'lgan sana",
+      "totalSpent": "Jami sarflangan",
+      "points": "Ballar",
+      "lastVisit": "So'nggi tashrif",
+      "view": "Ko'rish",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "never": "Hech qachon"
+    },
+    
+    "details": {
+      "title": "Mijoz tafsilotlari",
+      "memberSince": "A'zo bo'lgan sana",
+      "totalSpent": "Jami sarflangan",
+      "currentDue": "Joriy qarz",
+      "transactions": "Tranzaksiyalar",
+      "products": "Mahsulotlar",
+      "lastPurchase": "So'ngi xarid",
+      "email": "Elektron pochta",
+      "phone": "Telefon",
+      "address": "Manzil",
+      "loyaltyPoints": "Loyal ballar",
+      "earnedFromPurchases": "Xaridlardan topshirilgan",
+      "customerSince": "Mijoz sifatida",
+      "purchaseHistory": "Xaridlar tarixi",
+      "transactionsCount": "tranzaksiyalar",
+      "noPurchaseHistory": "Xaridlar tarixi topilmadi",
+      "sale": "Sotuv",
+      "paid": "To'langan",
+      "due": "Qarz",
+      "productsPurchased": "Sotib olingan mahsulotlar",
+      "unknownProduct": "Noma'lum mahsulot",
+      "close": "Yopish",
+      "editCustomer": "Mijozni tahrirlash"
+    },
+    
+    "form": {
+      "addTitle": "Yangi mijoz qo'shish",
+      "editTitle": "Mijozni tahrirlash",
+      "profileImage": "Profil rasmi",
+      "uploadHint": "PNG, JPG, JPEG, maksimal 5MB",
+      "fullName": "To'liq ism *",
+      "fullNamePlaceholder": "Mijoz ismini kiriting",
+      "email": "Elektron pochta",
+      "emailPlaceholder": "mijoz@email.com",
+      "phone": "Telefon",
+      "phonePlaceholder": "+998-90-123-45-67",
+      "address1": "Manzil 1",
+      "address1Placeholder": "Ko'cha manzili",
+      "address2": "Manzil 2",
+      "address2Placeholder": "Kvartira, xonadon, va h.k.",
+      "notes": "Eslatmalar",
+      "notesPlaceholder": "Qo'shimcha eslatmalar...",
+      "cancel": "Bekor qilish",
+      "update": "Mijozni yangilash",
+      "add": "Mijoz qo'shish"
+    },
+    
+    "errors": {
+      "imageTooLarge": "Rasm hajmi 5MB dan kichik bo'lishi kerak",
+      "invalidImageFormat": "Faqat rasm fayllari ruxsat etilgan",
+      "deleteConfirmation": "Bu mijozni o'chirishni istaysizmi?",
+      "failedToLoad": "Mijozlarni yuklab bo'lmadi",
+      "failedToLoadSales": "Mijoz sotuv ma'lumotlarini yuklab bo'lmadi",
+      "failedToCreate": "Mijoz yaratish muvaffaqiyatsiz",
+      "failedToUpdate": "Mijozni yangilash muvaffaqiyatsiz",
+      "failedToDelete": "Mijozni o'chirish muvaffaqiyatsiz"
+    }
+  }
+}

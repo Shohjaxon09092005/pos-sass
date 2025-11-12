@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 // API base URL
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -162,6 +163,7 @@ interface SupplierFormData {
 type TabType = "purchase-orders" | "manage-suppliers";
 
 export default function PurchasesPage() {
+  const { t } = useTranslation("purchase");
   const [activeTab, setActiveTab] = useState<TabType>("purchase-orders");
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -617,9 +619,9 @@ export default function PurchasesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Purchases</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("purchases")}</h1>
           <p className="text-sm text-gray-600">
-            Manage suppliers and purchase orders
+            {t("manage_suppliers_purchases")}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -629,7 +631,7 @@ export default function PurchasesPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>New Purchase Order</span>
+              <span>{t("new_purchase_order")}</span>
             </button>
           )}
           {activeTab === "manage-suppliers" && (
@@ -641,7 +643,7 @@ export default function PurchasesPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
             >
               <UserPlus className="h-5 w-5" />
-              <span>Add Supplier</span>
+              <span>{t("add_supplier")}</span>
             </button>
           )}
         </div>
@@ -660,7 +662,7 @@ export default function PurchasesPage() {
               }`}
             >
               <List className="h-5 w-5" />
-              <span>Purchase Orders</span>
+              <span>{t("purchase_orders")}</span>
             </button>
             <button
               onClick={() => setActiveTab("manage-suppliers")}
@@ -671,7 +673,7 @@ export default function PurchasesPage() {
               }`}
             >
               <Users className="h-5 w-5" />
-              <span>Manage Suppliers</span>
+              <span>{t("manage_suppliers")}</span>
             </button>
           </nav>
         </div>
@@ -686,7 +688,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Suppliers
+                        {t("stats.total_suppliers")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {suppliers.length}
@@ -702,7 +704,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Pending Payments
+                        {t("stats.pending_payments")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {pendingPurchases.length}
@@ -718,7 +720,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Pending Value
+                        {t("stats.pending_value")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {totalPending.toFixed(2)} UZS
@@ -734,7 +736,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Purchases
+                        {t("stats.total_purchases")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {totalThisMonth.toFixed(2)} UZS
@@ -755,7 +757,7 @@ export default function PurchasesPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <input
                         type="text"
-                        placeholder="Search by supplier or purchase ID..."
+                        placeholder={t('search.placeholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -768,9 +770,9 @@ export default function PurchasesPage() {
                       onChange={(e) => setStatusFilter(e.target.value)}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
+                      <option value="all">{t('search.all_status')}</option>
+                      <option value="active">{t('search.active')}</option>
+                      <option value="inactive">{t('search.inactive')}</option>
                     </select>
                   </div>
                 </div>
@@ -780,7 +782,7 @@ export default function PurchasesPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Purchase Orders
+                    {t("purchase_orders")}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -788,22 +790,22 @@ export default function PurchasesPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Purchase ID
+                          {t('table.purchase_id')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Supplier
+                          {t('table.supplier')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Items
+                          {t('table.items')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Total
+                          {t('table.total')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Status
+                          {t('table.status')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                          Actions
+                          {t('table.actions')}
                         </th>
                       </tr>
                     </thead>
@@ -830,14 +832,14 @@ export default function PurchasesPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {purchase.items.length} items
+                              {purchase.items.length} {t("items_count")}
                             </div>
                             <div className="text-sm text-gray-500">
                               {purchase.items.reduce(
                                 (sum, item) => sum + Math.abs(item.quantity),
                                 0
                               )}{" "}
-                              qty
+                              {t("qty")}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -846,7 +848,11 @@ export default function PurchasesPage() {
                             </div>
                             {parseFloat(purchase.amount_paid || "0") > 0 && (
                               <div className="text-xs text-gray-500">
-                                Paid: {(parseFloat(purchase.amount_paid) || 0).toFixed(2)} UZS
+                                {t("paid")}:{" "}
+                                {(
+                                  parseFloat(purchase.amount_paid) || 0
+                                ).toFixed(2)}{" "}
+                                UZS
                               </div>
                             )}
                           </td>
@@ -867,7 +873,7 @@ export default function PurchasesPage() {
                               }}
                               className="text-blue-600 hover:text-blue-900 transition-colors"
                             >
-                              View Details
+                              {t('view_details')}
                             </button>
                           </td>
                         </tr>
@@ -888,7 +894,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Suppliers
+                        {t('stats.total_suppliers')}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {suppliers.length}
@@ -904,7 +910,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Active Suppliers
+                        {t("stats.active_suppliers")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {
@@ -924,7 +930,7 @@ export default function PurchasesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Blacklisted
+                        {t("stats.blacklisted")}
                       </p>
                       <p className="text-2xl font-bold text-gray-900 mt-2">
                         {suppliers.filter((s) => s.is_blacklisted).length}
@@ -941,7 +947,7 @@ export default function PurchasesPage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    All Suppliers
+                    {t('table.all_suppliers')}
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -949,19 +955,19 @@ export default function PurchasesPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Supplier
+                          {t('table.supplier')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Contact
+                          {t('table.contact')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Address
+                          {t('table.address')}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Status
+                          {t('table.status')}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                          Actions
+                          {t('table.actions')}
                         </th>
                       </tr>
                     </thead>
@@ -985,12 +991,12 @@ export default function PurchasesPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {supplier.phone || "No phone"}
+                              {supplier.phone || t('no_phone')}
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900 max-w-xs truncate">
-                              {supplier.address_1 || "No address"}
+                              {supplier.address_1 || t('no_address')}
                               {supplier.address_2 && `, ${supplier.address_2}`}
                             </div>
                           </td>
@@ -1003,11 +1009,11 @@ export default function PurchasesPage() {
                                     : "bg-gray-100 text-gray-800"
                                 }`}
                               >
-                                {supplier.is_supplier ? "Active" : "Inactive"}
+                                {supplier.is_supplier ? t('status.active') : t('status.inactive')}
                               </span>
                               {supplier.is_blacklisted && (
                                 <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                  Blacklisted
+                                  {t('status.blacklisted' )}
                                 </span>
                               )}
                             </div>
@@ -1019,7 +1025,7 @@ export default function PurchasesPage() {
                                 className="text-blue-600 hover:text-blue-900 transition-colors flex items-center space-x-1"
                               >
                                 <Edit className="h-4 w-4" />
-                                <span>Edit</span>
+                                <span>{t('actions.edit')}</span>
                               </button>
                               <button
                                 onClick={() =>
@@ -1028,7 +1034,7 @@ export default function PurchasesPage() {
                                 className="text-red-600 hover:text-red-900 transition-colors flex items-center space-x-1"
                               >
                                 <Trash2 className="h-4 w-4" />
-                                <span>Delete</span>
+                                <span>{t('actions.delete')}</span>
                               </button>
                             </div>
                           </td>
@@ -1052,7 +1058,7 @@ export default function PurchasesPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Create Purchase Order
+                {t("forms.create")}
               </h3>
               <button
                 onClick={() => {
@@ -1088,14 +1094,14 @@ export default function PurchasesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Supplier *
+                    {t("forms.supplier")} *
                   </label>
                   <select
                     name="supplier"
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Select Supplier</option>
+                    <option value="">{t("forms.select_supplier")}</option>
                     {suppliers.map((supplier) => (
                       <option key={supplier.id} value={supplier.id}>
                         {supplier.name}
@@ -1105,7 +1111,7 @@ export default function PurchasesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expected Delivery Date
+                    {t("forms.expected_delivery_date")}
                   </label>
                   <input
                     type="date"
@@ -1118,14 +1124,14 @@ export default function PurchasesPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold text-gray-900">
-                    Order Items
+                    {t("forms.order_items")}
                   </h4>
                   <button
                     type="button"
                     onClick={addPurchaseItem}
                     className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium transition-colors"
                   >
-                    Add Item
+                    {t("forms.add_item")}
                   </button>
                 </div>
 
@@ -1134,19 +1140,19 @@ export default function PurchasesPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Product
+                          {t("forms.product")} *
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Quantity
+                          {t("forms.quantity")} *
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Unit Cost (UZS)
+                          {t("forms.unit_cost")} (UZS)
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Total (UZS)
+                          {t("forms.total")} (UZS)
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                          Action
+                          {t("forms.actions")}
                         </th>
                       </tr>
                     </thead>
@@ -1166,10 +1172,10 @@ export default function PurchasesPage() {
                               required
                               className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                             >
-                              <option value="">Select Product</option>
+                              <option value="">{t("forms.select_product")}</option>
                               {products.map((product) => (
                                 <option key={product.id} value={product.id}>
-                                  {product.title} - 
+                                  {product.title} -
                                   {parseFloat(product.cost).toFixed(2)} UZS
                                 </option>
                               ))}
@@ -1234,7 +1240,7 @@ export default function PurchasesPage() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-900">
-                    Total Amount:
+                    {t("forms.total_amount")}:
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
                     {calculateTotalAmount().toFixed(2)} UZS
@@ -1244,13 +1250,13 @@ export default function PurchasesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                  {t("forms.notes")}
                 </label>
                 <textarea
                   name="notes"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Additional notes for this purchase order..."
+                  placeholder={t("forms.additional_notes")}
                 />
               </div>
 
@@ -1270,13 +1276,13 @@ export default function PurchasesPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("forms.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Create Purchase Order
+                  {t("forms.create")}
                 </button>
               </div>
             </form>
@@ -1287,10 +1293,13 @@ export default function PurchasesPage() {
       {/* Purchase Detail Modal */}
       {showPurchaseDetail && selectedPurchase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto" style={{marginTop:"50px"}}>
+          <div
+            className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+            style={{ marginTop: "50px" }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Purchase Details
+                {t("modals.purchase_details")}
               </h3>
               <button
                 onClick={() => {
@@ -1307,7 +1316,7 @@ export default function PurchasesPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Purchase ID
+                    {t("table.purchase_id")}
                   </label>
                   <p className="text-lg font-mono text-gray-900">
                     {selectedPurchase.id}
@@ -1315,7 +1324,7 @@ export default function PurchasesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Supplier
+                    {t("table.supplier")}
                   </label>
                   <p className="text-gray-900">
                     {getSupplierName(selectedPurchase.supplier)}
@@ -1324,7 +1333,7 @@ export default function PurchasesPage() {
                 {selectedPurchase.created_at && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Created Date
+                      {t("details.created_date")}
                     </label>
                     <p className="text-gray-900">
                       {format(
@@ -1338,7 +1347,7 @@ export default function PurchasesPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Status
+                    {t("table.status")}
                   </label>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -1350,7 +1359,7 @@ export default function PurchasesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
-                    Total Amount
+                    {t("forms.total_amount")}
                   </label>
                   <p className="text-2xl font-bold text-green-600">
                     {getPurchaseTotal(selectedPurchase).toFixed(2)} UZS
@@ -1359,10 +1368,13 @@ export default function PurchasesPage() {
                 {parseFloat(selectedPurchase.amount_paid || "0") > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Amount Paid
+                      {t("details.amount_paid")}
                     </label>
                     <p className="text-lg text-gray-900">
-                      {(parseFloat(selectedPurchase.amount_paid) || 0).toFixed(2)} UZS
+                      {(parseFloat(selectedPurchase.amount_paid) || 0).toFixed(
+                        2
+                      )}{" "}
+                      UZS
                     </p>
                   </div>
                 )}
@@ -1371,7 +1383,7 @@ export default function PurchasesPage() {
 
             <div className="border-t border-gray-200 pt-6">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Items
+                {t("table.items")}
               </h4>
               <div className="space-y-3">
                 {selectedPurchase.items.map((item, index) => (
@@ -1390,11 +1402,11 @@ export default function PurchasesPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        
                         {(
                           Math.abs(item.quantity) *
                           parseFloat(item.cost_price || "0")
-                        ).toFixed(2)} UZS
+                        ).toFixed(2)}{" "}
+                        UZS
                       </p>
                     </div>
                   </div>
@@ -1405,7 +1417,7 @@ export default function PurchasesPage() {
             {selectedPurchase.notes && (
               <div className="border-t border-gray-200 pt-6 mt-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                  Notes
+                  {t("forms.notes")}
                 </h4>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
                   {selectedPurchase.notes}
@@ -1421,7 +1433,7 @@ export default function PurchasesPage() {
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Close
+                {t("forms.close")}
               </button>
             </div>
           </div>
@@ -1432,12 +1444,12 @@ export default function PurchasesPage() {
       {showSupplierModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="bg-white rounded-xl p-6 w-full max-w-6xl max-h-[80vh] overflow-y-auto" 
+            className="bg-white rounded-xl p-6 w-full max-w-6xl max-h-[80vh] overflow-y-auto"
             style={{ marginTop: "50px" }}
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                Manage Suppliers
+                {t("modals.manage_suppliers")}
               </h3>
               <div className="flex items-center space-x-3">
                 <button
@@ -1448,7 +1460,7 @@ export default function PurchasesPage() {
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors"
                 >
                   <UserPlus className="h-4 w-4" />
-                  <span>Add Supplier</span>
+                  <span>{t("modals.add_supplier")}</span>
                 </button>
                 <button
                   onClick={() => setShowSupplierModal(false)}
@@ -1464,19 +1476,19 @@ export default function PurchasesPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Supplier
+                     {t('table.supplier')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Contact
+                      {t('table.contact')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Address
+                      {t('table.address')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
+                      {t('table.status')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Actions
+                      {t('table.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -1527,7 +1539,7 @@ export default function PurchasesPage() {
                             className="text-blue-600 hover:text-blue-900 transition-colors flex items-center space-x-1"
                           >
                             <Edit className="h-4 w-4" />
-                            <span>Edit</span>
+                            <span>{t("action.edit")}</span>
                           </button>
                           <button
                             onClick={() =>
@@ -1536,7 +1548,7 @@ export default function PurchasesPage() {
                             className="text-red-600 hover:text-red-900 transition-colors flex items-center space-x-1"
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span>Delete</span>
+                            <span>{t("action.delete")}</span>
                           </button>
                         </div>
                       </td>
@@ -1572,7 +1584,7 @@ export default function PurchasesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name *
+                    {t('forms.name')} *
                   </label>
                   <input
                     type="text"
@@ -1585,13 +1597,13 @@ export default function PurchasesPage() {
                       }))
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Supplier name"
+                    placeholder={t("forms.supplier_name")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
+                    {t("forms.email")} *
                   </label>
                   <input
                     type="email"
@@ -1609,7 +1621,7 @@ export default function PurchasesPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
+                    {t("forms.phone")} *
                   </label>
                   <input
                     type="tel"
@@ -1627,7 +1639,7 @@ export default function PurchasesPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
+                    {t("table.status")}
                   </label>
                   <select
                     value={supplierFormData.is_supplier.toString()}
@@ -1639,14 +1651,14 @@ export default function PurchasesPage() {
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
+                    <option value="true">{t("status.active")}</option>
+                    <option value="false">{t("status.inactive")}</option>
                   </select>
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 1
+                    {t("forms.address_line_1")}
                   </label>
                   <input
                     type="text"
@@ -1658,13 +1670,13 @@ export default function PurchasesPage() {
                       }))
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Street address, P.O. box"
+                    placeholder={t("forms.address_line_1_placeholder")}
                   />
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 2
+                    {t("forms.address_line_2")}
                   </label>
                   <input
                     type="text"
@@ -1676,13 +1688,13 @@ export default function PurchasesPage() {
                       }))
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Apartment, suite, unit, building, floor, etc."
+                    placeholder={t("forms.address_line_2_placeholder")}
                   />
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
+                    {t("forms.notes")}
                   </label>
                   <textarea
                     value={supplierFormData.notes}
@@ -1694,7 +1706,7 @@ export default function PurchasesPage() {
                     }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Additional notes about this supplier..."
+                    placeholder={t("forms.additional_notes")}
                   />
                 </div>
               </div>
@@ -1708,7 +1720,7 @@ export default function PurchasesPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t("forms.cancel")}
                 </button>
                 <button
                   type="submit"

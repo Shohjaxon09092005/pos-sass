@@ -13,6 +13,7 @@ import {
   Edit,
   X
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Use the same Company interface from AuthContext
 interface Company {
@@ -56,6 +57,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function SettingsPage() {
   const { user, company, fetchUserData, updateCompany, fetchCompanies } = useAuth();
+  const { t } = useTranslation('settings');
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
@@ -154,21 +156,21 @@ export default function SettingsPage() {
 
       if (response.ok) {
         await fetchUserData();
-        showMessage('success', 'Profile updated successfully');
+        showMessage('success', t('settings.messages.profileUpdated'));
       } else {
         const error = await response.json();
-        showMessage('error', error.detail || 'Failed to update profile');
+        showMessage('error', error.detail || t('settings.messages.failedToUpdate', { resource: 'profile' }));
       }
     } catch (error) {
-      showMessage('error', 'Error updating profile');
+      showMessage('error', t('settings.messages.errorUpdating', { resource: 'profile' }));
     }
     setLoading(false);
-  }, [user, profile, fetchUserData, showMessage]);
+  }, [user, profile, fetchUserData, showMessage, t]);
 
   // Company API calls
   const handleSaveCompany = useCallback(async () => {
     if (!user || !user.companies?.[0]) {
-      showMessage('error', 'No company found');
+      showMessage('error', t('settings.messages.noCompany'));
       return;
     }
 
@@ -187,12 +189,12 @@ export default function SettingsPage() {
 
       await updateCompany(userCompany.id, apiCompanyData);
       await fetchUserData();
-      showMessage('success', 'Company updated successfully');
+      showMessage('success', t('settings.messages.companyUpdated'));
     } catch (error) {
-      showMessage('error', 'Error updating company');
+      showMessage('error', t('settings.messages.errorUpdating', { resource: 'company' }));
     }
     setLoading(false);
-  }, [user, companyData, updateCompany, fetchUserData, showMessage]);
+  }, [user, companyData, updateCompany, fetchUserData, showMessage, t]);
 
   // Create new company
   const handleCreateCompany = useCallback(async () => {
@@ -220,22 +222,22 @@ export default function SettingsPage() {
         await fetchUserData();
         setShowAddCompanyModal(false);
         setNewCompany({ title: '', email: '', phone: '', address: '', website: '' });
-        showMessage('success', 'Company created successfully');
+        showMessage('success', t('settings.messages.companyCreated'));
       } else {
         const error = await response.json();
-        showMessage('error', error.detail || 'Failed to create company');
+        showMessage('error', error.detail || t('settings.messages.failedToCreate', { resource: 'company' }));
       }
     } catch (error) {
-      showMessage('error', 'Error creating company');
+      showMessage('error', t('settings.messages.errorCreating', { resource: 'company' }));
     }
     setLoading(false);
-  }, [user, newCompany, fetchUserData, showMessage]);
+  }, [user, newCompany, fetchUserData, showMessage, t]);
 
   // Delete company
   const handleDeleteCompany = useCallback(async (companyId: number) => {
     if (!user) return;
     
-    if (!window.confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+    if (!window.confirm(t('settings.modals.deleteConfirm'))) {
       return;
     }
 
@@ -251,26 +253,26 @@ export default function SettingsPage() {
 
       if (response.ok) {
         await fetchUserData();
-        showMessage('success', 'Company deleted successfully');
+        showMessage('success', t('settings.messages.companyDeleted'));
       } else {
         const error = await response.json();
-        showMessage('error', error.detail || 'Failed to delete company');
+        showMessage('error', error.detail || t('settings.messages.failedToDelete', { resource: 'company' }));
       }
     } catch (error) {
-      showMessage('error', 'Error deleting company');
+      showMessage('error', t('settings.messages.errorDeleting', { resource: 'company' }));
     }
     setLoading(false);
-  }, [user, fetchUserData, showMessage]);
+  }, [user, fetchUserData, showMessage, t]);
 
   // Password API calls
   const handleChangePassword = useCallback(async () => {
     if (password.new_password !== password.confirm_new_password) {
-      showMessage('error', 'New passwords do not match');
+      showMessage('error', t('settings.messages.passwordsMismatch'));
       return;
     }
 
     if (password.new_password.length < 8) {
-      showMessage('error', 'New password must be at least 8 characters long');
+      showMessage('error', t('settings.messages.passwordTooShort'));
       return;
     }
 
@@ -291,23 +293,23 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        showMessage('success', 'Password updated successfully');
+        showMessage('success', t('settings.messages.passwordUpdated'));
         setPassword({ current_password: '', new_password: '', confirm_new_password: '' });
       } else {
         const error = await response.json();
-        showMessage('error', error.detail || 'Failed to update password');
+        showMessage('error', error.detail || t('settings.messages.failedToUpdate', { resource: 'password' }));
       }
     } catch (error) {
-      showMessage('error', 'Error updating password');
+      showMessage('error', t('settings.messages.errorUpdating', { resource: 'password' }));
     }
     setLoading(false);
-  }, [password, showMessage]);
+  }, [password, showMessage, t]);
 
   // Notification preferences (local storage for demo)
   const handleSaveNotifications = useCallback(() => {
     localStorage.setItem('notificationSettings', JSON.stringify(notifications));
-    showMessage('success', 'Notification preferences saved');
-  }, [notifications, showMessage]);
+    showMessage('success', t('settings.messages.preferencesSaved'));
+  }, [notifications, showMessage, t]);
 
   const togglePasswordVisibility = useCallback((field: keyof typeof showPassword) => {
     setShowPassword(prev => ({
@@ -341,56 +343,56 @@ export default function SettingsPage() {
   }, []);
 
   const tabs = useMemo(() => [
-    { id: 'profile', name: 'Profile', icon: User },
-    { id: 'company', name: 'Company', icon: Building },
-    { id: 'notifications', name: 'Notifications', icon: Bell },
-    { id: 'security', name: 'Security', icon: Shield },
-  ], []);
+    { id: 'profile', name: t('settings.tabs.profile'), icon: User },
+    { id: 'company', name: t('settings.tabs.company'), icon: Building },
+    { id: 'notifications', name: t('settings.tabs.notifications'), icon: Bell },
+    { id: 'security', name: t('settings.tabs.security'), icon: Shield },
+  ], [t]);
 
   const ProfileSettings = useCallback(() => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{t('settings.profile.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              First Name
+              {t('settings.profile.firstName')}
             </label>
             <input
               type="text"
               value={profile.first_name}
               onChange={handleProfileChange('first_name')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your first name"
+              placeholder={t('settings.profile.firstNamePlaceholder')}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Last Name
+              {t('settings.profile.lastName')}
             </label>
             <input
               type="text"
               value={profile.last_name}
               onChange={handleProfileChange('last_name')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your last name"
+              placeholder={t('settings.profile.lastNamePlaceholder')}
             />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+              {t('settings.profile.email')}
             </label>
             <input
               type="email"
               value={profile.email}
               onChange={handleProfileChange('email')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email address"
+              placeholder={t('settings.profile.emailPlaceholder')}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Role
+              {t('settings.profile.role')}
             </label>
             <input
               type="text"
@@ -401,7 +403,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username
+              {t('settings.profile.username')}
             </label>
             <input
               type="text"
@@ -420,29 +422,29 @@ export default function SettingsPage() {
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Save className="h-5 w-5" />
-          <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+          <span>{loading ? t('settings.actions.saving') : t('settings.actions.saveChanges')}</span>
         </button>
       </div>
     </div>
-  ), [profile, user, loading, handleSaveProfile, handleProfileChange]);
+  ), [profile, user, loading, handleSaveProfile, handleProfileChange, t]);
 
   const CompanySettings = useCallback(() => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Company Information</h3>
+        <h3 className="text-lg font-medium text-gray-900">{t('settings.company.title')}</h3>
         <button
           onClick={() => setShowAddCompanyModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Plus className="h-5 w-5" />
-          <span>Add Company</span>
+          <span>{t('settings.company.addCompany')}</span>
         </button>
       </div>
 
       {/* Current Companies List */}
       {user?.companies && user.companies.length > 0 && (
         <div className="space-y-4">
-          <h4 className="font-medium text-gray-900">Your Companies</h4>
+          <h4 className="font-medium text-gray-900">{t('settings.company.yourCompanies')}</h4>
           {user.companies.map((comp) => (
             <div key={comp.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-start">
@@ -466,7 +468,7 @@ export default function SettingsPage() {
                     onClick={() => handleDeleteCompany(comp.id)}
                     disabled={loading}
                     className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                    title="Delete Company"
+                    title={t('settings.actions.delete')}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -480,67 +482,67 @@ export default function SettingsPage() {
       {/* Edit Current Company */}
       {user?.companies && user.companies.length > 0 && (
         <div className="border-t pt-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">Edit Company</h4>
+          <h4 className="text-lg font-medium text-gray-900 mb-4">{t('settings.company.editCompany')}</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name *
+                {t('settings.company.companyName')}
               </label>
               <input
                 type="text"
                 value={companyData.title}
                 onChange={handleCompanyDataChange('title')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter company name"
+                placeholder={t('settings.company.companyNamePlaceholder')}
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                {t('settings.company.email')}
               </label>
               <input
                 type="email"
                 value={companyData.email}
                 onChange={handleCompanyDataChange('email')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="company@example.com"
+                placeholder={t('settings.company.emailPlaceholder')}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                {t('settings.company.phone')}
               </label>
               <input
                 type="tel"
                 value={companyData.phone}
                 onChange={handleCompanyDataChange('phone')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="+1 (555) 123-4567"
+                placeholder={t('settings.company.phonePlaceholder')}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Website
+                {t('settings.company.website')}
               </label>
               <input
                 type="url"
                 value={companyData.website}
                 onChange={handleCompanyDataChange('website')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="https://example.com"
+                placeholder={t('settings.company.websitePlaceholder')}
               />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address *
+                {t('settings.company.address')}
               </label>
               <textarea
                 rows={3}
                 value={companyData.address}
                 onChange={handleCompanyDataChange('address')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter company address"
+                placeholder={t('settings.company.addressPlaceholder')}
                 required
               />
             </div>
@@ -553,22 +555,22 @@ export default function SettingsPage() {
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
             >
               <Save className="h-5 w-5" />
-              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+              <span>{loading ? t('settings.actions.saving') : t('settings.actions.saveChanges')}</span>
             </button>
           </div>
         </div>
       )}
     </div>
-  ), [user, companyData, loading, handleSaveCompany, handleDeleteCompany, handleCompanyDataChange]);
+  ), [user, companyData, loading, handleSaveCompany, handleDeleteCompany, handleCompanyDataChange, t]);
 
   const SecuritySettings = useCallback(() => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Password & Security</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{t('settings.security.title')}</h3>
         <div className="space-y-4 max-w-md">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Password *
+              {t('settings.security.currentPassword')}
             </label>
             <div className="relative">
               <input
@@ -576,7 +578,7 @@ export default function SettingsPage() {
                 value={password.current_password}
                 onChange={handlePasswordChange('current_password')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                placeholder="Enter current password"
+                placeholder={t('settings.security.currentPasswordPlaceholder')}
                 required
               />
               <button
@@ -590,7 +592,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password *
+              {t('settings.security.newPassword')}
             </label>
             <div className="relative">
               <input
@@ -598,7 +600,7 @@ export default function SettingsPage() {
                 value={password.new_password}
                 onChange={handlePasswordChange('new_password')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                placeholder="Enter new password"
+                placeholder={t('settings.security.newPasswordPlaceholder')}
                 required
                 minLength={8}
               />
@@ -613,7 +615,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm New Password *
+              {t('settings.security.confirmPassword')}
             </label>
             <div className="relative">
               <input
@@ -621,7 +623,7 @@ export default function SettingsPage() {
                 value={password.confirm_new_password}
                 onChange={handlePasswordChange('confirm_new_password')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                placeholder="Confirm new password"
+                placeholder={t('settings.security.confirmPasswordPlaceholder')}
                 required
                 minLength={8}
               />
@@ -644,42 +646,42 @@ export default function SettingsPage() {
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Save className="h-5 w-5" />
-          <span>{loading ? 'Updating...' : 'Update Password'}</span>
+          <span>{loading ? t('settings.actions.updating') : t('settings.security.updatePassword')}</span>
         </button>
       </div>
     </div>
-  ), [password, showPassword, loading, handleChangePassword, togglePasswordVisibility, handlePasswordChange]);
+  ), [password, showPassword, loading, handleChangePassword, togglePasswordVisibility, handlePasswordChange, t]);
 
   const NotificationSettings = useCallback(() => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{t('settings.notifications.title')}</h3>
         <div className="space-y-4">
           {[
             { 
               key: 'daily_sales' as keyof typeof notifications, 
-              name: 'Daily Sales Summary', 
-              description: 'Receive daily reports about your sales performance' 
+              name: t('settings.notifications.dailySales'), 
+              description: t('settings.notifications.dailySalesDesc') 
             },
             { 
               key: 'low_stock' as keyof typeof notifications, 
-              name: 'Low Stock Alerts', 
-              description: 'Get notified when products are running low' 
+              name: t('settings.notifications.lowStock'), 
+              description: t('settings.notifications.lowStockDesc') 
             },
             { 
               key: 'new_orders' as keyof typeof notifications, 
-              name: 'New Orders', 
-              description: 'Notification for every new order placed' 
+              name: t('settings.notifications.newOrders'), 
+              description: t('settings.notifications.newOrdersDesc') 
             },
             { 
               key: 'payments' as keyof typeof notifications, 
-              name: 'Payment Alerts', 
-              description: 'Updates about payment processing and failures' 
+              name: t('settings.notifications.payments'), 
+              description: t('settings.notifications.paymentsDesc') 
             },
             { 
               key: 'system_updates' as keyof typeof notifications, 
-              name: 'System Updates', 
-              description: 'Important system updates and maintenance notifications' 
+              name: t('settings.notifications.systemUpdates'), 
+              description: t('settings.notifications.systemUpdatesDesc') 
             },
           ].map((notification) => (
             <div key={notification.key} className="flex items-center justify-between py-3">
@@ -707,11 +709,11 @@ export default function SettingsPage() {
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors"
         >
           <Save className="h-5 w-5" />
-          <span>Save Preferences</span>
+          <span>{t('settings.notifications.savePreferences')}</span>
         </button>
       </div>
     </div>
-  ), [notifications, handleSaveNotifications, handleNotificationChange]);
+  ), [notifications, handleSaveNotifications, handleNotificationChange, t]);
 
   const renderContent = useCallback(() => {
     switch (activeTab) {
@@ -728,7 +730,7 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading user data...</p>
+          <p className="mt-4 text-gray-600">{t('settings.loading')}</p>
         </div>
       </div>
     );
@@ -739,8 +741,8 @@ export default function SettingsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-600">Manage your account and system preferences</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+          <p className="text-sm text-gray-600">{t('settings.subtitle')}</p>
         </div>
 
         {/* Message Alert */}
@@ -788,7 +790,7 @@ export default function SettingsPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl w-full max-w-md">
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900">Add New Company</h3>
+                <h3 className="text-xl font-bold text-gray-900">{t('settings.modals.addCompany.title')}</h3>
                 <button
                   onClick={() => setShowAddCompanyModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -800,68 +802,68 @@ export default function SettingsPage() {
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name *
+                    {t('settings.company.companyName')}
                   </label>
                   <input
                     type="text"
                     value={newCompany.title}
                     onChange={handleNewCompanyChange('title')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter company name"
+                    placeholder={t('settings.company.companyNamePlaceholder')}
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address *
+                    {t('settings.company.address')}
                   </label>
                   <textarea
                     rows={3}
                     value={newCompany.address}
                     onChange={handleNewCompanyChange('address')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter company address"
+                    placeholder={t('settings.company.addressPlaceholder')}
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    {t('settings.company.phone')}
                   </label>
                   <input
                     type="tel"
                     value={newCompany.phone}
                     onChange={handleNewCompanyChange('phone')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t('settings.company.phonePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
+                    {t('settings.company.email')}
                   </label>
                   <input
                     type="email"
                     value={newCompany.email}
                     onChange={handleNewCompanyChange('email')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="company@example.com"
+                    placeholder={t('settings.company.emailPlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website
+                    {t('settings.company.website')}
                   </label>
                   <input
                     type="url"
                     value={newCompany.website}
                     onChange={handleNewCompanyChange('website')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com"
+                    placeholder={t('settings.company.websitePlaceholder')}
                   />
                 </div>
               </div>
@@ -872,14 +874,14 @@ export default function SettingsPage() {
                   onClick={() => setShowAddCompanyModal(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t('settings.actions.cancel')}
                 </button>
                 <button
                   onClick={handleCreateCompany}
                   disabled={loading || !newCompany.title || !newCompany.address}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                 >
-                  {loading ? 'Creating...' : 'Create Company'}
+                  {loading ? t('settings.actions.creating') : t('settings.modals.addCompany.create')}
                 </button>
               </div>
             </div>
