@@ -325,12 +325,19 @@ export default function ProductsPage() {
         (e.currentTarget.elements.namedItem("cost") as HTMLInputElement).value
       );
 
-      // Initial/Input Stock for creation
+      // Initial/Input Stoc for creation
       const inputStockValue = (
         e.currentTarget.elements.namedItem("input_stock") as HTMLInputElement
       )?.value;
       if (inputStockValue !== undefined) {
         formData.append("input_stock", inputStockValue || "0");
+      }
+      // Initial/alert_quantity for creation
+      const alertQuantityValue = (
+        e.currentTarget.elements.namedItem("alert_quantity") as HTMLInputElement
+      )?.value;
+      if (alertQuantityValue !== undefined) {
+        formData.append("alert_quantity", alertQuantityValue || "0");
       }
 
       // Category va unit - agar mavjud bo'lsa
@@ -440,6 +447,13 @@ export default function ProductsPage() {
       )?.value;
       if (inputStockValue !== undefined) {
         formData.append("input_stock", inputStockValue || "0");
+      }
+      // alert_quantity (optional for update)
+      const alertQuantityValue = (
+        e.currentTarget.elements.namedItem("alert_quantity") as HTMLInputElement
+      )?.value;
+      if (alertQuantityValue !== undefined) {
+        formData.append("alert_quantity", alertQuantityValue || "0");
       }
       formData.append(
         "barcode",
@@ -1020,6 +1034,18 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("alert_quantity")}
+                  </label>
+                  <input
+                    type="number"
+                    name="alert_quantity"
+                    min={0}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t("productName")} *
                   </label>
                   <input
@@ -1173,7 +1199,9 @@ export default function ProductsPage() {
             style={{ marginTop: "50px" }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">{t("editProduct")}</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                {t("editProduct")}
+              </h3>
               <button
                 onClick={() => {
                   setEditingProduct(null);
@@ -1381,6 +1409,18 @@ export default function ProductsPage() {
                   <input
                     type="number"
                     name="input_stock"
+                    min={0}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("alert_quantity")}
+                  </label>
+                  <input
+                    type="number"
+                    name="alert_quantity"
                     min={0}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />

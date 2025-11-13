@@ -53,6 +53,10 @@ import enNotFound from "./locales/en/notFound.json";
 import ruNotFound from "./locales/ru/notFound.json";
 import uzNotFound from "./locales/uz/notFound.json";
 
+import enPos from "./locales/en/pos.json";
+import ruPos from "./locales/ru/pos.json";
+import uzPos from "./locales/uz/pos.json";
+
 
 
 i18n.use(initReactI18next).init({
@@ -70,7 +74,8 @@ i18n.use(initReactI18next).init({
       employees: enEmployees,
       billing: enBilling,
       settings: enSettings,
-      notFound: enNotFound
+      notFound: enNotFound,
+      pos: enPos
     },
     ru: {
       home: ruHome,
@@ -85,7 +90,8 @@ i18n.use(initReactI18next).init({
       employees: ruEmployees,
       billing: ruBilling,
       settings: ruSettings,
-      notFound: ruNotFound
+      notFound: ruNotFound,
+      pos: ruPos
     },
     uz: {
       home: uzHome,
@@ -100,7 +106,8 @@ i18n.use(initReactI18next).init({
       employees: uzEmployees,
       billing: uzBilling,
       settings: uzSettings,
-      notFound: uzNotFound
+      notFound: uzNotFound,
+      pos: uzPos
     },
   },
   lng: "uz", // default til

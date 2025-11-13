@@ -180,7 +180,7 @@ export default function PaymentsPage() {
     } else {
       const filtered = currencies.filter(currency =>
         currency?.code?.toLowerCase().includes(currencySearchTerm.toLowerCase()) ||
-        currency?.name?.toLowerCase().includes(currencySearchTerm.toLowerCase())
+        currency?.title?.toLowerCase().includes(currencySearchTerm.toLowerCase())
       );
       setFilteredCurrencies(filtered);
     }
@@ -405,9 +405,8 @@ export default function PaymentsPage() {
       const token = localStorage.getItem("access_token");
       const currencyData = {
         code: formData.get("code") as string,
-        name: formData.get("name") as string,
+        title: formData.get("title") as string,
         symbol: formData.get("symbol") as string,
-        exchange_rate: parseFloat(formData.get("exchange_rate") as string),
         is_active: true,
       };
 
@@ -446,9 +445,8 @@ export default function PaymentsPage() {
       const token = localStorage.getItem("access_token");
       const currencyData = {
         code: formData.get("code") as string,
-        name: formData.get("name") as string,
+        title: formData.get("title") as string,
         symbol: formData.get("symbol") as string,
-        exchange_rate: parseFloat(formData.get("exchange_rate") as string),
         is_active: formData.get("is_active") === "true",
       };
 
@@ -971,11 +969,10 @@ export default function PaymentsPage() {
                       </div>
                       <div>
                         <span className="font-medium text-gray-900 block">
-                          {currency.name} ({currency.code})
+                          {currency.title} ({currency.code})
                         </span>
                         <div className="text-sm text-gray-500 space-y-1">
                           <div>{t('symbol')}: {currency.symbol}</div>
-                          <div>{t('exchange_rate')}: {currency.exchange_rate}</div>
                         </div>
                       </div>
                     </div>
@@ -1364,7 +1361,7 @@ export default function PaymentsPage() {
                 </label>
                 <input
                   type="text"
-                  name="name"
+                  name="title"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder={t('currencies_example_name')}
@@ -1384,20 +1381,7 @@ export default function PaymentsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('currencies_exchange_rate')} *
-                </label>
-                <input
-                  type="number"
-                  name="exchange_rate"
-                  required
-                  step="0.0001"
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={t('currencies_example_rate')}
-                />
-              </div>
+              
 
               <div className="flex justify-end space-x-3 pt-4">
                 <button
@@ -1455,8 +1439,8 @@ export default function PaymentsPage() {
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  defaultValue={editingCurrency.name}
+                  name="title"
+                  defaultValue={editingCurrency.title}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -1475,20 +1459,7 @@ export default function PaymentsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('currencies_exchange_rate')} *
-                </label>
-                <input
-                  type="number"
-                  name="exchange_rate"
-                  defaultValue={editingCurrency.exchange_rate}
-                  required
-                  step="0.0001"
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

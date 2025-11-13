@@ -57,6 +57,7 @@
   "close": "Yopish",
   "inputStock": "Kirim zaxirasi",
   "initialStock": "Boshlang'ich zaxira",
+  "alert_quantity": "Ogohlantirish miqdori",
   "currentStock": "Joriy zaxira",
   "stockAdjustment": "Zaxirani sozlash",
   "unknown": "Noma'lum",

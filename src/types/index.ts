@@ -173,9 +173,8 @@ export interface PaymentMethod {
 export interface Currency {
   id: string;
   code: string;
-  name: string;
+  title: string;
   symbol: string;
-  exchange_rate: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;

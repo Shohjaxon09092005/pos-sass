@@ -56,6 +56,7 @@
   "totalValue": "Общая стоимость",
   "close": "Закрыть",
   "inputStock": "Входной запас",
+  "alert_quantity": "Количество для оповещения",
   "initialStock": "Начальный запас",
   "currentStock": "Текущий запас",
   "stockAdjustment": "Корректировка запаса",
